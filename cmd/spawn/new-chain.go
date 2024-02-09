@@ -21,12 +21,16 @@ type SpawnNewConfig struct {
 	IgnoreFiles []string
 
 	Debugging bool
+
+	DisabledFeatures []string
 }
 
 const (
 	FlagWalletPrefix = "bech32"
 	FlagBinaryName   = "bin"
 	FlagDebugging    = "debug"
+
+	FlagDisabled = "disabled"
 )
 
 var IgnoredFiles = []string{"generate.sh", "embed.go"}
@@ -35,6 +39,7 @@ func init() {
 	newChain.Flags().String(FlagWalletPrefix, "cosmos", "chain wallet bech32 prefix")
 	newChain.Flags().String(FlagBinaryName, "appd", "binary name")
 	newChain.Flags().Bool(FlagDebugging, false, "enable debugging")
+	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features")
 }
 
 // TODO: reduce required inputs here. (or make them flags with defaults?)
@@ -55,6 +60,8 @@ var newChain = &cobra.Command{
 
 		debug, _ := cmd.Flags().GetBool(FlagDebugging)
 
+		disabled, _ := cmd.Flags().GetStringSlice(FlagDisabled)
+
 		cfg := SpawnNewConfig{
 			ProjectName:  projName,
 			Bech32Prefix: walletPrefix,
@@ -63,6 +70,9 @@ var newChain = &cobra.Command{
 			BinaryName:   binName,
 
 			Debugging: debug,
+
+			// by default everything is on, then we remove what the user wants to disable
+			DisabledFeatures: disabled,
 		}
 
 		NewChain(cfg)
@@ -77,12 +87,14 @@ func NewChain(cfg SpawnNewConfig) {
 	appDirName := cfg.AppDirName
 	binaryName := cfg.BinaryName
 	Debugging := cfg.Debugging
+	disabled := cfg.DisabledFeatures
+
+	fmt.Println("Disabled features:", disabled)
 
 	goModName := fmt.Sprintf("github.com/strangelove-ventures/%s", NewDirName)
 
 	fmt.Println("Spawning new app:", NewDirName)
 
-	// create NewDirName directory
 	if err := os.MkdirAll(NewDirName, 0755); err != nil {
 		panic(err)
 	}
@@ -90,17 +102,16 @@ func NewChain(cfg SpawnNewConfig) {
 	err := fs.WalkDir(simapp.SimApp, ".", func(relPath string, d fs.DirEntry, e error) error {
 		newPath := path.Join(NewDirName, relPath)
 
-		if Debugging {
-			fmt.Println("relPath", relPath)
-			fmt.Println("newPath", newPath)
-		}
+		// if Debugging {
+		// 	fmt.Printf("relPath: %s, newPath: %s\n", relPath, newPath)
+		// }
 
 		if relPath == "." {
 			return nil
 		}
 
-		// if relPath is a dir, continue
 		if d.IsDir() {
+			// if relPath is a dir, continue walking
 			return nil
 		}
 
@@ -118,6 +129,8 @@ func NewChain(cfg SpawnNewConfig) {
 		if err != nil {
 			return err
 		}
+		fileContent = removeDisabledFeatures(disabled, relPath, fileContent)
+
 		fc := string(fileContent)
 
 		// TODO: regex would be nicer for replacing incase it changes up stream. may never though. Also limit to specific files?
@@ -158,4 +171,113 @@ func NewChain(cfg SpawnNewConfig) {
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+// Removes disabled features from the files specified
+func removeDisabledFeatures(disabled []string, relativePath string, fileContent []byte) []byte {
+	for _, name := range disabled {
+		switch name {
+		case "tokenfactory":
+			fileContent = removeTokenFactory(relativePath, fileContent)
+		case "poa":
+			fileContent = removePoa(relativePath, fileContent)
+		case "ibc": // this would remove all. Including PFM, then we can have others for specifics (i.e. ICAHost, IBCFees)
+			// fileContent = removeIbc(relativePath, fileContent)
+			continue
+		case "wasm":
+			// fileContent = removeWasm(relativePath, fileContent)
+			continue
+		case "nft":
+			// fileContent = removeNft(relativePath, fileContent)
+			continue
+		case "circuit":
+			// fileContent = removeCircuit(relativePath, fileContent)
+			continue
+		}
+	}
+
+	return fileContent
+}
+
+// Removes all references from the tokenfactory file
+func removeTokenFactory(relativePath string, fileContent []byte) []byte {
+	if relativePath == "go.mod" || relativePath == "go.sum" {
+		fileContent = RemoveGoModImport("github.com/reecepbcups/tokenfactory", fileContent)
+	}
+
+	if relativePath == "app/app.go" {
+		fileContent = RemoveGeneralModule("tokenfactory", string(fileContent))
+	}
+
+	return fileContent
+}
+
+func removePoa(relativePath string, fileContent []byte) []byte {
+	if relativePath == "go.mod" || relativePath == "go.sum" {
+		fileContent = RemoveGoModImport("github.com/strangelove-ventures/poa", fileContent)
+	}
+
+	if relativePath == "app/app.go" || relativePath == "app/ante.go" {
+		fileContent = RemoveGeneralModule("poa", string(fileContent))
+	}
+
+	return fileContent
+}
+
+// RemoveGeneralModule removes any matching names from the fileContent.
+// i.e. if moduleFind is "tokenfactory" any lines with "tokenfactory" will be removed
+// including comments.
+// If an import or other line depends on a solo module a user wishes to remove, add a comment to the line
+// such as `// tag:tokenfactory` to also remove other lines within the simapp template
+func RemoveGeneralModule(moduleFind string, fileContent string) []byte {
+	newContent := make([]string, 0, len(strings.Split(fileContent, "\n")))
+
+	startIdx := -1
+	for idx, line := range strings.Split(fileContent, "\n") {
+		lowerLine := strings.ToLower(line)
+
+		// if we are in a startIdx, then we need to continue until we find the close parenthesis (i.e. NewKeeper)
+		if startIdx != -1 {
+			fmt.Printf("rm %s startIdx: %d, %s\n", moduleFind, idx, line)
+			if strings.TrimSpace(line) == ")" {
+				fmt.Println("endIdx:", idx, line)
+				startIdx = -1
+				continue
+			}
+
+			continue
+		}
+
+		lineHas := strings.Contains(lowerLine, moduleFind)
+
+		if lineHas && strings.HasSuffix(line, "(") {
+			startIdx = idx
+			fmt.Printf("startIdx %s: %d, %s\n", moduleFind, idx, line)
+			continue
+		}
+
+		if lineHas {
+			fmt.Printf("rm %s: %d, %s\n", moduleFind, idx, line)
+			continue
+		}
+
+		newContent = append(newContent, line)
+	}
+
+	return []byte(strings.Join(newContent, "\n"))
+}
+
+// given a go mod, remove a line within the file content
+func RemoveGoModImport(module string, fileContent []byte) []byte {
+	fcs := string(fileContent)
+	lines := strings.Split(fcs, "\n")
+
+	newLines := make([]string, 0, len(lines))
+	for _, line := range lines {
+		if !strings.Contains(line, module) {
+			newLines = append(newLines, line)
+		}
+	}
+
+	return []byte(strings.Join(newLines, "\n"))
 }

@@ -15,6 +15,9 @@ import (
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
+
+	sdkmath "cosmossdk.io/math" // `tag: poa` (Tagging with poa so if it is removed, this module is removed from import too)
+	poaante "github.com/strangelove-ventures/poa/ante"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
@@ -50,6 +53,10 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		return nil, errors.New("circuit keeper is required for ante builder")
 	}
 
+	poaDoGenTxRateValidation := false
+	poaRateFloor := sdkmath.LegacyMustNewDecFromStr("0.10")
+	poaRateCeil := sdkmath.LegacyMustNewDecFromStr("0.50")
+
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit), // after setup context to enforce limits early
@@ -68,6 +75,8 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
+		poaante.NewPOADisableStakingDecorator(),
+		poaante.NewCommissionLimitDecorator(poaDoGenTxRateValidation, poaRateFloor, poaRateCeil),
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil
