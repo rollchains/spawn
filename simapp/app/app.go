@@ -186,10 +186,11 @@ var maccPerms = map[string][]string{
 	govtypes.ModuleName:            {authtypes.Burner},
 	nft.ModuleName:                 nil,
 	// non sdk modules
-	ibctransfertypes.ModuleName: {authtypes.Minter, authtypes.Burner},
-	ibcfeetypes.ModuleName:      nil,
-	icatypes.ModuleName:         nil,
-	wasmtypes.ModuleName:        {authtypes.Burner},
+	ibctransfertypes.ModuleName:  {authtypes.Minter, authtypes.Burner},
+	ibcfeetypes.ModuleName:       nil,
+	icatypes.ModuleName:          nil,
+	wasmtypes.ModuleName:         {authtypes.Burner},
+	tokenfactorytypes.ModuleName: {authtypes.Minter, authtypes.Burner},
 }
 
 var (
@@ -772,12 +773,12 @@ func NewWasmApp(
 		transfer.NewAppModule(app.TransferKeeper),
 		ibcfee.NewAppModule(app.IBCFeeKeeper),
 		ica.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper),
-		ibctm.AppModule{},
-		// sdk
-		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
+		ibctm.NewAppModule(),
 		// custom
 		tokenfactory.NewAppModule(app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(tokenfactorytypes.ModuleName)),
 		poamodule.NewAppModule(appCodec, app.POAKeeper),
+		// sdk
+		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -865,8 +866,8 @@ func NewWasmApp(
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 		wasmtypes.ModuleName, // wasm after ibc transfer
-		tokenfactorytypes.ModuleName,
 		poa.ModuleName,
+		tokenfactorytypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
@@ -1266,5 +1267,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	paramsKeeper.Subspace(wasmtypes.ModuleName)
 	paramsKeeper.Subspace(tokenfactorytypes.ModuleName)
+	paramsKeeper.Subspace(poa.ModuleName)
 	return paramsKeeper
 }
