@@ -1,0 +1,1 @@
+# TODO: A file to test the node within a bash shell (instead of docker)
