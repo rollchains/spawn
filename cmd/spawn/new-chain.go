@@ -35,7 +35,7 @@ const (
 
 var (
 	IgnoredFiles      = []string{"generate.sh", "embed.go"}
-	SupportedFeatures = []string{"tokenfactory", "poa", "wasm", "ibc", "nft", "group", "circuit"}
+	SupportedFeatures = []string{"tokenfactory", "poa", "globalfee", "wasm", "ibc", "nft", "group", "circuit"}
 )
 
 func init() {
@@ -189,6 +189,8 @@ func removeDisabledFeatures(disabled []string, relativePath string, fileContent 
 			fileContent = removeTokenFactory(relativePath, fileContent)
 		case "poa":
 			fileContent = removePoa(relativePath, fileContent)
+		case "globalfee":
+			fileContent = removeGlobalFee(relativePath, fileContent)
 		case "ibc": // this would remove all. Including PFM, then we can have others for specifics (i.e. ICAHost, IBCFees)
 			// fileContent = removeIbc(relativePath, fileContent)
 			continue
@@ -230,6 +232,22 @@ func removePoa(relativePath string, fileContent []byte) []byte {
 
 	if relativePath == "app/app.go" || relativePath == "app/ante.go" {
 		fileContent = RemoveGeneralModule("poa", string(fileContent))
+	}
+
+	return fileContent
+}
+
+func removeGlobalFee(relativePath string, fileContent []byte) []byte {
+
+	fileContent = RemoveTaggedLines("globalfee", string(fileContent), true)
+
+	if relativePath == "go.mod" || relativePath == "go.sum" {
+		fileContent = RemoveGoModImport("github.com/reecepbcups/globalfee", fileContent)
+	}
+
+	if relativePath == "app/app.go" || relativePath == "app/ante.go" {
+		fileContent = RemoveGeneralModule("globalfee", string(fileContent))
+		fileContent = RemoveGeneralModule("GlobalFee", string(fileContent))
 	}
 
 	return fileContent
@@ -306,19 +324,51 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 }
 
 // RemoveTaggedLines deletes tagged lines or just removes the comment if desired.
-func RemoveTaggedLines(name string, fileContent string, delete bool) []byte {
+func RemoveTaggedLines(name string, fileContent string, deleteLine bool) []byte {
 	newContent := make([]string, 0, len(strings.Split(fileContent, "\n")))
 
-	for _, line := range strings.Split(fileContent, "\n") {
+	startIdx := -1
+	expectedFormat := "// spawntag:"
+	for idx, line := range strings.Split(fileContent, "\n") {
+		line = strings.ReplaceAll(line, "//spawntag:", expectedFormat) // just QOL for us to not tear our hair out
+
+		uncomment := fmt.Sprintf("?spawntag:%s", name)
 
 		hasTag := strings.Contains(line, fmt.Sprintf("spawntag:%s", name))
+		hasMultiLineTag := strings.Contains(line, fmt.Sprintf("!spawntag:%s", name))
+		hasUncommentTag := strings.Contains(line, uncomment) // uncomments a line of code if the tag is found
+
+		if hasUncommentTag {
+			line = strings.Replace(line, "//", "", 1)
+			line = strings.TrimRight(strings.Replace(line, fmt.Sprintf("// %s", uncomment), "", 1), " ")
+			fmt.Printf("uncomment %s: %d, %s\n", name, idx, line)
+			newContent = append(newContent, line) // early add
+			continue
+		}
+
+		// if the line has a tag, and the tag starts with a !, then we will continue until we find the end of the tag with another.
+		if startIdx != -1 {
+			if !hasMultiLineTag {
+				continue
+			} else {
+				startIdx = -1
+				fmt.Println("endIdx:", idx, line)
+				continue
+			}
+		}
+
+		if hasMultiLineTag {
+			startIdx = idx
+			fmt.Printf("startIdx %s: %d, %s\n", name, idx, line)
+			continue
+		}
 
 		if hasTag {
-			if delete {
+			if deleteLine {
 				continue
 			}
 
-			line = strings.Split(line, "// spawntag:")[0]
+			line = strings.Split(line, expectedFormat)[0]
 			line = strings.TrimRight(line, " ")
 		}
 

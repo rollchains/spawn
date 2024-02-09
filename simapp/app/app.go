@@ -605,7 +605,7 @@ func NewChainApp(
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
 
-	// Create the global fee keeper
+	// Create the globalfee keeper
 	app.GlobalFeeKeeper = globalfeekeeper.NewKeeper(
 		appCodec,
 		app.keys[globalfeetypes.StoreKey],
@@ -949,8 +949,8 @@ func NewChainApp(
 			CircuitKeeper:         &app.CircuitKeeper,
 
 			GlobalFeeKeeper:      app.GlobalFeeKeeper,
-			BypassMinFeeMsgTypes: GetDefaultBypassFeeMessages(), // spawntag:globalfee
-			StakingKeeper:        *app.StakingKeeper,
+			BypassMinFeeMsgTypes: GetDefaultBypassFeeMessages(), //spawntag:globalfee
+			StakingKeeper:        *app.StakingKeeper,            //spawntag:globalfee
 		},
 	)
 	if err != nil {
@@ -1036,7 +1036,7 @@ func GetDefaultBypassFeeMessages() []string {
 	}
 }
 
-// !spawntag:globalfee
+//!spawntag:globalfee
 
 func (app *ChainApp) FinalizeBlock(req *abci.RequestFinalizeBlock) (*abci.ResponseFinalizeBlock, error) {
 	// when skipping sdk 47 for sdk 50, the upgrade handler is called too late in BaseApp
