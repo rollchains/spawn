@@ -245,18 +245,14 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 	}
 
 	if relativePath == "app/app.go" || relativePath == "app/ante.go" {
-		fileContent = RemoveGeneralModule("WasmKeeper", string(fileContent))
-		fileContent = RemoveGeneralModule("wasmtypes", string(fileContent))
-		fileContent = RemoveGeneralModule("wasmStack", string(fileContent))
-		fileContent = RemoveGeneralModule("wasmOpts", string(fileContent))
-		fileContent = RemoveGeneralModule("TXCounterStoreService", string(fileContent))
-		fileContent = RemoveGeneralModule("WasmConfig", string(fileContent))
-		fileContent = RemoveGeneralModule("wasmDir", string(fileContent))
-		fileContent = RemoveGeneralModule("tokenfactorybindings", string(fileContent))
-		fileContent = RemoveGeneralModule("github.com/CosmWasm/wasmd", string(fileContent))
+		for _, w := range []string{
+			"WasmKeeper", "wasmtypes", "wasmStack",
+			"wasmOpts", "TXCounterStoreService", "WasmConfig",
+			"wasmDir", "tokenfactorybindings", "github.com/CosmWasm/wasmd", "wasmvm",
+		} {
+			fileContent = RemoveGeneralModule(w, string(fileContent))
+		}
 
-		fileContent = RemoveGeneralModule("wasmvm", string(fileContent))
-		// fileContent = RemoveGeneralModule("wasm", string(fileContent))
 	}
 
 	if relativePath == "app/ante.go" {
@@ -276,10 +272,10 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 	}
 
 	if relativePath == "app/test_helpers.go" {
-		fileContent = RemoveGeneralModule("wasmkeeper", string(fileContent))
-		fileContent = RemoveGeneralModule("WasmOpts", string(fileContent))
-		fileContent = RemoveGeneralModule("wasmOpts", string(fileContent))
-		fileContent = RemoveGeneralModule("emptyWasmOptions", string(fileContent))
+		for _, w := range []string{"emptyWasmOptions", "wasmkeeper", "WasmOpts", "wasmOpts"} {
+			fileContent = RemoveGeneralModule(w, string(fileContent))
+		}
+
 	}
 
 	if relativePath == "app/wasm.go" {
@@ -287,18 +283,16 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 	}
 
 	if relativePath == "cmd/wasmd/commands.go" {
-		fileContent = RemoveGeneralModule("wasm", string(fileContent))
-		fileContent = RemoveGeneralModule("wasmOpts", string(fileContent))
-		fileContent = RemoveGeneralModule("wasmcli", string(fileContent))
-		fileContent = RemoveGeneralModule("wasmtypes", string(fileContent))
+		for _, w := range []string{"wasm", "wasmOpts", "wasmcli", "wasmtypes"} {
+			fileContent = RemoveGeneralModule(w, string(fileContent))
+		}
 	}
 
 	if relativePath == "cmd/wasmd/root.go" {
-		fileContent = RemoveGeneralModule("wasmtypes", string(fileContent))
-		fileContent = RemoveGeneralModule("wasmkeeper", string(fileContent))
+		for _, w := range []string{"wasmtypes", "wasmkeeper"} {
+			fileContent = RemoveGeneralModule(w, string(fileContent))
+		}
 	}
-
-	RemoveGeneralModule("TXCounterStoreService", string(fileContent))
 
 	return fileContent
 }
@@ -331,15 +325,14 @@ func RemoveTaggedLines(name string, fileContent string, delete bool) []byte {
 // including comments.
 // If an import or other line depends on a solo module a user wishes to remove, add a comment to the line
 // such as `// tag:tokenfactory` to also remove other lines within the simapp template
-func RemoveGeneralModule(moduleFind string, fileContent string) []byte {
+func RemoveGeneralModule(removeText string, fileContent string) []byte {
 	newContent := make([]string, 0, len(strings.Split(fileContent, "\n")))
 
 	startIdx := -1
 	for idx, line := range strings.Split(fileContent, "\n") {
-
 		// if we are in a startIdx, then we need to continue until we find the close parenthesis (i.e. NewKeeper)
 		if startIdx != -1 {
-			fmt.Printf("rm %s startIdx: %d, %s\n", moduleFind, idx, line)
+			fmt.Printf("rm %s startIdx: %d, %s\n", removeText, idx, line)
 			if strings.TrimSpace(line) == ")" || strings.TrimSpace(line) == "}" {
 				fmt.Println("endIdx:", idx, line)
 				startIdx = -1
@@ -349,16 +342,16 @@ func RemoveGeneralModule(moduleFind string, fileContent string) []byte {
 			continue
 		}
 
-		lineHas := strings.Contains(line, moduleFind)
+		lineHas := strings.Contains(line, removeText)
 
 		if lineHas && (strings.HasSuffix(strings.TrimSpace(line), "(") || strings.HasSuffix(strings.TrimSpace(line), "{")) {
 			startIdx = idx
-			fmt.Printf("startIdx %s: %d, %s\n", moduleFind, idx, line)
+			fmt.Printf("startIdx %s: %d, %s\n", removeText, idx, line)
 			continue
 		}
 
 		if lineHas {
-			fmt.Printf("rm %s: %d, %s\n", moduleFind, idx, line)
+			fmt.Printf("rm %s: %d, %s\n", removeText, idx, line)
 			continue
 		}
 
