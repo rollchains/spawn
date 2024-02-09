@@ -133,6 +133,11 @@ func NewChain(cfg SpawnNewConfig) {
 
 		fc := string(fileContent)
 
+		if fc == "REMOVE" {
+			// don't save this file
+			return nil
+		}
+
 		// TODO: regex would be nicer for replacing incase it changes up stream. may never though. Also limit to specific files?
 		fc = strings.ReplaceAll(fc, ".wasmd", appDirName)
 		fc = strings.ReplaceAll(fc, `const appName = "WasmApp"`, fmt.Sprintf(`const appName = "%s"`, appName))
@@ -185,7 +190,7 @@ func removeDisabledFeatures(disabled []string, relativePath string, fileContent 
 			// fileContent = removeIbc(relativePath, fileContent)
 			continue
 		case "wasm":
-			// fileContent = removeWasm(relativePath, fileContent)
+			fileContent = removeWasm(relativePath, fileContent)
 			continue
 		case "nft":
 			// fileContent = removeNft(relativePath, fileContent)
@@ -195,6 +200,9 @@ func removeDisabledFeatures(disabled []string, relativePath string, fileContent 
 			continue
 		}
 	}
+
+	// remove any left over `// spawntag:` comments
+	fileContent = RemoveTaggedLines("", string(fileContent), false)
 
 	return fileContent
 }
@@ -224,6 +232,68 @@ func removePoa(relativePath string, fileContent []byte) []byte {
 	return fileContent
 }
 
+func removeWasm(relativePath string, fileContent []byte) []byte {
+
+	// remove any line with spawntag:wasm
+	// if strings.Contains(string(fileContent), "spawntag:wasm") {}
+	fileContent = RemoveTaggedLines("wasm", string(fileContent), true)
+
+	// TODO: tokenfactory depends on wasm currently.
+	if relativePath == "go.mod" || relativePath == "go.sum" {
+		fileContent = RemoveGoModImport("github.com/CosmWasm/wasmd", fileContent)
+		fileContent = RemoveGoModImport("github.com/CosmWasm/wasmvm", fileContent)
+	}
+
+	if relativePath == "app/app.go" || relativePath == "app/ante.go" {
+		fileContent = RemoveGeneralModule("WasmKeeper", string(fileContent))
+		// fileContent = RemoveGeneralModule("ScopedWasmKeeper", string(fileContent))
+		// fileContent = RemoveGeneralModule("wasmtypes", string(fileContent))
+		// fileContent = RemoveGeneralModule("wasmtypes", string(fileContent))
+		// fileContent = RemoveGeneralModule("wasmStack", string(fileContent))
+		// fileContent = RemoveGeneralModule("wasmOpts", string(fileContent))
+		// fileContent = RemoveGeneralModule("wasmvm", string(fileContent))
+		// fileContent = RemoveGeneralModule("wasm", string(fileContent))
+		fileContent = RemoveGeneralModule("TXCounterStoreService", string(fileContent))
+		fileContent = RemoveGeneralModule("WasmConfig", string(fileContent))
+		fileContent = RemoveGeneralModule("wasmDir", string(fileContent))
+	}
+
+	if relativePath == "app/ante.go" {
+		fileContent = RemoveGeneralModule("wasm", string(fileContent))
+	}
+
+	if relativePath == "app/wasm.go" {
+		fileContent = []byte("REMOVE")
+	}
+
+	RemoveGeneralModule("TXCounterStoreService", string(fileContent))
+
+	return fileContent
+}
+
+// RemoveTaggedLines deletes tagged lines or just removes the comment if desired.
+func RemoveTaggedLines(name string, fileContent string, delete bool) []byte {
+	newContent := make([]string, 0, len(strings.Split(fileContent, "\n")))
+
+	for _, line := range strings.Split(fileContent, "\n") {
+
+		hasTag := strings.Contains(line, fmt.Sprintf("spawntag:%s", name))
+
+		if hasTag {
+			if delete {
+				continue
+			}
+
+			line = strings.Split(line, "// spawntag:")[0]
+			line = strings.TrimRight(line, " ")
+		}
+
+		newContent = append(newContent, line)
+	}
+
+	return []byte(strings.Join(newContent, "\n"))
+}
+
 // RemoveGeneralModule removes any matching names from the fileContent.
 // i.e. if moduleFind is "tokenfactory" any lines with "tokenfactory" will be removed
 // including comments.
@@ -234,12 +304,11 @@ func RemoveGeneralModule(moduleFind string, fileContent string) []byte {
 
 	startIdx := -1
 	for idx, line := range strings.Split(fileContent, "\n") {
-		lowerLine := strings.ToLower(line)
 
 		// if we are in a startIdx, then we need to continue until we find the close parenthesis (i.e. NewKeeper)
 		if startIdx != -1 {
 			fmt.Printf("rm %s startIdx: %d, %s\n", moduleFind, idx, line)
-			if strings.TrimSpace(line) == ")" {
+			if strings.TrimSpace(line) == ")" || strings.TrimSpace(line) == "}" {
 				fmt.Println("endIdx:", idx, line)
 				startIdx = -1
 				continue
@@ -248,9 +317,9 @@ func RemoveGeneralModule(moduleFind string, fileContent string) []byte {
 			continue
 		}
 
-		lineHas := strings.Contains(lowerLine, moduleFind)
+		lineHas := strings.Contains(line, moduleFind)
 
-		if lineHas && strings.HasSuffix(line, "(") {
+		if lineHas && (strings.HasSuffix(strings.TrimSpace(line), "(") || strings.HasSuffix(strings.TrimSpace(line), "{")) {
 			startIdx = idx
 			fmt.Printf("startIdx %s: %d, %s\n", moduleFind, idx, line)
 			continue

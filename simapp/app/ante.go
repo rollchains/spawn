@@ -6,7 +6,7 @@ import (
 	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
 	"github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
-	corestoretypes "cosmossdk.io/core/store"
+	corestoretypes "cosmossdk.io/core/store" // spawntag: wasm
 	circuitante "cosmossdk.io/x/circuit/ante"
 	circuitkeeper "cosmossdk.io/x/circuit/keeper"
 
@@ -14,9 +14,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
-	sdkmath "cosmossdk.io/math" // `tag: poa` (Tagging with poa so if it is removed, this module is removed from import too)
+	sdkmath "cosmossdk.io/math" // spawntag:poa (Tagging with poa so if it is removed, this module is removed from import too)
 	poaante "github.com/strangelove-ventures/poa/ante"
 )
 
@@ -26,7 +26,7 @@ type HandlerOptions struct {
 	ante.HandlerOptions
 
 	IBCKeeper             *keeper.Keeper
-	WasmConfig            *wasmTypes.WasmConfig
+	WasmConfig            *wasmtypes.WasmConfig
 	WasmKeeper            *wasmkeeper.Keeper
 	TXCounterStoreService corestoretypes.KVStoreService
 	CircuitKeeper         *circuitkeeper.Keeper
