@@ -30,7 +30,7 @@ const (
 	FlagBinaryName   = "bin"
 	FlagDebugging    = "debug"
 
-	FlagDisabled = "disable"
+	FlagDisabled = "disabled"
 )
 
 var IgnoredFiles = []string{"generate.sh", "embed.go"}
@@ -102,17 +102,16 @@ func NewChain(cfg SpawnNewConfig) {
 	err := fs.WalkDir(simapp.SimApp, ".", func(relPath string, d fs.DirEntry, e error) error {
 		newPath := path.Join(NewDirName, relPath)
 
-		if Debugging {
-			fmt.Println("relPath", relPath)
-			fmt.Println("newPath", newPath)
-		}
+		// if Debugging {
+		// 	fmt.Printf("relPath: %s, newPath: %s\n", relPath, newPath)
+		// }
 
 		if relPath == "." {
 			return nil
 		}
 
-		// if relPath is a dir, continue
 		if d.IsDir() {
+			// if relPath is a dir, continue walking
 			return nil
 		}
 
@@ -130,6 +129,8 @@ func NewChain(cfg SpawnNewConfig) {
 		if err != nil {
 			return err
 		}
+		fileContent = removeDisabledFeatures(disabled, relPath, fileContent)
+
 		fc := string(fileContent)
 
 		// TODO: regex would be nicer for replacing incase it changes up stream. may never though. Also limit to specific files?
@@ -172,17 +173,88 @@ func NewChain(cfg SpawnNewConfig) {
 	}
 }
 
-// Removes disabled features from the files
-func removeDisabledFeatures(disabled []string) {
+// Removes disabled features from the files specified
+func removeDisabledFeatures(disabled []string, relativePath string, fileContent []byte) []byte {
 	for _, name := range disabled {
 		if name == "tokenfactory" {
-			removeTokenFactory()
+			fileContent = removeTokenFactory(relativePath, fileContent)
 		}
 	}
 
+	return fileContent
 }
 
-func removeTokenFactory() {
-	// go.mod, app.go
+// Removes all references from the tokenfactory file
+func removeTokenFactory(relativePath string, fileContent []byte) []byte {
+	if relativePath == "go.mod" || relativePath == "go.sum" {
+		fmt.Println("Removing tokenfactory from go.mod")
+		fileContent = removeGoModImport("github.com/reecepbcups/tokenfactory", fileContent)
+	}
 
+	if relativePath == "app/app.go" {
+		// iterate every line and find tokenfactor
+		fileContent = removeInstancesOfTokenFactory(fileContent)
+
+	}
+
+	return fileContent
+}
+
+func removeInstancesOfTokenFactory(fileContent []byte) []byte {
+	fcs := string(fileContent)
+
+	newContent := make([]string, 0, len(strings.Split(fcs, "\n")))
+
+	startIdx := -1
+	for idx, line := range strings.Split(fcs, "\n") {
+		lowerLine := strings.ToLower(line)
+
+		// if we are in a startIdx, then we need to continue until we find the close parenthesis (i.e. NewKeeper)
+		if startIdx != -1 {
+			fmt.Println("rm tf startIdx:", idx, line)
+			if strings.TrimSpace(line) == ")" {
+				fmt.Println("endIdx:", idx)
+				startIdx = -1
+				continue
+			}
+
+			continue
+		}
+
+		lineHasTf := strings.Contains(lowerLine, "tokenfactory")
+
+		if lineHasTf && strings.HasSuffix(line, "(") {
+			startIdx = idx
+			fmt.Println("startIdx:", startIdx)
+			continue
+		}
+
+		if lineHasTf {
+			fmt.Println("rm tf:", idx, line)
+			continue
+
+			// if true, then we need to iter lines down until the close param as well. (i./e. Keeper setup)
+
+		}
+
+		newContent = append(newContent, line)
+
+	}
+
+	return []byte(strings.Join(newContent, "\n"))
+}
+
+// given a go mod, remove a line within the file content
+func removeGoModImport(module string, fileContent []byte) []byte {
+	fcs := string(fileContent)
+	lines := strings.Split(fcs, "\n")
+
+	newLines := make([]string, 0, len(lines))
+	for _, line := range lines {
+		if !strings.Contains(line, module) {
+			newLines = append(newLines, line)
+		}
+	}
+
+	return []byte(strings.Join(newLines, "\n"))
 }
