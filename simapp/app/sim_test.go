@@ -124,7 +124,6 @@ func TestAppImportExport(t *testing.T) {
 	}()
 
 	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions, nil, fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
-	require.Equal(t, "WasmApp", newApp.Name())
 
 	initReq := &abci.RequestInitChain{
 		AppStateBytes: exported.AppState,
@@ -239,7 +238,6 @@ func TestAppSimulationAfterImport(t *testing.T) {
 	}()
 
 	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions, nil, fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
-	require.Equal(t, "WasmApp", newApp.Name())
 
 	_, err = newApp.InitChain(&abci.RequestInitChain{
 		ChainId:       SimAppChainID,
@@ -281,7 +279,6 @@ func setupSimulationApp(t *testing.T, msg string) (simtypes.Config, dbm.DB, simt
 	appOptions[server.FlagInvCheckPeriod] = simcli.FlagPeriodValue
 
 	app := NewChainApp(logger, db, nil, true, appOptions, nil, fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
-	require.Equal(t, "WasmApp", app.Name())
 	return config, db, appOptions, app
 }
 

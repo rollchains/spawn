@@ -255,7 +255,7 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 		fileContent = RemoveGeneralModule("tokenfactorybindings", string(fileContent))
 		fileContent = RemoveGeneralModule("github.com/CosmWasm/wasmd", string(fileContent))
 
-		// fileContent = RemoveGeneralModule("wasmvm", string(fileContent))
+		fileContent = RemoveGeneralModule("wasmvm", string(fileContent))
 		// fileContent = RemoveGeneralModule("wasm", string(fileContent))
 	}
 

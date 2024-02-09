@@ -15,7 +15,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 )
 
-func TestWasmdExport(t *testing.T) {
+func TestAppExport(t *testing.T) {
 	db := dbm.NewMemDB()
 	logger := log.NewTestLogger(t)
 	gapp := NewChainAppWithCustomOptions(t, false, SetupOptions{

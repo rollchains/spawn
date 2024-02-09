@@ -219,7 +219,7 @@ func SetupWithGenesisValSet(
 	return app
 }
 
-// SetupWithEmptyStore set up a wasmd app instance with empty DB
+// SetupWithEmptyStore set up a chain app instance with empty DB
 func SetupWithEmptyStore(t testing.TB) *ChainApp {
 	app, _ := setup(t, "testing", false, 0)
 	return app
