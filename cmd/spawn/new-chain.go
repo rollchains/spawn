@@ -30,16 +30,19 @@ const (
 	FlagBinaryName   = "bin"
 	FlagDebugging    = "debug"
 
-	FlagDisabled = "disabled"
+	FlagDisabled = "disabled" // disable, or remove?
 )
 
-var IgnoredFiles = []string{"generate.sh", "embed.go"}
+var (
+	IgnoredFiles      = []string{"generate.sh", "embed.go"}
+	SupportedFeatures = []string{"tokenfactory", "poa", "wasm", "ibc", "nft", "group", "circuit"}
+)
 
 func init() {
 	newChain.Flags().String(FlagWalletPrefix, "cosmos", "chain wallet bech32 prefix")
 	newChain.Flags().String(FlagBinaryName, "appd", "binary name")
 	newChain.Flags().Bool(FlagDebugging, false, "enable debugging")
-	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features")
+	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features: "+strings.Join(SupportedFeatures, ", "))
 }
 
 // TODO: reduce required inputs here. (or make them flags with defaults?)
