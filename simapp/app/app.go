@@ -140,6 +140,11 @@ import (
 	tokenfactorybindings "github.com/reecepbcups/tokenfactory/x/tokenfactory/bindings"
 	tokenfactorykeeper "github.com/reecepbcups/tokenfactory/x/tokenfactory/keeper"
 	tokenfactorytypes "github.com/reecepbcups/tokenfactory/x/tokenfactory/types"
+
+	poa "github.com/strangelove-ventures/poa"
+	poatypes "github.com/strangelove-ventures/poa"
+	poakeeper "github.com/strangelove-ventures/poa/keeper"
+	poamodule "github.com/strangelove-ventures/poa/module"
 )
 
 const appName = "WasmApp"
@@ -234,6 +239,7 @@ type WasmApp struct {
 
 	// Custom
 	TokenFactoryKeeper tokenfactorykeeper.Keeper
+	POAKeeper          poakeeper.Keeper
 
 	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
 	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
@@ -341,6 +347,7 @@ func NewWasmApp(
 		icahosttypes.StoreKey,
 		icacontrollertypes.StoreKey,
 		tokenfactorytypes.StoreKey,
+		poa.StoreKey,
 	)
 
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -606,6 +613,16 @@ func NewWasmApp(
 	)
 	wasmOpts = append(wasmOpts, tokenfactorybindings.RegisterCustomPlugins(app.BankKeeper, &app.TokenFactoryKeeper)...)
 
+	// Initialize the PoA Keeper and and AppModule
+	app.POAKeeper = poakeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[poatypes.StoreKey]),
+		app.StakingKeeper,
+		app.SlashingKeeper,
+		authcodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
+		logger,
+	)
+
 	// IBC Fee Module keeper
 	app.IBCFeeKeeper = ibcfeekeeper.NewKeeper(
 		appCodec, keys[ibcfeetypes.StoreKey],
@@ -760,6 +777,7 @@ func NewWasmApp(
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
 		// custom
 		tokenfactory.NewAppModule(app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(tokenfactorytypes.ModuleName)),
+		poamodule.NewAppModule(appCodec, app.POAKeeper),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -793,6 +811,7 @@ func NewWasmApp(
 		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
 		evidencetypes.ModuleName,
+		poa.ModuleName, // custom
 		stakingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		authz.ModuleName,
@@ -809,6 +828,7 @@ func NewWasmApp(
 	app.ModuleManager.SetOrderEndBlockers(
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
+		poa.ModuleName, // custom
 		stakingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		feegrant.ModuleName,
@@ -844,9 +864,9 @@ func NewWasmApp(
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
-		// wasm after ibc transfer
-		wasmtypes.ModuleName,
+		wasmtypes.ModuleName, // wasm after ibc transfer
 		tokenfactorytypes.ModuleName,
+		poa.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)

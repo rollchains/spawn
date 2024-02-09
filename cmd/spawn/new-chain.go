@@ -176,8 +176,23 @@ func NewChain(cfg SpawnNewConfig) {
 // Removes disabled features from the files specified
 func removeDisabledFeatures(disabled []string, relativePath string, fileContent []byte) []byte {
 	for _, name := range disabled {
-		if name == "tokenfactory" {
+		switch name {
+		case "tokenfactory":
 			fileContent = removeTokenFactory(relativePath, fileContent)
+		case "poa":
+			fileContent = removePoa(relativePath, fileContent)
+		case "ibc": // this would remove all. Including PFM, then we can have others for specifics (i.e. ICAHost, IBCFees)
+			// fileContent = removeIbc(relativePath, fileContent)
+			continue
+		case "wasm":
+			// fileContent = removeWasm(relativePath, fileContent)
+			continue
+		case "nft":
+			// fileContent = removeNft(relativePath, fileContent)
+			continue
+		case "circuit":
+			// fileContent = removeCircuit(relativePath, fileContent)
+			continue
 		}
 	}
 
@@ -187,31 +202,43 @@ func removeDisabledFeatures(disabled []string, relativePath string, fileContent 
 // Removes all references from the tokenfactory file
 func removeTokenFactory(relativePath string, fileContent []byte) []byte {
 	if relativePath == "go.mod" || relativePath == "go.sum" {
-		fmt.Println("Removing tokenfactory from go.mod")
-		fileContent = removeGoModImport("github.com/reecepbcups/tokenfactory", fileContent)
+		fileContent = RemoveGoModImport("github.com/reecepbcups/tokenfactory", fileContent)
 	}
 
 	if relativePath == "app/app.go" {
-		// iterate every line and find tokenfactor
-		fileContent = removeInstancesOfTokenFactory(fileContent)
-
+		fileContent = RemoveGeneralModule("tokenfactory", string(fileContent))
 	}
 
 	return fileContent
 }
 
-func removeInstancesOfTokenFactory(fileContent []byte) []byte {
-	fcs := string(fileContent)
+func removePoa(relativePath string, fileContent []byte) []byte {
+	if relativePath == "go.mod" || relativePath == "go.sum" {
+		fileContent = RemoveGoModImport("github.com/strangelove-ventures/poa", fileContent)
+	}
 
-	newContent := make([]string, 0, len(strings.Split(fcs, "\n")))
+	if relativePath == "app/app.go" || relativePath == "app/ante.go" {
+		fileContent = RemoveGeneralModule("poa", string(fileContent))
+	}
+
+	return fileContent
+}
+
+// RemoveGeneralModule removes any matching names from the fileContent.
+// i.e. if moduleFind is "tokenfactory" any lines with "tokenfactory" will be removed
+// including comments.
+// If an import or other line depends on a solo module a user wishes to remove, add a comment to the line
+// such as `// tag:tokenfactory` to also remove other lines within the simapp template
+func RemoveGeneralModule(moduleFind string, fileContent string) []byte {
+	newContent := make([]string, 0, len(strings.Split(fileContent, "\n")))
 
 	startIdx := -1
-	for idx, line := range strings.Split(fcs, "\n") {
+	for idx, line := range strings.Split(fileContent, "\n") {
 		lowerLine := strings.ToLower(line)
 
 		// if we are in a startIdx, then we need to continue until we find the close parenthesis (i.e. NewKeeper)
 		if startIdx != -1 {
-			fmt.Println("rm tf startIdx:", idx, line)
+			fmt.Printf("rm %s startIdx: %d, %s\n", moduleFind, idx, line)
 			if strings.TrimSpace(line) == ")" {
 				fmt.Println("endIdx:", idx, line)
 				startIdx = -1
@@ -221,28 +248,27 @@ func removeInstancesOfTokenFactory(fileContent []byte) []byte {
 			continue
 		}
 
-		lineHasTf := strings.Contains(lowerLine, "tokenfactory")
+		lineHas := strings.Contains(lowerLine, moduleFind)
 
-		if lineHasTf && strings.HasSuffix(line, "(") {
+		if lineHas && strings.HasSuffix(line, "(") {
 			startIdx = idx
-			fmt.Println("startIdx:", startIdx, line)
+			fmt.Printf("startIdx %s: %d, %s\n", moduleFind, idx, line)
 			continue
 		}
 
-		if lineHasTf {
-			fmt.Println("rm tf:", idx, line)
+		if lineHas {
+			fmt.Printf("rm %s: %d, %s\n", moduleFind, idx, line)
 			continue
 		}
 
 		newContent = append(newContent, line)
-
 	}
 
 	return []byte(strings.Join(newContent, "\n"))
 }
 
 // given a go mod, remove a line within the file content
-func removeGoModImport(module string, fileContent []byte) []byte {
+func RemoveGoModImport(module string, fileContent []byte) []byte {
 	fcs := string(fileContent)
 	lines := strings.Split(fcs, "\n")
 
