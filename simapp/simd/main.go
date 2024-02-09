@@ -6,8 +6,7 @@ import (
 	"cosmossdk.io/log"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
-
-	"github.com/CosmWasm/wasmd/app"
+	"github.com/strangelove-ventures/simapp/app"
 )
 
 func main() {
