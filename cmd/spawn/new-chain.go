@@ -17,6 +17,7 @@ type SpawnNewConfig struct {
 	AppName      string
 	AppDirName   string
 	BinaryName   string
+	TokenDenom   string
 
 	IgnoreFiles []string
 
@@ -29,24 +30,29 @@ const (
 	FlagWalletPrefix = "bech32"
 	FlagBinaryName   = "bin"
 	FlagDebugging    = "debug"
+	FlagTokenDenom   = "denom"
 
-	FlagDisabled = "disabled"
+	FlagDisabled = "disable"
 )
 
-var IgnoredFiles = []string{"generate.sh", "embed.go"}
+var (
+	IgnoredFiles      = []string{"generate.sh", "embed.go"}
+	SupportedFeatures = []string{"tokenfactory", "poa", "globalfee", "wasm", "ibc", "nft", "group", "circuit"}
+)
 
 func init() {
 	newChain.Flags().String(FlagWalletPrefix, "cosmos", "chain wallet bech32 prefix")
 	newChain.Flags().String(FlagBinaryName, "appd", "binary name")
 	newChain.Flags().Bool(FlagDebugging, false, "enable debugging")
-	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features")
+	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features: "+strings.Join(SupportedFeatures, ", "))
+	newChain.Flags().String(FlagTokenDenom, "stake", "token denom")
 }
 
 // TODO: reduce required inputs here. (or make them flags with defaults?)
 var newChain = &cobra.Command{
-	Use:     "new-chain [project-name]",
+	Use:     "new [project-name]",
 	Short:   "List all current chains or outputs a current config information",
-	Example: fmt.Sprintf(`spawn new-chain my-project --%s=cosmos --%s=appd`, FlagWalletPrefix, FlagBinaryName),
+	Example: fmt.Sprintf(`spawn new project --%s=cosmos --%s=appd`, FlagWalletPrefix, FlagBinaryName),
 	Args:    cobra.ExactArgs(1),
 	// ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	// 	return GetFiles(), cobra.ShellCompDirectiveNoFileComp
@@ -57,6 +63,7 @@ var newChain = &cobra.Command{
 
 		walletPrefix, _ := cmd.Flags().GetString(FlagWalletPrefix)
 		binName, _ := cmd.Flags().GetString(FlagBinaryName)
+		denom, _ := cmd.Flags().GetString(FlagTokenDenom)
 
 		debug, _ := cmd.Flags().GetBool(FlagDebugging)
 
@@ -68,8 +75,8 @@ var newChain = &cobra.Command{
 			AppName:      appName,
 			AppDirName:   "." + projName,
 			BinaryName:   binName,
-
-			Debugging: debug,
+			TokenDenom:   denom,
+			Debugging:    debug,
 
 			// by default everything is on, then we remove what the user wants to disable
 			DisabledFeatures: disabled,
@@ -138,6 +145,11 @@ func NewChain(cfg SpawnNewConfig) {
 			return nil
 		}
 
+		if relPath == "scripts/test_node.sh" {
+			fc = strings.ReplaceAll(fc, "export BINARY=${BINARY:-wasmd}", fmt.Sprintf("export BINARY=${BINARY:-%s}", binaryName))
+			fc = strings.ReplaceAll(fc, "export DENOM=${DENOM:-token}", fmt.Sprintf("export DENOM=${DENOM:-%s}", cfg.TokenDenom))
+		}
+
 		// TODO: regex would be nicer for replacing incase it changes up stream. may never though. Also limit to specific files?
 		fc = strings.ReplaceAll(fc, ".wasmd", appDirName)
 		fc = strings.ReplaceAll(fc, `const appName = "WasmApp"`, fmt.Sprintf(`const appName = "%s"`, appName))
@@ -186,6 +198,8 @@ func removeDisabledFeatures(disabled []string, relativePath string, fileContent 
 			fileContent = removeTokenFactory(relativePath, fileContent)
 		case "poa":
 			fileContent = removePoa(relativePath, fileContent)
+		case "globalfee":
+			fileContent = removeGlobalFee(relativePath, fileContent)
 		case "ibc": // this would remove all. Including PFM, then we can have others for specifics (i.e. ICAHost, IBCFees)
 			// fileContent = removeIbc(relativePath, fileContent)
 			continue
@@ -217,6 +231,10 @@ func removeTokenFactory(relativePath string, fileContent []byte) []byte {
 		fileContent = RemoveGeneralModule("tokenfactory", string(fileContent))
 	}
 
+	if relativePath == "scripts/test_node.sh" {
+		fileContent = RemoveGeneralModule("tokenfactory", string(fileContent))
+	}
+
 	return fileContent
 }
 
@@ -227,6 +245,31 @@ func removePoa(relativePath string, fileContent []byte) []byte {
 
 	if relativePath == "app/app.go" || relativePath == "app/ante.go" {
 		fileContent = RemoveGeneralModule("poa", string(fileContent))
+	}
+
+	if relativePath == "scripts/test_node.sh" {
+		fileContent = RemoveGeneralModule("poa", string(fileContent))
+	}
+
+	return fileContent
+}
+
+func removeGlobalFee(relativePath string, fileContent []byte) []byte {
+
+	fileContent = HandleCommentSwaps("globalfee", string(fileContent))
+	fileContent = RemoveTaggedLines("globalfee", string(fileContent), true)
+
+	if relativePath == "go.mod" || relativePath == "go.sum" {
+		fileContent = RemoveGoModImport("github.com/reecepbcups/globalfee", fileContent)
+	}
+
+	if relativePath == "app/app.go" || relativePath == "app/ante.go" {
+		fileContent = RemoveGeneralModule("globalfee", string(fileContent))
+		fileContent = RemoveGeneralModule("GlobalFee", string(fileContent))
+	}
+
+	if relativePath == "scripts/test_node.sh" {
+		fileContent = RemoveGeneralModule("globalfee", string(fileContent))
 	}
 
 	return fileContent
@@ -302,20 +345,67 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 	return fileContent
 }
 
-// RemoveTaggedLines deletes tagged lines or just removes the comment if desired.
-func RemoveTaggedLines(name string, fileContent string, delete bool) []byte {
+// Sometimes if we remove a module, we want to delete one line and use another.
+func HandleCommentSwaps(name string, fileContent string) []byte {
 	newContent := make([]string, 0, len(strings.Split(fileContent, "\n")))
 
-	for _, line := range strings.Split(fileContent, "\n") {
+	uncomment := fmt.Sprintf("?spawntag:%s", name)
+
+	for idx, line := range strings.Split(fileContent, "\n") {
+		hasUncommentTag := strings.Contains(line, uncomment)
+		if hasUncommentTag {
+			line = strings.Replace(line, "//", "", 1)
+			line = strings.TrimRight(strings.Replace(line, fmt.Sprintf("// %s", uncomment), "", 1), " ")
+			fmt.Printf("uncomment %s: %d, %s\n", name, idx, line)
+		}
+
+		newContent = append(newContent, line)
+	}
+
+	return []byte(strings.Join(newContent, "\n"))
+}
+
+const expectedFormat = "// spawntag:"
+
+// RemoveTaggedLines deletes tagged lines or just removes the comment if desired.
+func RemoveTaggedLines(name string, fileContent string, deleteLine bool) []byte {
+	newContent := make([]string, 0, len(strings.Split(fileContent, "\n")))
+
+	startIdx := -1
+	for idx, line := range strings.Split(fileContent, "\n") {
+		// TODO: regex anything in between // and spawntag such as spaces, symbols, etc.
+		line = strings.ReplaceAll(line, "//spawntag:", expectedFormat) // just QOL for us to not tear our hair out
 
 		hasTag := strings.Contains(line, fmt.Sprintf("spawntag:%s", name))
+		hasMultiLineTag := strings.Contains(line, fmt.Sprintf("!spawntag:%s", name))
 
-		if hasTag {
-			if delete {
+		// if the line has a tag, and the tag starts with a !, then we will continue until we find the end of the tag with another.
+		if startIdx != -1 {
+			if !hasMultiLineTag {
 				continue
 			}
 
-			line = strings.Split(line, "// spawntag:")[0]
+			startIdx = -1
+			fmt.Println("endIdx:", idx, line)
+			continue
+		}
+
+		if hasMultiLineTag {
+			if !deleteLine {
+				continue
+			}
+
+			startIdx = idx
+			fmt.Printf("startIdx %s: %d, %s\n", name, idx, line)
+			continue
+		}
+
+		if hasTag {
+			if deleteLine {
+				continue
+			}
+
+			line = strings.Split(line, expectedFormat)[0]
 			line = strings.TrimRight(line, " ")
 		}
 

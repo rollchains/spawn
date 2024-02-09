@@ -132,6 +132,8 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
+	ibcchanneltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types" //spawntag:globalfee
+
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -144,6 +146,10 @@ import (
 	poa "github.com/strangelove-ventures/poa"
 	poakeeper "github.com/strangelove-ventures/poa/keeper"
 	poamodule "github.com/strangelove-ventures/poa/module"
+
+	globalfee "github.com/reecepbcups/globalfee/x/globalfee"
+	globalfeekeeper "github.com/reecepbcups/globalfee/x/globalfee/keeper"
+	globalfeetypes "github.com/reecepbcups/globalfee/x/globalfee/types"
 )
 
 const appName = "WasmApp"
@@ -235,11 +241,12 @@ type ChainApp struct {
 	ICAControllerKeeper icacontrollerkeeper.Keeper
 	ICAHostKeeper       icahostkeeper.Keeper
 	TransferKeeper      ibctransferkeeper.Keeper
-	WasmKeeper          wasmkeeper.Keeper
 
 	// Custom
+	WasmKeeper         wasmkeeper.Keeper
 	TokenFactoryKeeper tokenfactorykeeper.Keeper
 	POAKeeper          poakeeper.Keeper
+	GlobalFeeKeeper    globalfeekeeper.Keeper
 
 	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
 	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
@@ -348,6 +355,7 @@ func NewChainApp(
 		icacontrollertypes.StoreKey,
 		tokenfactorytypes.StoreKey,
 		poa.StoreKey,
+		globalfeetypes.StoreKey,
 	)
 
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -597,6 +605,13 @@ func NewChainApp(
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
 
+	// Create the globalfee keeper
+	app.GlobalFeeKeeper = globalfeekeeper.NewKeeper(
+		appCodec,
+		app.keys[globalfeetypes.StoreKey],
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+
 	// Create the TokenFactory Keeper
 	app.TokenFactoryKeeper = tokenfactorykeeper.NewKeeper(
 		appCodec,
@@ -774,6 +789,7 @@ func NewChainApp(
 		// custom
 		tokenfactory.NewAppModule(app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(tokenfactorytypes.ModuleName)),
 		poamodule.NewAppModule(appCodec, app.POAKeeper),
+		globalfee.NewAppModule(appCodec, app.GlobalFeeKeeper),
 		// sdk
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
 	)
@@ -865,6 +881,7 @@ func NewChainApp(
 		wasmtypes.ModuleName, // wasm after ibc transfer
 		poa.ModuleName,
 		tokenfactorytypes.ModuleName,
+		globalfeetypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
@@ -930,6 +947,10 @@ func NewChainApp(
 			WasmKeeper:            &app.WasmKeeper,
 			TXCounterStoreService: runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
 			CircuitKeeper:         &app.CircuitKeeper,
+
+			GlobalFeeKeeper:      app.GlobalFeeKeeper,
+			BypassMinFeeMsgTypes: GetDefaultBypassFeeMessages(), //spawntag:globalfee
+			StakingKeeper:        *app.StakingKeeper,            //spawntag:globalfee
 		},
 	)
 	if err != nil {
@@ -997,6 +1018,25 @@ func NewChainApp(
 
 	return app
 }
+
+// !spawntag:globalfee
+func GetDefaultBypassFeeMessages() []string {
+	return []string{
+		sdk.MsgTypeURL(&ibcchanneltypes.MsgRecvPacket{}),
+		sdk.MsgTypeURL(&ibcchanneltypes.MsgAcknowledgement{}),
+		sdk.MsgTypeURL(&ibcclienttypes.MsgCreateClient{}),
+		sdk.MsgTypeURL(&ibcclienttypes.MsgUpdateClient{}),
+		sdk.MsgTypeURL(&ibcclienttypes.MsgUpgradeClient{}),
+		sdk.MsgTypeURL(&ibctransfertypes.MsgTransfer{}),
+		sdk.MsgTypeURL(&ibcchanneltypes.MsgTimeout{}),
+		sdk.MsgTypeURL(&ibcchanneltypes.MsgTimeoutOnClose{}),
+		sdk.MsgTypeURL(&ibcchanneltypes.MsgChannelOpenTry{}),
+		sdk.MsgTypeURL(&ibcchanneltypes.MsgChannelOpenConfirm{}),
+		sdk.MsgTypeURL(&ibcchanneltypes.MsgChannelOpenAck{}),
+	}
+}
+
+//!spawntag:globalfee
 
 func (app *ChainApp) FinalizeBlock(req *abci.RequestFinalizeBlock) (*abci.ResponseFinalizeBlock, error) {
 	// when skipping sdk 47 for sdk 50, the upgrade handler is called too late in BaseApp
@@ -1263,5 +1303,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(wasmtypes.ModuleName)
 	paramsKeeper.Subspace(tokenfactorytypes.ModuleName)
 	paramsKeeper.Subspace(poa.ModuleName)
+	paramsKeeper.Subspace(globalfee.ModuleName)
+
 	return paramsKeeper
 }
