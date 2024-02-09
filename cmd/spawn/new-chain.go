@@ -30,7 +30,7 @@ const (
 	FlagBinaryName   = "bin"
 	FlagDebugging    = "debug"
 
-	FlagDisabled = "disabled" // disable, or remove?
+	FlagDisabled = "disable"
 )
 
 var (
@@ -47,9 +47,9 @@ func init() {
 
 // TODO: reduce required inputs here. (or make them flags with defaults?)
 var newChain = &cobra.Command{
-	Use:     "new-chain [project-name]",
+	Use:     "new [project-name]",
 	Short:   "List all current chains or outputs a current config information",
-	Example: fmt.Sprintf(`spawn new-chain my-project --%s=cosmos --%s=appd`, FlagWalletPrefix, FlagBinaryName),
+	Example: fmt.Sprintf(`spawn new project --%s=cosmos --%s=appd`, FlagWalletPrefix, FlagBinaryName),
 	Args:    cobra.ExactArgs(1),
 	// ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	// 	return GetFiles(), cobra.ShellCompDirectiveNoFileComp
@@ -239,6 +239,7 @@ func removePoa(relativePath string, fileContent []byte) []byte {
 
 func removeGlobalFee(relativePath string, fileContent []byte) []byte {
 
+	fileContent = HandleCommentSwaps("globalfee", string(fileContent))
 	fileContent = RemoveTaggedLines("globalfee", string(fileContent), true)
 
 	if relativePath == "go.mod" || relativePath == "go.sum" {
@@ -323,41 +324,56 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 	return fileContent
 }
 
+// Sometimes if we remove a module, we want to delete one line and use another.
+func HandleCommentSwaps(name string, fileContent string) []byte {
+	newContent := make([]string, 0, len(strings.Split(fileContent, "\n")))
+
+	uncomment := fmt.Sprintf("?spawntag:%s", name)
+
+	for idx, line := range strings.Split(fileContent, "\n") {
+		hasUncommentTag := strings.Contains(line, uncomment)
+		if hasUncommentTag {
+			line = strings.Replace(line, "//", "", 1)
+			line = strings.TrimRight(strings.Replace(line, fmt.Sprintf("// %s", uncomment), "", 1), " ")
+			fmt.Printf("uncomment %s: %d, %s\n", name, idx, line)
+		}
+
+		newContent = append(newContent, line)
+	}
+
+	return []byte(strings.Join(newContent, "\n"))
+}
+
+const expectedFormat = "// spawntag:"
+
 // RemoveTaggedLines deletes tagged lines or just removes the comment if desired.
 func RemoveTaggedLines(name string, fileContent string, deleteLine bool) []byte {
 	newContent := make([]string, 0, len(strings.Split(fileContent, "\n")))
 
 	startIdx := -1
-	expectedFormat := "// spawntag:"
 	for idx, line := range strings.Split(fileContent, "\n") {
+		// TODO: regex anything in between // and spawntag such as spaces, symbols, etc.
 		line = strings.ReplaceAll(line, "//spawntag:", expectedFormat) // just QOL for us to not tear our hair out
-
-		uncomment := fmt.Sprintf("?spawntag:%s", name)
 
 		hasTag := strings.Contains(line, fmt.Sprintf("spawntag:%s", name))
 		hasMultiLineTag := strings.Contains(line, fmt.Sprintf("!spawntag:%s", name))
-		hasUncommentTag := strings.Contains(line, uncomment) // uncomments a line of code if the tag is found
-
-		if hasUncommentTag {
-			line = strings.Replace(line, "//", "", 1)
-			line = strings.TrimRight(strings.Replace(line, fmt.Sprintf("// %s", uncomment), "", 1), " ")
-			fmt.Printf("uncomment %s: %d, %s\n", name, idx, line)
-			newContent = append(newContent, line) // early add
-			continue
-		}
 
 		// if the line has a tag, and the tag starts with a !, then we will continue until we find the end of the tag with another.
 		if startIdx != -1 {
 			if !hasMultiLineTag {
 				continue
-			} else {
-				startIdx = -1
-				fmt.Println("endIdx:", idx, line)
-				continue
 			}
+
+			startIdx = -1
+			fmt.Println("endIdx:", idx, line)
+			continue
 		}
 
 		if hasMultiLineTag {
+			if !deleteLine {
+				continue
+			}
+
 			startIdx = idx
 			fmt.Printf("startIdx %s: %d, %s\n", name, idx, line)
 			continue
