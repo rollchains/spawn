@@ -4,5 +4,5 @@ import (
 	"embed"
 )
 
-//go:embed **/* go.mod go.sum Makefile chains.yaml
+//go:embed *
 var SimApp embed.FS
