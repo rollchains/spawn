@@ -275,6 +275,13 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 		fileContent = RemoveGeneralModule("wasm", string(fileContent))
 	}
 
+	if relativePath == "app/test_helpers.go" {
+		fileContent = RemoveGeneralModule("wasmkeeper", string(fileContent))
+		fileContent = RemoveGeneralModule("WasmOpts", string(fileContent))
+		fileContent = RemoveGeneralModule("wasmOpts", string(fileContent))
+		fileContent = RemoveGeneralModule("emptyWasmOptions", string(fileContent))
+	}
+
 	if relativePath == "app/wasm.go" {
 		fileContent = []byte("REMOVE")
 	}
