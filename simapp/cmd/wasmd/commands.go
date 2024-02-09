@@ -7,7 +7,7 @@ import (
 
 	cmtcfg "github.com/cometbft/cometbft/config"
 	dbm "github.com/cosmos/cosmos-db"
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus" //spawntag:wasm
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -87,8 +87,9 @@ func initAppConfig() (string, interface{}) {
 		Wasm:   wasmtypes.DefaultWasmConfig(),
 	}
 
-	customAppTemplate := serverconfig.DefaultConfigTemplate +
-		wasmtypes.DefaultConfigTemplate()
+	customAppTemplate := serverconfig.DefaultConfigTemplate
+
+	customAppTemplate += wasmtypes.DefaultConfigTemplate()
 
 	return customAppTemplate, customAppConfig
 }
@@ -219,7 +220,7 @@ func appExport(
 	appOpts servertypes.AppOptions,
 	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
-	var wasmApp *app.ChainApp
+	var chainApp *app.ChainApp
 	// this check is necessary as we use the flag in x/upgrade.
 	// we can exit more gracefully by checking the flag here.
 	homePath, ok := appOpts.Get(flags.FlagHome).(string)
@@ -236,7 +237,7 @@ func appExport(
 	viperAppOpts.Set(server.FlagInvCheckPeriod, 1)
 	appOpts = viperAppOpts
 
-	wasmApp = app.NewChainApp(
+	chainApp = app.NewChainApp(
 		logger,
 		db,
 		traceStore,
@@ -246,16 +247,16 @@ func appExport(
 	)
 
 	if height != -1 {
-		if err := wasmApp.LoadHeight(height); err != nil {
+		if err := chainApp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	}
 
-	return wasmApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
+	return chainApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
 }
 
 var tempDir = func() string {
-	dir, err := os.MkdirTemp("", "wasmd")
+	dir, err := os.MkdirTemp("", "simd")
 	if err != nil {
 		panic("failed to create temp dir: " + err.Error())
 	}

@@ -286,6 +286,18 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 		fileContent = []byte("REMOVE")
 	}
 
+	if relativePath == "cmd/wasmd/commands.go" {
+		fileContent = RemoveGeneralModule("wasm", string(fileContent))
+		fileContent = RemoveGeneralModule("wasmOpts", string(fileContent))
+		fileContent = RemoveGeneralModule("wasmcli", string(fileContent))
+		fileContent = RemoveGeneralModule("wasmtypes", string(fileContent))
+	}
+
+	if relativePath == "cmd/wasmd/root.go" {
+		fileContent = RemoveGeneralModule("wasmtypes", string(fileContent))
+		fileContent = RemoveGeneralModule("wasmkeeper", string(fileContent))
+	}
+
 	RemoveGeneralModule("TXCounterStoreService", string(fileContent))
 
 	return fileContent
