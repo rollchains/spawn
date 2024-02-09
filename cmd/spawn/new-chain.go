@@ -213,7 +213,7 @@ func removeInstancesOfTokenFactory(fileContent []byte) []byte {
 		if startIdx != -1 {
 			fmt.Println("rm tf startIdx:", idx, line)
 			if strings.TrimSpace(line) == ")" {
-				fmt.Println("endIdx:", idx)
+				fmt.Println("endIdx:", idx, line)
 				startIdx = -1
 				continue
 			}
@@ -225,16 +225,13 @@ func removeInstancesOfTokenFactory(fileContent []byte) []byte {
 
 		if lineHasTf && strings.HasSuffix(line, "(") {
 			startIdx = idx
-			fmt.Println("startIdx:", startIdx)
+			fmt.Println("startIdx:", startIdx, line)
 			continue
 		}
 
 		if lineHasTf {
 			fmt.Println("rm tf:", idx, line)
 			continue
-
-			// if true, then we need to iter lines down until the close param as well. (i./e. Keeper setup)
-
 		}
 
 		newContent = append(newContent, line)
