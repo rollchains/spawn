@@ -246,19 +246,32 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 
 	if relativePath == "app/app.go" || relativePath == "app/ante.go" {
 		fileContent = RemoveGeneralModule("WasmKeeper", string(fileContent))
-		// fileContent = RemoveGeneralModule("ScopedWasmKeeper", string(fileContent))
-		// fileContent = RemoveGeneralModule("wasmtypes", string(fileContent))
-		// fileContent = RemoveGeneralModule("wasmtypes", string(fileContent))
-		// fileContent = RemoveGeneralModule("wasmStack", string(fileContent))
-		// fileContent = RemoveGeneralModule("wasmOpts", string(fileContent))
-		// fileContent = RemoveGeneralModule("wasmvm", string(fileContent))
-		// fileContent = RemoveGeneralModule("wasm", string(fileContent))
+		fileContent = RemoveGeneralModule("wasmtypes", string(fileContent))
+		fileContent = RemoveGeneralModule("wasmStack", string(fileContent))
+		fileContent = RemoveGeneralModule("wasmOpts", string(fileContent))
 		fileContent = RemoveGeneralModule("TXCounterStoreService", string(fileContent))
 		fileContent = RemoveGeneralModule("WasmConfig", string(fileContent))
 		fileContent = RemoveGeneralModule("wasmDir", string(fileContent))
+		fileContent = RemoveGeneralModule("tokenfactorybindings", string(fileContent))
+		fileContent = RemoveGeneralModule("github.com/CosmWasm/wasmd", string(fileContent))
+
+		// fileContent = RemoveGeneralModule("wasmvm", string(fileContent))
+		// fileContent = RemoveGeneralModule("wasm", string(fileContent))
 	}
 
 	if relativePath == "app/ante.go" {
+		fileContent = RemoveGeneralModule("wasm", string(fileContent))
+	}
+
+	if relativePath == "app/encoding.go" {
+		fileContent = RemoveGeneralModule("wasmkeeper", string(fileContent))
+	}
+
+	if relativePath == "app/sim_test.go" {
+		fileContent = RemoveGeneralModule("wasm", string(fileContent))
+	}
+
+	if relativePath == "app/test_support.go" {
 		fileContent = RemoveGeneralModule("wasm", string(fileContent))
 	}
 

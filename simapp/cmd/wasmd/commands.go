@@ -236,14 +236,13 @@ func appExport(
 	viperAppOpts.Set(server.FlagInvCheckPeriod, 1)
 	appOpts = viperAppOpts
 
-	var emptyWasmOpts []wasmkeeper.Option
 	wasmApp = app.NewChainApp(
 		logger,
 		db,
 		traceStore,
 		height == -1,
 		appOpts,
-		emptyWasmOpts,
+		nil,
 	)
 
 	if height != -1 {
