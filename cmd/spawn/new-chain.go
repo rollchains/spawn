@@ -21,12 +21,16 @@ type SpawnNewConfig struct {
 	IgnoreFiles []string
 
 	Debugging bool
+
+	DisabledFeatures []string
 }
 
 const (
 	FlagWalletPrefix = "bech32"
 	FlagBinaryName   = "bin"
 	FlagDebugging    = "debug"
+
+	FlagDisabled = "disable"
 )
 
 var IgnoredFiles = []string{"generate.sh", "embed.go"}
@@ -35,6 +39,7 @@ func init() {
 	newChain.Flags().String(FlagWalletPrefix, "cosmos", "chain wallet bech32 prefix")
 	newChain.Flags().String(FlagBinaryName, "appd", "binary name")
 	newChain.Flags().Bool(FlagDebugging, false, "enable debugging")
+	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features")
 }
 
 // TODO: reduce required inputs here. (or make them flags with defaults?)
@@ -55,6 +60,8 @@ var newChain = &cobra.Command{
 
 		debug, _ := cmd.Flags().GetBool(FlagDebugging)
 
+		disabled, _ := cmd.Flags().GetStringSlice(FlagDisabled)
+
 		cfg := SpawnNewConfig{
 			ProjectName:  projName,
 			Bech32Prefix: walletPrefix,
@@ -63,6 +70,9 @@ var newChain = &cobra.Command{
 			BinaryName:   binName,
 
 			Debugging: debug,
+
+			// by default everything is on, then we remove what the user wants to disable
+			DisabledFeatures: disabled,
 		}
 
 		NewChain(cfg)
@@ -77,12 +87,14 @@ func NewChain(cfg SpawnNewConfig) {
 	appDirName := cfg.AppDirName
 	binaryName := cfg.BinaryName
 	Debugging := cfg.Debugging
+	disabled := cfg.DisabledFeatures
+
+	fmt.Println("Disabled features:", disabled)
 
 	goModName := fmt.Sprintf("github.com/strangelove-ventures/%s", NewDirName)
 
 	fmt.Println("Spawning new app:", NewDirName)
 
-	// create NewDirName directory
 	if err := os.MkdirAll(NewDirName, 0755); err != nil {
 		panic(err)
 	}
@@ -158,4 +170,19 @@ func NewChain(cfg SpawnNewConfig) {
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+// Removes disabled features from the files
+func removeDisabledFeatures(disabled []string) {
+	for _, name := range disabled {
+		if name == "tokenfactory" {
+			removeTokenFactory()
+		}
+	}
+
+}
+
+func removeTokenFactory() {
+	// go.mod, app.go
+
 }
