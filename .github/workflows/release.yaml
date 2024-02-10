@@ -28,7 +28,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v5
         with:
           version: latest
-          args: build --skip-validate --config gorelease.yaml
+          args: build --skip-validate
 
       - name: Release
         uses: goreleaser/goreleaser-action@v5
