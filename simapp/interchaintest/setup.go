@@ -7,7 +7,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
 
 	sdkmath "cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/cosmos/cosmos-sdk/types" //spawntag:globalfee
 
 	wasm "github.com/CosmWasm/wasmd/x/wasm/types"
 	globalfee "github.com/reecepbcups/globalfee/x/globalfee/types"
@@ -22,17 +22,14 @@ var (
 	Name    = "appName"
 	ChainID = "chainid-1"
 	Binary  = "wasmd"
-	Bech32  = "wasm"
+
+	Bech32 = "wasm"
 
 	NumberVals         = 1
 	NumberFullNodes    = 0
 	GenesisFundsAmount = sdkmath.NewInt(1000_000000) // 1k tokens
 
-	ChainImage = ibc.DockerImage{
-		Repository: "wasmd",
-		Version:    "local",
-		UidGid:     "1025:1025",
-	}
+	ChainImage = ibc.NewDockerImage("wasmd", "local", "1025:1025")
 
 	GasCoin = sdk.NewDecCoinFromDec(Denom, sdkmath.LegacyMustNewDecFromStr("0.0")) // spawntag:globalfee
 

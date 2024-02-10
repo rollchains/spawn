@@ -133,6 +133,8 @@ var newChain = &cobra.Command{
 }
 
 func NewChain(cfg *SpawnNewConfig) {
+	var err error
+
 	NewDirName := cfg.ProjectName
 	bech32Prefix := cfg.Bech32Prefix
 	projName := cfg.ProjectName
@@ -141,10 +143,9 @@ func NewChain(cfg *SpawnNewConfig) {
 	binaryName := cfg.BinaryName
 	Debugging := cfg.Debugging
 	disabled := cfg.DisabledFeatures
+	goModName := fmt.Sprintf("github.com/strangelove-ventures/%s", NewDirName)
 
 	fmt.Println("Disabled features:", disabled)
-
-	goModName := fmt.Sprintf("github.com/strangelove-ventures/%s", NewDirName)
 
 	fmt.Println("Spawning new app:", NewDirName)
 
@@ -152,7 +153,7 @@ func NewChain(cfg *SpawnNewConfig) {
 		panic(err)
 	}
 
-	err := fs.WalkDir(simapp.SimApp, ".", func(relPath string, d fs.DirEntry, e error) error {
+	err = fs.WalkDir(simapp.SimAppFS, ".", func(relPath string, d fs.DirEntry, e error) error {
 		newPath := path.Join(NewDirName, relPath)
 
 		// if Debugging {
@@ -178,7 +179,7 @@ func NewChain(cfg *SpawnNewConfig) {
 		}
 
 		// grab the file contents from path
-		fileContent, err := simapp.SimApp.ReadFile(relPath)
+		fileContent, err := simapp.SimAppFS.ReadFile(relPath)
 		if err != nil {
 			return err
 		}
@@ -265,27 +266,114 @@ func NewChain(cfg *SpawnNewConfig) {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	// Interchaintest e2e is a nested submodule. go.mod is renamed to go.mod_ to avoid conflicts
+	// It will be unwound during unpacking to properly nest it.
+	icTestFS := simapp.ICTestFS
+	err = fs.WalkDir(icTestFS, ".", func(relPath string, d fs.DirEntry, e error) error {
+		newPath := path.Join(NewDirName, relPath)
+		if strings.HasSuffix(newPath, "go.mod_") {
+			newPath = strings.ReplaceAll(newPath, "go.mod_", "go.mod")
+		}
+
+		// if Debugging {
+		// 	fmt.Printf("relPath: %s, newPath: %s\n", relPath, newPath)
+		// }
+
+		if relPath == "." {
+			return nil
+		}
+
+		if d.IsDir() {
+			// if relPath is a dir, continue walking
+			return nil
+		}
+
+		for _, ignoreFile := range IgnoredFiles {
+			if strings.HasSuffix(newPath, ignoreFile) || strings.HasPrefix(newPath, ignoreFile) {
+				if Debugging {
+					fmt.Println("ignoring", newPath)
+				}
+				return nil
+			}
+		}
+
+		// grab the file contents from path
+		fileContent, err := icTestFS.ReadFile(relPath)
+		if err != nil {
+			return err
+		}
+		fileContent = removeDisabledFeatures(disabled, newPath, fileContent)
+
+		fc := string(fileContent)
+
+		if fc == "REMOVE" {
+			// don't save this file
+			return nil
+		}
+
+		// replace high level info
+		if strings.HasSuffix(relPath, path.Join("interchaintest", "setup.go")) {
+			// TODO: a lot of this is the same for the testnet, re-use it in a helper func for the basic conversion types.
+			// The hardcoding of values is also not nice, but it's a start.
+
+			fc = strings.ReplaceAll(fc, `ibc.NewDockerImage("wasmd", "local", "1025:1025")`, fmt.Sprintf(`ibc.NewDockerImage("%s", "local", "1025:1025")`, strings.ToLower(projName))) // must be first
+			fc = strings.ReplaceAll(fc, "mydenom", cfg.TokenDenom)
+			fc = strings.ReplaceAll(fc, `Binary  = "wasmd"`, fmt.Sprintf(`Binary  = "%s"`, binaryName)) // else it would replace the Cosmwasm/wasmd import path
+			fc = strings.ReplaceAll(fc, "appName", projName)
+			fc = strings.ReplaceAll(fc, `Bech32 = "wasm"`, fmt.Sprintf(`Bech32 = "%s"`, bech32Prefix))
+
+			// making dynamic would be nice (req: regex. Would always be \"wasm1.*\" or something like that)
+			// gov, acc0, acc1
+			for _, addr := range []string{"wasm10d07y265gmmuvt4z0w9aw880jnsr700js7zslc", "wasm1hj5fveer5cjtn4wd6wstzugjfdxzl0xpvsr89g", "wasm1efd63aw40lxf3n4mhf7dzhjkr453axursysrvp"} {
+				_, bz, err := bech32.Decode(addr, 100)
+				if err != nil {
+					panic(err)
+				}
+
+				newAddr, err := bech32.Encode(bech32Prefix, bz)
+				if err != nil {
+					panic(err)
+				}
+
+				fc = strings.ReplaceAll(fc, addr, newAddr)
+			}
+		}
+
+		if err := os.MkdirAll(path.Dir(newPath), 0755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(newPath, []byte(fc), 0644); err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+
 }
 
 // Removes disabled features from the files specified
-func removeDisabledFeatures(disabled []string, relativePath string, fileContent []byte) []byte {
+func removeDisabledFeatures(disabled []string, newPath string, fileContent []byte) []byte {
 	for _, name := range disabled {
 		switch strings.ToLower(name) {
 		case "tokenfactory", "token-factory", "tf":
-			fileContent = removeTokenFactory(relativePath, fileContent)
+			fileContent = removeTokenFactory(newPath, fileContent)
 		case "poa":
-			fileContent = removePoa(relativePath, fileContent)
+			fileContent = removePoa(newPath, fileContent)
 		case "globalfee":
-			fileContent = removeGlobalFee(relativePath, fileContent)
+			fileContent = removeGlobalFee(newPath, fileContent)
 		case "wasm", "cosmwasm":
-			fileContent = removeWasm(relativePath, fileContent)
+			fileContent = removeWasm(newPath, fileContent)
 			continue
 		case "icahost":
 			// what about all ICA?
-			// fileContent = removeICAHost(relativePath, fileContent)
+			// fileContent = removeICAHost(newPath, fileContent)
 			continue
 		case "icacontroller":
-			// fileContent = removeICAController(relativePath, fileContent)
+			// fileContent = removeICAController(newPath, fileContent)
 			continue
 		}
 	}
@@ -298,65 +386,87 @@ func removeDisabledFeatures(disabled []string, relativePath string, fileContent 
 
 // Removes all references from the tokenfactory file
 func removeTokenFactory(relativePath string, fileContent []byte) []byte {
-	if relativePath == "go.mod" || relativePath == "go.sum" {
+	name := "tokenfactory"
+
+	if strings.HasSuffix(relativePath, "go.mod") || strings.HasSuffix(relativePath, "go.sum") {
+		fmt.Println("removing go.mod import", relativePath)
 		fileContent = RemoveGoModImport("github.com/reecepbcups/tokenfactory", fileContent)
 	}
 
 	if relativePath == path.Join("app", "app.go") {
-		fileContent = RemoveGeneralModule("tokenfactory", string(fileContent))
+		fileContent = RemoveGeneralModule(name, string(fileContent))
 	}
 
 	if relativePath == path.Join("scripts", "test_node.sh") {
-		fileContent = RemoveGeneralModule("tokenfactory", string(fileContent))
+		fileContent = RemoveGeneralModule(name, string(fileContent))
+	}
+
+	// interchaintest
+	if strings.HasSuffix(relativePath, path.Join("interchaintest", "setup.go")) {
+		fileContent = RemoveGeneralModule(name, string(fileContent))
 	}
 
 	return fileContent
 }
 
 func removePoa(relativePath string, fileContent []byte) []byte {
-	if relativePath == "go.mod" || relativePath == "go.sum" {
+	name := "poa"
+
+	if strings.HasSuffix(relativePath, "go.mod") || strings.HasSuffix(relativePath, "go.sum") {
 		fileContent = RemoveGoModImport("github.com/strangelove-ventures/poa", fileContent)
 	}
 
 	if relativePath == path.Join("app", "app.go") || relativePath == path.Join("app", "ante.go") {
-		fileContent = RemoveGeneralModule("poa", string(fileContent))
+		fileContent = RemoveGeneralModule(name, string(fileContent))
 	}
 
 	if relativePath == path.Join("scripts", "test_node.sh") {
-		fileContent = RemoveGeneralModule("poa", string(fileContent))
+		fileContent = RemoveGeneralModule(name, string(fileContent))
+	}
+
+	// interchaintest
+	if strings.HasSuffix(relativePath, path.Join("interchaintest", "setup.go")) {
+		fileContent = RemoveGeneralModule(name, string(fileContent))
 	}
 
 	return fileContent
 }
 
 func removeGlobalFee(relativePath string, fileContent []byte) []byte {
+	name := "globalfee"
 
-	fileContent = HandleCommentSwaps("globalfee", string(fileContent))
-	fileContent = RemoveTaggedLines("globalfee", string(fileContent), true)
+	fileContent = HandleCommentSwaps(name, string(fileContent))
+	fileContent = RemoveTaggedLines(name, string(fileContent), true)
 
-	if relativePath == "go.mod" || relativePath == "go.sum" {
+	if strings.HasSuffix(relativePath, "go.mod") || strings.HasSuffix(relativePath, "go.sum") {
 		fileContent = RemoveGoModImport("github.com/reecepbcups/globalfee", fileContent)
 	}
 
 	if relativePath == path.Join("app", "app.go") || relativePath == path.Join("app", "ante.go") {
-		fileContent = RemoveGeneralModule("globalfee", string(fileContent))
+		fileContent = RemoveGeneralModule(name, string(fileContent))
 		fileContent = RemoveGeneralModule("GlobalFee", string(fileContent))
 	}
 
 	if relativePath == path.Join("scripts", "test_node.sh") {
-		fileContent = RemoveGeneralModule("globalfee", string(fileContent))
+		fileContent = RemoveGeneralModule(name, string(fileContent))
+	}
+
+	// interchaintest
+	if strings.HasSuffix(relativePath, path.Join("interchaintest", "setup.go")) {
+		fileContent = RemoveGeneralModule(name, string(fileContent))
 	}
 
 	return fileContent
 }
 
 func removeWasm(relativePath string, fileContent []byte) []byte {
+	name := "wasm"
 
 	// remove any line with spawntag:wasm
 	// if strings.Contains(string(fileContent), "spawntag:wasm") {}
-	fileContent = RemoveTaggedLines("wasm", string(fileContent), true)
+	fileContent = RemoveTaggedLines(name, string(fileContent), true)
 
-	if relativePath == "go.mod" || relativePath == "go.sum" {
+	if strings.HasSuffix(relativePath, "go.mod") || strings.HasSuffix(relativePath, "go.sum") {
 		fileContent = RemoveGoModImport("github.com/CosmWasm/wasmd", fileContent)
 		fileContent = RemoveGoModImport("github.com/CosmWasm/wasmvm", fileContent)
 	}
@@ -373,7 +483,7 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 	}
 
 	if relativePath == path.Join("app", "ante.go") {
-		fileContent = RemoveGeneralModule("wasm", string(fileContent))
+		fileContent = RemoveGeneralModule(name, string(fileContent))
 	}
 
 	if relativePath == path.Join("app", "encoding.go") {
@@ -381,7 +491,7 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 	}
 
 	if relativePath == path.Join("app", "sim_test.go") {
-		fileContent = RemoveGeneralModule("wasm", string(fileContent))
+		fileContent = RemoveGeneralModule(name, string(fileContent))
 	}
 
 	if relativePath == path.Join("app", "app_test.go") {
@@ -390,7 +500,7 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 	}
 
 	if relativePath == path.Join("app", "test_support.go") {
-		fileContent = RemoveGeneralModule("wasm", string(fileContent))
+		fileContent = RemoveGeneralModule(name, string(fileContent))
 	}
 
 	if relativePath == path.Join("app", "test_helpers.go") {
@@ -405,7 +515,7 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 	}
 
 	if relativePath == path.Join("cmd", "wasmd", "commands.go") {
-		for _, w := range []string{"wasm", "wasmOpts", "wasmcli", "wasmtypes"} {
+		for _, w := range []string{name, "wasmOpts", "wasmcli", "wasmtypes"} {
 			fileContent = RemoveGeneralModule(w, string(fileContent))
 		}
 	}
@@ -414,6 +524,11 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 		for _, w := range []string{"wasmtypes", "wasmkeeper"} {
 			fileContent = RemoveGeneralModule(w, string(fileContent))
 		}
+	}
+
+	// interchaintest
+	if strings.HasSuffix(relativePath, path.Join("interchaintest", "setup.go")) {
+		fileContent = RemoveGeneralModule(name, string(fileContent))
 	}
 
 	return fileContent
@@ -447,7 +562,7 @@ func RemoveTaggedLines(name string, fileContent string, deleteLine bool) []byte 
 
 	startIdx := -1
 	for idx, line := range strings.Split(fileContent, "\n") {
-		// TODO: regex anything in between // and spawntag such as spaces, symbols, etc.
+		// TODO: regex anything in between // and spawntag such as spaces, symbols, etc?
 		line = strings.ReplaceAll(line, "//spawntag:", expectedFormat) // just QOL for us to not tear our hair out
 
 		hasTag := strings.Contains(line, fmt.Sprintf("spawntag:%s", name))
@@ -512,6 +627,14 @@ func RemoveGeneralModule(removeText string, fileContent string) []byte {
 		}
 
 		lineHas := strings.Contains(line, removeText)
+
+		// if line contains //ignore or // ignore, then we use that line
+		// useful if some text is 'wasm' as a bech32 prefix, not a variable / type.
+		if strings.Contains(line, "//ignore") || strings.Contains(line, "// ignore") {
+			fmt.Printf("Ignoring removal: %s: %d, %s\n", removeText, idx, line)
+			newContent = append(newContent, line)
+			continue
+		}
 
 		if lineHas && (strings.HasSuffix(strings.TrimSpace(line), "(") || strings.HasSuffix(strings.TrimSpace(line), "{")) {
 			startIdx = idx
