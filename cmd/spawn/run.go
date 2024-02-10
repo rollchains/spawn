@@ -16,12 +16,12 @@ import (
 // TODO: maybe instead we just use local-ic directly? This could just be a builder for docker
 var BuildAppImage = &cobra.Command{
 	Use:   "docker-build",
-	Short: fmt.Sprintf("Build Docker Image for your app"),
+	Short: "Build Docker Image for your app",
 	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Building Docker Image for your app...")
 		installHeighliner()
-		fmt.Println("Building Local Docker Image...\n")
+		fmt.Println("Building Local Docker Image...")
 		buildLocalDockerImage()
 	},
 }

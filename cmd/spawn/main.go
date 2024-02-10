@@ -14,7 +14,7 @@ const (
 
 func main() {
 	rootCmd.AddCommand(newChain)
-	rootCmd.AddCommand(DownloadLocalIC)
+	rootCmd.AddCommand(LocalICCmd)
 	rootCmd.AddCommand(BuildAppImage)
 
 	if err := rootCmd.Execute(); err != nil {

@@ -57,7 +57,6 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=wasm \
 		  -X github.com/cosmos/cosmos-sdk/version.AppName=wasmd \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-		  -X github.com/CosmWasm/wasmd/app.Bech32Prefix=wasm \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
 
 ifeq ($(WITH_CLEVELDB),yes)
@@ -203,9 +202,10 @@ proto-check-breaking:
 	test-sim-import-export build-windows-client \
 	test-system
 
-###############################################################################
-###                                  heighliner                             ###
-###############################################################################
+## --- Testnet Utilities ---
+get-localic:
+	git clone --branch v8.1.0 https://github.com/strangelove-ventures/interchaintest.git
+	cd interchaintest/local-interchain && make install
 
 get-heighliner:
 	git clone https://github.com/strangelove-ventures/heighliner.git
@@ -215,7 +215,14 @@ local-image:
 ifeq (,$(shell which heighliner))
 	echo 'heighliner' binary not found. Consider running `make get-heighliner`
 else
-	heighliner build -c juno --local -f ./chains.yaml
+# heighliner build -c wasmd --dockerfile=cosmos --binaries--local -f chains.yaml # Not sure why this is not working right now...
+	docker build . -t wasmd:local
 endif
 
 .PHONY: get-heighliner local-image
+
+###############################################################################
+###                                    testnet                              ###
+###############################################################################
+
+testnet: install local-image
