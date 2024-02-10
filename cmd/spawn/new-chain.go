@@ -7,6 +7,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/cosmos/btcutil/bech32"
 	"github.com/spf13/cobra"
 	"github.com/strangelove-ventures/simapp"
 )
@@ -36,7 +37,7 @@ const (
 )
 
 var (
-	IgnoredFiles      = []string{"generate.sh", "embed.go"}
+	IgnoredFiles      = []string{"embed.go", "heighliner/"}
 	SupportedFeatures = []string{"tokenfactory", "poa", "globalfee", "wasm", "ibc", "nft", "group", "circuit"}
 )
 
@@ -90,6 +91,7 @@ var newChain = &cobra.Command{
 func NewChain(cfg SpawnNewConfig) {
 	NewDirName := cfg.ProjectName
 	bech32Prefix := cfg.Bech32Prefix
+	projName := cfg.ProjectName
 	appName := cfg.AppName
 	appDirName := cfg.AppDirName
 	binaryName := cfg.BinaryName
@@ -123,7 +125,7 @@ func NewChain(cfg SpawnNewConfig) {
 		}
 
 		for _, ignoreFile := range IgnoredFiles {
-			if strings.HasSuffix(newPath, ignoreFile) {
+			if strings.HasSuffix(newPath, ignoreFile) || strings.HasPrefix(newPath, ignoreFile) {
 				if Debugging {
 					fmt.Println("ignoring", newPath)
 				}
@@ -150,6 +152,10 @@ func NewChain(cfg SpawnNewConfig) {
 			fc = strings.ReplaceAll(fc, "export DENOM=${DENOM:-token}", fmt.Sprintf("export DENOM=${DENOM:-%s}", cfg.TokenDenom))
 		}
 
+		if relPath == "Dockerfile" {
+			fc = strings.ReplaceAll(fc, "wasmd", binaryName)
+		}
+
 		// TODO: regex would be nicer for replacing incase it changes up stream. may never though. Also limit to specific files?
 		fc = strings.ReplaceAll(fc, ".wasmd", appDirName)
 		fc = strings.ReplaceAll(fc, `const appName = "WasmApp"`, fmt.Sprintf(`const appName = "%s"`, appName))
@@ -160,16 +166,55 @@ func NewChain(cfg SpawnNewConfig) {
 		fc = strings.ReplaceAll(fc, "https://github.com/CosmWasm/wasmd.git", fmt.Sprintf("https://%s.git", goModName))
 		fc = strings.ReplaceAll(fc, "version.Name=wasm", fmt.Sprintf("version.Name=%s", appName)) // ldflags
 		fc = strings.ReplaceAll(fc, "version.AppName=wasmd", fmt.Sprintf("version.AppName=%s", binaryName))
-		fc = strings.ReplaceAll(fc, "github.com/CosmWasm/wasmd/app.Bech32Prefix=wasm", fmt.Sprintf("%s/app.Bech32Prefix=%s", goModName, bech32Prefix))
 		fc = strings.ReplaceAll(fc, "cmd/wasmd", fmt.Sprintf("cmd/%s", binaryName))
 		fc = strings.ReplaceAll(fc, "build/wasmd", fmt.Sprintf("build/%s", binaryName))
 
-		// heighliner
-		if strings.HasSuffix(relPath, "chains.yaml") {
-			fc = strings.ReplaceAll(fc, "MyAppName", appName)
-			fc = strings.ReplaceAll(fc, "MyAppBinary", binaryName)
+		// heighliner (not working atm)
+		fc = strings.ReplaceAll(fc, "docker build . -t wasmd:local", fmt.Sprintf(`docker build . -t %s:local`, strings.ToLower(projName)))
+		// fc = strings.ReplaceAll(fc, "heighliner build -c wasmd --local --dockerfile=cosmos -f chains.yaml", fmt.Sprintf(`heighliner build -c %s --local --dockerfile=cosmos -f chains.yaml`, strings.ToLower(appName)))
+		// if strings.HasSuffix(relPath, "chains.yaml") {
+		// 	fc = strings.ReplaceAll(fc, "myappname", strings.ToLower(appName))
+		// 	fc = strings.ReplaceAll(fc, "/go/bin/wasmd", fmt.Sprintf("/go/bin/%s", binaryName))
+		// }
+
+		// local-interchain config
+		if strings.HasSuffix(relPath, "testnet.json") {
+			fc = strings.ReplaceAll(fc, `"repository": "wasmd"`, fmt.Sprintf(`"repository": "%s"`, strings.ToLower(projName)))
+			fc = strings.ReplaceAll(fc, `"bech32_prefix": "wasm"`, fmt.Sprintf(`"bech32_prefix": "%s"`, bech32Prefix))
+			fc = strings.ReplaceAll(fc, "appName", projName)
+			fc = strings.ReplaceAll(fc, "mydenom", cfg.TokenDenom)
+			fc = strings.ReplaceAll(fc, "wasmd", binaryName)
+
+			for _, addr := range []string{"wasm1hj5fveer5cjtn4wd6wstzugjfdxzl0xpvsr89g", "wasm1efd63aw40lxf3n4mhf7dzhjkr453axursysrvp"} {
+				// bech32 convert to the new prefix
+				_, bz, err := bech32.Decode(addr, 100)
+				if err != nil {
+					panic(err)
+				}
+
+				newAddr, err := bech32.Encode(bech32Prefix, bz)
+				if err != nil {
+					panic(err)
+				}
+
+				fc = strings.ReplaceAll(fc, addr, newAddr)
+			}
+
+			// // bech32 convert to the new prefix
+			// _, bz, err := bech32.Decode(addr1)
+			// if err != nil {
+			// 	panic(err)
+			// }
+
+			// newAddr, err := bech32.Encode(bech32Prefix, bz)
+			// if err != nil {
+			// 	panic(err)
+			// }
+
+			// fc = strings.ReplaceAll(fc, addr1, newAddr)
+
+			// TODO: Bech32 convert and replace the addresses within the accounts section
 		}
-		fc = strings.ReplaceAll(fc, "heighliner build -c juno --local -f ./chains.yaml", fmt.Sprintf(`heighliner build -c %s --local -f ./chains.yaml`, strings.ToLower(appName)))
 
 		// if the relPath is cmd/wasmd, replace it to be cmd/binaryName
 		if strings.HasPrefix(relPath, "cmd/wasmd") {
