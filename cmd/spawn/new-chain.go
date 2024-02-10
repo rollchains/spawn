@@ -7,6 +7,9 @@ import (
 	"path"
 	"strings"
 
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+
 	"github.com/cosmos/btcutil/bech32"
 	"github.com/spf13/cobra"
 	"github.com/strangelove-ventures/simapp"
@@ -27,6 +30,14 @@ type SpawnNewConfig struct {
 	DisabledFeatures []string
 }
 
+func (cfg *SpawnNewConfig) Validate() error {
+	if strings.ContainsAny(cfg.ProjectName, `~!@#$%^&*()_+{}|:"<>?/.,;'[]\=-`) {
+		return fmt.Errorf("project name cannot contain special characters %s", cfg.ProjectName)
+	}
+
+	return nil
+}
+
 const (
 	FlagWalletPrefix = "bech32"
 	FlagBinaryName   = "bin"
@@ -39,7 +50,7 @@ const (
 
 var (
 	IgnoredFiles      = []string{"embed.go", "heighliner/"}
-	SupportedFeatures = []string{"tokenfactory", "poa", "globalfee", "wasm", "ibc", "nft", "group", "circuit"}
+	SupportedFeatures = []string{"tokenfactory", "poa", "globalfee", "wasm", "icahost", "icacontroller"}
 )
 
 func init() {
@@ -51,18 +62,18 @@ func init() {
 	newChain.Flags().Bool(FlagNoGit, false, "git init base")
 }
 
-// TODO: reduce required inputs here. (or make them flags with defaults?)
 var newChain = &cobra.Command{
-	Use:     "new [project-name]",
-	Short:   "List all current chains or outputs a current config information",
-	Example: fmt.Sprintf(`spawn new project --%s=cosmos --%s=appd`, FlagWalletPrefix, FlagBinaryName),
+	Use:   "new-chain [project-name]",
+	Short: "Create a new project",
+	Example: fmt.Sprintf(
+		`spawn new rollchain --%s=cosmos --%s=appd --%s=token --%s=tokenfactory,poa,globalfee`,
+		FlagWalletPrefix, FlagBinaryName, FlagTokenDenom, FlagDisabled,
+	),
 	Args:    cobra.ExactArgs(1),
-	// ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	// 	return GetFiles(), cobra.ShellCompDirectiveNoFileComp
-	// },
+	Aliases: []string{"new"},
 	Run: func(cmd *cobra.Command, args []string) {
 		projName := strings.ToLower(args[0])
-		appName := strings.Title(projName) + "App"
+		appName := cases.Title(language.AmericanEnglish).String(projName) + "App"
 
 		walletPrefix, _ := cmd.Flags().GetString(FlagWalletPrefix)
 		binName, _ := cmd.Flags().GetString(FlagBinaryName)
@@ -74,7 +85,7 @@ var newChain = &cobra.Command{
 
 		ignoreGitInit, _ := cmd.Flags().GetBool(FlagNoGit)
 
-		cfg := SpawnNewConfig{
+		cfg := &SpawnNewConfig{
 			ProjectName:  projName,
 			Bech32Prefix: walletPrefix,
 			AppName:      appName,
@@ -86,12 +97,15 @@ var newChain = &cobra.Command{
 			// by default everything is on, then we remove what the user wants to disable
 			DisabledFeatures: disabled,
 		}
+		if err := cfg.Validate(); err != nil {
+			fmt.Println("Error validating config:", err)
+			return
+		}
 
 		NewChain(cfg)
 
 		// Create the base git repo
 		if !ignoreGitInit {
-
 			// if git already exists, don't init
 			if err := execCommand("git", "init", projName, "--quiet"); err != nil {
 				fmt.Println("Error initializing git:", err)
@@ -117,7 +131,7 @@ var newChain = &cobra.Command{
 	},
 }
 
-func NewChain(cfg SpawnNewConfig) {
+func NewChain(cfg *SpawnNewConfig) {
 	NewDirName := cfg.ProjectName
 	bech32Prefix := cfg.Bech32Prefix
 	projName := cfg.ProjectName
@@ -255,24 +269,22 @@ func NewChain(cfg SpawnNewConfig) {
 // Removes disabled features from the files specified
 func removeDisabledFeatures(disabled []string, relativePath string, fileContent []byte) []byte {
 	for _, name := range disabled {
-		switch name {
-		case "tokenfactory":
+		switch strings.ToLower(name) {
+		case "tokenfactory", "token-factory", "tf":
 			fileContent = removeTokenFactory(relativePath, fileContent)
 		case "poa":
 			fileContent = removePoa(relativePath, fileContent)
 		case "globalfee":
 			fileContent = removeGlobalFee(relativePath, fileContent)
-		case "wasm":
+		case "wasm", "cosmwasm":
 			fileContent = removeWasm(relativePath, fileContent)
 			continue
-		case "ibc": // this would remove all. Including PFM, then we can have others for specifics (i.e. ICAHost, IBCFees)
-			// fileContent = removeIbc(relativePath, fileContent)
+		case "icahost":
+			// what about all ICA?
+			// fileContent = removeICAHost(relativePath, fileContent)
 			continue
-		case "nft":
-			// fileContent = removeNft(relativePath, fileContent)
-			continue
-		case "circuit":
-			// fileContent = removeCircuit(relativePath, fileContent)
+		case "icacontroller":
+			// fileContent = removeICAController(relativePath, fileContent)
 			continue
 		}
 	}

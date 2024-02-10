@@ -9,6 +9,7 @@ require (
 	github.com/schollz/progressbar/v3 v3.14.1
 	github.com/spf13/cobra v1.8.0
 	github.com/strangelove-ventures/simapp v0.0.0-00000000-000000000000
+	golang.org/x/text v0.14.0
 )
 
 require (
