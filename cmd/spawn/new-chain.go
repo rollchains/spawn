@@ -197,6 +197,7 @@ func NewChain(cfg SpawnNewConfig) {
 		fc = strings.ReplaceAll(fc, "version.AppName=wasmd", fmt.Sprintf("version.AppName=%s", binaryName))
 		fc = strings.ReplaceAll(fc, "cmd/wasmd", fmt.Sprintf("cmd/%s", binaryName))
 		fc = strings.ReplaceAll(fc, "build/wasmd", fmt.Sprintf("build/%s", binaryName))
+		fc = strings.ReplaceAll(fc, "wasmd keys", fmt.Sprintf("%s keys", binaryName)) // testnet
 
 		// heighliner (not working atm)
 		fc = strings.ReplaceAll(fc, "docker build . -t wasmd:local", fmt.Sprintf(`docker build . -t %s:local`, strings.ToLower(projName)))
