@@ -1,7 +1,7 @@
 /local-ic
 /bin/local-ic
 heighliner/
-interchaintest/
+/interchaintest/
 dist/
 **/configs/logs.json
 my-project/
