@@ -6,7 +6,6 @@ go 1.21
 replace (
 	cosmossdk.io/core => cosmossdk.io/core v0.11.0
 	github.com/spf13/viper => github.com/spf13/viper v1.17.0 // v1.18+ breaks app overrides
-	github.com/strangelove-ventures/simapp/interchaintest => ./interchaintest
 )
 
 replace (
