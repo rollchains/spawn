@@ -34,6 +34,7 @@ const (
 	FlagTokenDenom   = "denom"
 
 	FlagDisabled = "disable"
+	FlagNoGit    = "no-git"
 )
 
 var (
@@ -47,6 +48,7 @@ func init() {
 	newChain.Flags().Bool(FlagDebugging, false, "enable debugging")
 	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features: "+strings.Join(SupportedFeatures, ", "))
 	newChain.Flags().String(FlagTokenDenom, "stake", "token denom")
+	newChain.Flags().Bool(FlagNoGit, false, "git init base")
 }
 
 // TODO: reduce required inputs here. (or make them flags with defaults?)
@@ -84,6 +86,11 @@ var newChain = &cobra.Command{
 		}
 
 		NewChain(cfg)
+
+		// announce it
+		fmt.Printf("New chain %s created\n", projName)
+		// change to the new directory (flag to disable this)
+		// run git init if FlagNoGit
 
 	},
 }

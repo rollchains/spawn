@@ -34,6 +34,7 @@ func init() {
 // make install && ICTEST_HOME=./simapp spawn local-ic start testnet
 // make install && cd simapp && spawn local-ic start testnet
 // ---
+// TODO: Do something like `curl https://get.ignite.com/cli! | bash`? just with windows support
 var LocalICCmd = &cobra.Command{
 	Use:   "local-ic",
 	Short: "Local Interchain",
