@@ -61,13 +61,13 @@
                     {
                         "name": "acc0",
                         "address": "wasm1hj5fveer5cjtn4wd6wstzugjfdxzl0xpvsr89g",
-                        "amount": "10000000000%DENOM%",
+                        "amount": "10000000000mydenom",
                         "mnemonic": "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry"
                     },
                     {
                         "name": "acc1",
                         "address": "wasm1efd63aw40lxf3n4mhf7dzhjkr453axursysrvp",
-                        "amount": "10000000000%DENOM%",
+                        "amount": "10000000000mydenom",
                         "mnemonic": "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise"
                     }
                 ],
