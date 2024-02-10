@@ -202,9 +202,10 @@ proto-check-breaking:
 	test-sim-import-export build-windows-client \
 	test-system
 
-###############################################################################
-###                                  heighliner                             ###
-###############################################################################
+## --- Testnet Utilities ---
+get-localic:
+	git clone --branch v8.1.0 https://github.com/strangelove-ventures/interchaintest.git
+	cd interchaintest/local-interchain && make install
 
 get-heighliner:
 	git clone https://github.com/strangelove-ventures/heighliner.git

@@ -72,6 +72,8 @@ var newChain = &cobra.Command{
 
 		disabled, _ := cmd.Flags().GetStringSlice(FlagDisabled)
 
+		ignoreGitInit, _ := cmd.Flags().GetBool(FlagNoGit)
+
 		cfg := SpawnNewConfig{
 			ProjectName:  projName,
 			Bech32Prefix: walletPrefix,
@@ -87,10 +89,19 @@ var newChain = &cobra.Command{
 
 		NewChain(cfg)
 
-		// announce it
-		fmt.Printf("New chain %s created\n", projName)
-		// change to the new directory (flag to disable this)
+		// Announce how to use it
+		fmt.Printf("\n\n🎉 New blockchain '%s' generated!\n", projName)
+		fmt.Println("🏅Getting started:")
+		fmt.Println("  - $ cd " + projName)
+		fmt.Println("  - $ make testnet      # build & start the testnet")
+		fmt.Printf("  - $ make install      # build the %s binary\n", binName)
+		fmt.Println("  - $ make local-image  # docker build")
+
 		// run git init if FlagNoGit
+		if !ignoreGitInit {
+			// git init into the sub directory
+			execCommand("git", "init", projName)
+		}
 
 	},
 }
