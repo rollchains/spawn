@@ -29,8 +29,8 @@ builds:
       - windows_amd64_v1
       - windows_arm64
       - windows_386
-    dir: ./cmd/spawn
-    main: .
+    dir: .
+    main: ./cmd/spawn
     binary: spawn
     builder: go
     gobinary: go

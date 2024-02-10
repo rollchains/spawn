@@ -6,7 +6,7 @@ on:
     - '**'
 
 # Test Locally with:
-# goreleaser build --skip-validate --config gorelease.yaml --snapshot
+# goreleaser build --skip-validate --snapshot
 
 jobs:
   goreleaser:
