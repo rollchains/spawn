@@ -12,8 +12,6 @@ import (
 // heighliner build latest.
 // check if local-ic is found in path, if not, tell the user to download & move to their GOPATH (or do automatically)
 // if local-ic is installed, call it here automatically
-
-// TODO: maybe instead we just use local-ic directly? This could just be a builder for docker
 var BuildAppImage = &cobra.Command{
 	Use:   "docker-build",
 	Short: "Build Docker Image for your app",

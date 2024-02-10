@@ -355,7 +355,6 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 	// if strings.Contains(string(fileContent), "spawntag:wasm") {}
 	fileContent = RemoveTaggedLines("wasm", string(fileContent), true)
 
-	// TODO: tokenfactory depends on wasm currently.
 	if relativePath == "go.mod" || relativePath == "go.sum" {
 		fileContent = RemoveGoModImport("github.com/CosmWasm/wasmd", fileContent)
 		fileContent = RemoveGoModImport("github.com/CosmWasm/wasmvm", fileContent)
