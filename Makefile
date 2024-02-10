@@ -2,7 +2,6 @@
 
 CWD := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 
-PROJECT_NAME = ignite
 DATE := $(shell date '+%Y-%m-%dT%H:%M:%S')
 HEAD = $(shell git rev-parse HEAD)
 LD_FLAGS =

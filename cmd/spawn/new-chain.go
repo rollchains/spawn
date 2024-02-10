@@ -214,6 +214,7 @@ func NewChain(cfg SpawnNewConfig) {
 			fc = strings.ReplaceAll(fc, "mydenom", cfg.TokenDenom)
 			fc = strings.ReplaceAll(fc, "wasmd", binaryName)
 
+			// making dynamic would be nice
 			for _, addr := range []string{"wasm1hj5fveer5cjtn4wd6wstzugjfdxzl0xpvsr89g", "wasm1efd63aw40lxf3n4mhf7dzhjkr453axursysrvp"} {
 				// bech32 convert to the new prefix
 				_, bz, err := bech32.Decode(addr, 100)
@@ -228,21 +229,6 @@ func NewChain(cfg SpawnNewConfig) {
 
 				fc = strings.ReplaceAll(fc, addr, newAddr)
 			}
-
-			// // bech32 convert to the new prefix
-			// _, bz, err := bech32.Decode(addr1)
-			// if err != nil {
-			// 	panic(err)
-			// }
-
-			// newAddr, err := bech32.Encode(bech32Prefix, bz)
-			// if err != nil {
-			// 	panic(err)
-			// }
-
-			// fc = strings.ReplaceAll(fc, addr1, newAddr)
-
-			// TODO: Bech32 convert and replace the addresses within the accounts section
 		}
 
 		// if the relPath is cmd/wasmd, replace it to be cmd/binaryName
