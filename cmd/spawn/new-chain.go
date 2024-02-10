@@ -125,7 +125,8 @@ var newChain = &cobra.Command{
 		fmt.Printf("\n\n🎉 New blockchain '%s' generated!\n", projName)
 		fmt.Println("🏅Getting started:")
 		fmt.Println("  - $ cd " + projName)
-		fmt.Println("  - $ make testnet      # build & start the testnet")
+		fmt.Println("  - $ make testnet      # build & start a testnet")
+		fmt.Println("  - $ make testnet-ibc  # build & start an ibc testnet")
 		fmt.Printf("  - $ make install      # build the %s binary\n", binName)
 		fmt.Println("  - $ make local-image  # build docker image")
 	},
