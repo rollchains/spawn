@@ -89,20 +89,31 @@ var newChain = &cobra.Command{
 
 		NewChain(cfg)
 
+		// Create the base git repo
+		if !ignoreGitInit {
+
+			// if git already exists, don't init
+			if err := execCommand("git", "init", projName, "--quiet"); err != nil {
+				fmt.Println("Error initializing git:", err)
+			}
+			if err := os.Chdir(projName); err != nil {
+				fmt.Println("Error changing to project directory:", err)
+			}
+			if err := execCommand("git", "add", "."); err != nil {
+				fmt.Println("Error adding files to git:", err)
+			}
+			if err := execCommand("git", "commit", "-m", "initial commit", "--quiet"); err != nil {
+				fmt.Println("Error committing initial files:", err)
+			}
+		}
+
 		// Announce how to use it
 		fmt.Printf("\n\n🎉 New blockchain '%s' generated!\n", projName)
 		fmt.Println("🏅Getting started:")
 		fmt.Println("  - $ cd " + projName)
 		fmt.Println("  - $ make testnet      # build & start the testnet")
 		fmt.Printf("  - $ make install      # build the %s binary\n", binName)
-		fmt.Println("  - $ make local-image  # docker build")
-
-		// run git init if FlagNoGit
-		if !ignoreGitInit {
-			// git init into the sub directory
-			execCommand("git", "init", projName)
-		}
-
+		fmt.Println("  - $ make local-image  # build docker image")
 	},
 }
 

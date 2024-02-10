@@ -628,7 +628,7 @@ func NewChainApp(
 	)
 	wasmOpts = append(wasmOpts, tokenfactorybindings.RegisterCustomPlugins(app.BankKeeper, &app.TokenFactoryKeeper)...)
 
-	// Initialize the PoA Keeper and and AppModule
+	// Initialize the poa Keeper and and AppModule
 	app.POAKeeper = poakeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[poa.StoreKey]),
