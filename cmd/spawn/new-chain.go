@@ -176,7 +176,7 @@ func NewChain(cfg SpawnNewConfig) {
 			return nil
 		}
 
-		if relPath == "scripts/test_node.sh" {
+		if relPath == path.Join("scripts", "test_node.sh") {
 			fc = strings.ReplaceAll(fc, "export BINARY=${BINARY:-wasmd}", fmt.Sprintf("export BINARY=${BINARY:-%s}", binaryName))
 			fc = strings.ReplaceAll(fc, "export DENOM=${DENOM:-token}", fmt.Sprintf("export DENOM=${DENOM:-%s}", cfg.TokenDenom))
 		}
@@ -201,6 +201,7 @@ func NewChain(cfg SpawnNewConfig) {
 
 		// heighliner (not working atm)
 		fc = strings.ReplaceAll(fc, "docker build . -t wasmd:local", fmt.Sprintf(`docker build . -t %s:local`, strings.ToLower(projName)))
+		// TODO: remember to make the below path.Join
 		// fc = strings.ReplaceAll(fc, "heighliner build -c wasmd --local --dockerfile=cosmos -f chains.yaml", fmt.Sprintf(`heighliner build -c %s --local --dockerfile=cosmos -f chains.yaml`, strings.ToLower(appName)))
 		// if strings.HasSuffix(relPath, "chains.yaml") {
 		// 	fc = strings.ReplaceAll(fc, "myappname", strings.ToLower(appName))
@@ -261,11 +262,11 @@ func removeDisabledFeatures(disabled []string, relativePath string, fileContent 
 			fileContent = removePoa(relativePath, fileContent)
 		case "globalfee":
 			fileContent = removeGlobalFee(relativePath, fileContent)
-		case "ibc": // this would remove all. Including PFM, then we can have others for specifics (i.e. ICAHost, IBCFees)
-			// fileContent = removeIbc(relativePath, fileContent)
-			continue
 		case "wasm":
 			fileContent = removeWasm(relativePath, fileContent)
+			continue
+		case "ibc": // this would remove all. Including PFM, then we can have others for specifics (i.e. ICAHost, IBCFees)
+			// fileContent = removeIbc(relativePath, fileContent)
 			continue
 		case "nft":
 			// fileContent = removeNft(relativePath, fileContent)
@@ -288,11 +289,11 @@ func removeTokenFactory(relativePath string, fileContent []byte) []byte {
 		fileContent = RemoveGoModImport("github.com/reecepbcups/tokenfactory", fileContent)
 	}
 
-	if relativePath == "app/app.go" {
+	if relativePath == path.Join("app", "app.go") {
 		fileContent = RemoveGeneralModule("tokenfactory", string(fileContent))
 	}
 
-	if relativePath == "scripts/test_node.sh" {
+	if relativePath == path.Join("scripts", "test_node.sh") {
 		fileContent = RemoveGeneralModule("tokenfactory", string(fileContent))
 	}
 
@@ -304,11 +305,11 @@ func removePoa(relativePath string, fileContent []byte) []byte {
 		fileContent = RemoveGoModImport("github.com/strangelove-ventures/poa", fileContent)
 	}
 
-	if relativePath == "app/app.go" || relativePath == "app/ante.go" {
+	if relativePath == path.Join("app", "app.go") || relativePath == path.Join("app", "ante.go") {
 		fileContent = RemoveGeneralModule("poa", string(fileContent))
 	}
 
-	if relativePath == "scripts/test_node.sh" {
+	if relativePath == path.Join("scripts", "test_node.sh") {
 		fileContent = RemoveGeneralModule("poa", string(fileContent))
 	}
 
@@ -324,12 +325,12 @@ func removeGlobalFee(relativePath string, fileContent []byte) []byte {
 		fileContent = RemoveGoModImport("github.com/reecepbcups/globalfee", fileContent)
 	}
 
-	if relativePath == "app/app.go" || relativePath == "app/ante.go" {
+	if relativePath == path.Join("app", "app.go") || relativePath == path.Join("app", "ante.go") {
 		fileContent = RemoveGeneralModule("globalfee", string(fileContent))
 		fileContent = RemoveGeneralModule("GlobalFee", string(fileContent))
 	}
 
-	if relativePath == "scripts/test_node.sh" {
+	if relativePath == path.Join("scripts", "test_node.sh") {
 		fileContent = RemoveGeneralModule("globalfee", string(fileContent))
 	}
 
@@ -348,7 +349,7 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 		fileContent = RemoveGoModImport("github.com/CosmWasm/wasmvm", fileContent)
 	}
 
-	if relativePath == "app/app.go" || relativePath == "app/ante.go" {
+	if relativePath == path.Join("app", "app.go") || relativePath == path.Join("app", "ante.go") {
 		for _, w := range []string{
 			"WasmKeeper", "wasmtypes", "wasmStack",
 			"wasmOpts", "TXCounterStoreService", "WasmConfig",
@@ -359,45 +360,45 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 
 	}
 
-	if relativePath == "app/ante.go" {
+	if relativePath == path.Join("app", "ante.go") {
 		fileContent = RemoveGeneralModule("wasm", string(fileContent))
 	}
 
-	if relativePath == "app/encoding.go" {
+	if relativePath == path.Join("app", "encoding.go") {
 		fileContent = RemoveGeneralModule("wasmkeeper", string(fileContent))
 	}
 
-	if relativePath == "app/sim_test.go" {
+	if relativePath == path.Join("app", "sim_test.go") {
 		fileContent = RemoveGeneralModule("wasm", string(fileContent))
 	}
 
-	if relativePath == "app/app_test.go" {
+	if relativePath == path.Join("app", "app_test.go") {
 		fileContent = RemoveGeneralModule("wasmOpts", string(fileContent))
 		fileContent = RemoveGeneralModule("wasmkeeper", string(fileContent))
 	}
 
-	if relativePath == "app/test_support.go" {
+	if relativePath == path.Join("app", "test_support.go") {
 		fileContent = RemoveGeneralModule("wasm", string(fileContent))
 	}
 
-	if relativePath == "app/test_helpers.go" {
+	if relativePath == path.Join("app", "test_helpers.go") {
 		for _, w := range []string{"emptyWasmOptions", "wasmkeeper", "WasmOpts", "wasmOpts"} {
 			fileContent = RemoveGeneralModule(w, string(fileContent))
 		}
 
 	}
 
-	if relativePath == "app/wasm.go" {
+	if relativePath == path.Join("app", "wasm.go") {
 		fileContent = []byte("REMOVE")
 	}
 
-	if relativePath == "cmd/wasmd/commands.go" {
+	if relativePath == path.Join("cmd", "wasmd", "commands.go") {
 		for _, w := range []string{"wasm", "wasmOpts", "wasmcli", "wasmtypes"} {
 			fileContent = RemoveGeneralModule(w, string(fileContent))
 		}
 	}
 
-	if relativePath == "cmd/wasmd/root.go" {
+	if relativePath == path.Join("cmd", "wasmd", "root.go") {
 		for _, w := range []string{"wasmtypes", "wasmkeeper"} {
 			fileContent = RemoveGeneralModule(w, string(fileContent))
 		}
