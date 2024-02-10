@@ -74,7 +74,7 @@ var LocalICCmd = &cobra.Command{
 }
 
 func whereIsLocalICInstalled() string {
-	for _, path := range []string{"local-ic", "bin/local-ic", "local-interchain/localic"} {
+	for _, path := range []string{"local-ic", path.Join("bin", "local-ic"), path.Join("local-interchain", "localic")} {
 		if _, err := os.Stat(path); err == nil {
 			return path
 		}

@@ -7,6 +7,9 @@ import (
 	"path"
 	"strings"
 
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+
 	"github.com/cosmos/btcutil/bech32"
 	"github.com/spf13/cobra"
 	"github.com/strangelove-ventures/simapp"
@@ -27,6 +30,14 @@ type SpawnNewConfig struct {
 	DisabledFeatures []string
 }
 
+func (cfg *SpawnNewConfig) Validate() error {
+	if strings.ContainsAny(cfg.ProjectName, `~!@#$%^&*()_+{}|:"<>?/.,;'[]\=-`) {
+		return fmt.Errorf("project name cannot contain special characters %s", cfg.ProjectName)
+	}
+
+	return nil
+}
+
 const (
 	FlagWalletPrefix = "bech32"
 	FlagBinaryName   = "bin"
@@ -39,7 +50,7 @@ const (
 
 var (
 	IgnoredFiles      = []string{"embed.go", "heighliner/"}
-	SupportedFeatures = []string{"tokenfactory", "poa", "globalfee", "wasm", "ibc", "nft", "group", "circuit"}
+	SupportedFeatures = []string{"tokenfactory", "poa", "globalfee", "wasm", "icahost", "icacontroller"}
 )
 
 func init() {
@@ -51,18 +62,18 @@ func init() {
 	newChain.Flags().Bool(FlagNoGit, false, "git init base")
 }
 
-// TODO: reduce required inputs here. (or make them flags with defaults?)
 var newChain = &cobra.Command{
-	Use:     "new [project-name]",
-	Short:   "List all current chains or outputs a current config information",
-	Example: fmt.Sprintf(`spawn new project --%s=cosmos --%s=appd`, FlagWalletPrefix, FlagBinaryName),
+	Use:   "new-chain [project-name]",
+	Short: "Create a new project",
+	Example: fmt.Sprintf(
+		`spawn new rollchain --%s=cosmos --%s=appd --%s=token --%s=tokenfactory,poa,globalfee`,
+		FlagWalletPrefix, FlagBinaryName, FlagTokenDenom, FlagDisabled,
+	),
 	Args:    cobra.ExactArgs(1),
-	// ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	// 	return GetFiles(), cobra.ShellCompDirectiveNoFileComp
-	// },
+	Aliases: []string{"new"},
 	Run: func(cmd *cobra.Command, args []string) {
 		projName := strings.ToLower(args[0])
-		appName := strings.Title(projName) + "App"
+		appName := cases.Title(language.AmericanEnglish).String(projName) + "App"
 
 		walletPrefix, _ := cmd.Flags().GetString(FlagWalletPrefix)
 		binName, _ := cmd.Flags().GetString(FlagBinaryName)
@@ -74,7 +85,7 @@ var newChain = &cobra.Command{
 
 		ignoreGitInit, _ := cmd.Flags().GetBool(FlagNoGit)
 
-		cfg := SpawnNewConfig{
+		cfg := &SpawnNewConfig{
 			ProjectName:  projName,
 			Bech32Prefix: walletPrefix,
 			AppName:      appName,
@@ -86,12 +97,15 @@ var newChain = &cobra.Command{
 			// by default everything is on, then we remove what the user wants to disable
 			DisabledFeatures: disabled,
 		}
+		if err := cfg.Validate(); err != nil {
+			fmt.Println("Error validating config:", err)
+			return
+		}
 
 		NewChain(cfg)
 
 		// Create the base git repo
 		if !ignoreGitInit {
-
 			// if git already exists, don't init
 			if err := execCommand("git", "init", projName, "--quiet"); err != nil {
 				fmt.Println("Error initializing git:", err)
@@ -111,13 +125,14 @@ var newChain = &cobra.Command{
 		fmt.Printf("\n\n🎉 New blockchain '%s' generated!\n", projName)
 		fmt.Println("🏅Getting started:")
 		fmt.Println("  - $ cd " + projName)
-		fmt.Println("  - $ make testnet      # build & start the testnet")
+		fmt.Println("  - $ make testnet      # build & start a testnet")
+		fmt.Println("  - $ make testnet-ibc  # build & start an ibc testnet")
 		fmt.Printf("  - $ make install      # build the %s binary\n", binName)
 		fmt.Println("  - $ make local-image  # build docker image")
 	},
 }
 
-func NewChain(cfg SpawnNewConfig) {
+func NewChain(cfg *SpawnNewConfig) {
 	NewDirName := cfg.ProjectName
 	bech32Prefix := cfg.Bech32Prefix
 	projName := cfg.ProjectName
@@ -176,7 +191,7 @@ func NewChain(cfg SpawnNewConfig) {
 			return nil
 		}
 
-		if relPath == "scripts/test_node.sh" {
+		if relPath == path.Join("scripts", "test_node.sh") {
 			fc = strings.ReplaceAll(fc, "export BINARY=${BINARY:-wasmd}", fmt.Sprintf("export BINARY=${BINARY:-%s}", binaryName))
 			fc = strings.ReplaceAll(fc, "export DENOM=${DENOM:-token}", fmt.Sprintf("export DENOM=${DENOM:-%s}", cfg.TokenDenom))
 		}
@@ -197,9 +212,11 @@ func NewChain(cfg SpawnNewConfig) {
 		fc = strings.ReplaceAll(fc, "version.AppName=wasmd", fmt.Sprintf("version.AppName=%s", binaryName))
 		fc = strings.ReplaceAll(fc, "cmd/wasmd", fmt.Sprintf("cmd/%s", binaryName))
 		fc = strings.ReplaceAll(fc, "build/wasmd", fmt.Sprintf("build/%s", binaryName))
+		fc = strings.ReplaceAll(fc, "wasmd keys", fmt.Sprintf("%s keys", binaryName)) // testnet
 
 		// heighliner (not working atm)
 		fc = strings.ReplaceAll(fc, "docker build . -t wasmd:local", fmt.Sprintf(`docker build . -t %s:local`, strings.ToLower(projName)))
+		// TODO: remember to make the below path.Join
 		// fc = strings.ReplaceAll(fc, "heighliner build -c wasmd --local --dockerfile=cosmos -f chains.yaml", fmt.Sprintf(`heighliner build -c %s --local --dockerfile=cosmos -f chains.yaml`, strings.ToLower(appName)))
 		// if strings.HasSuffix(relPath, "chains.yaml") {
 		// 	fc = strings.ReplaceAll(fc, "myappname", strings.ToLower(appName))
@@ -253,24 +270,22 @@ func NewChain(cfg SpawnNewConfig) {
 // Removes disabled features from the files specified
 func removeDisabledFeatures(disabled []string, relativePath string, fileContent []byte) []byte {
 	for _, name := range disabled {
-		switch name {
-		case "tokenfactory":
+		switch strings.ToLower(name) {
+		case "tokenfactory", "token-factory", "tf":
 			fileContent = removeTokenFactory(relativePath, fileContent)
 		case "poa":
 			fileContent = removePoa(relativePath, fileContent)
 		case "globalfee":
 			fileContent = removeGlobalFee(relativePath, fileContent)
-		case "ibc": // this would remove all. Including PFM, then we can have others for specifics (i.e. ICAHost, IBCFees)
-			// fileContent = removeIbc(relativePath, fileContent)
-			continue
-		case "wasm":
+		case "wasm", "cosmwasm":
 			fileContent = removeWasm(relativePath, fileContent)
 			continue
-		case "nft":
-			// fileContent = removeNft(relativePath, fileContent)
+		case "icahost":
+			// what about all ICA?
+			// fileContent = removeICAHost(relativePath, fileContent)
 			continue
-		case "circuit":
-			// fileContent = removeCircuit(relativePath, fileContent)
+		case "icacontroller":
+			// fileContent = removeICAController(relativePath, fileContent)
 			continue
 		}
 	}
@@ -287,11 +302,11 @@ func removeTokenFactory(relativePath string, fileContent []byte) []byte {
 		fileContent = RemoveGoModImport("github.com/reecepbcups/tokenfactory", fileContent)
 	}
 
-	if relativePath == "app/app.go" {
+	if relativePath == path.Join("app", "app.go") {
 		fileContent = RemoveGeneralModule("tokenfactory", string(fileContent))
 	}
 
-	if relativePath == "scripts/test_node.sh" {
+	if relativePath == path.Join("scripts", "test_node.sh") {
 		fileContent = RemoveGeneralModule("tokenfactory", string(fileContent))
 	}
 
@@ -303,11 +318,11 @@ func removePoa(relativePath string, fileContent []byte) []byte {
 		fileContent = RemoveGoModImport("github.com/strangelove-ventures/poa", fileContent)
 	}
 
-	if relativePath == "app/app.go" || relativePath == "app/ante.go" {
+	if relativePath == path.Join("app", "app.go") || relativePath == path.Join("app", "ante.go") {
 		fileContent = RemoveGeneralModule("poa", string(fileContent))
 	}
 
-	if relativePath == "scripts/test_node.sh" {
+	if relativePath == path.Join("scripts", "test_node.sh") {
 		fileContent = RemoveGeneralModule("poa", string(fileContent))
 	}
 
@@ -323,12 +338,12 @@ func removeGlobalFee(relativePath string, fileContent []byte) []byte {
 		fileContent = RemoveGoModImport("github.com/reecepbcups/globalfee", fileContent)
 	}
 
-	if relativePath == "app/app.go" || relativePath == "app/ante.go" {
+	if relativePath == path.Join("app", "app.go") || relativePath == path.Join("app", "ante.go") {
 		fileContent = RemoveGeneralModule("globalfee", string(fileContent))
 		fileContent = RemoveGeneralModule("GlobalFee", string(fileContent))
 	}
 
-	if relativePath == "scripts/test_node.sh" {
+	if relativePath == path.Join("scripts", "test_node.sh") {
 		fileContent = RemoveGeneralModule("globalfee", string(fileContent))
 	}
 
@@ -341,13 +356,12 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 	// if strings.Contains(string(fileContent), "spawntag:wasm") {}
 	fileContent = RemoveTaggedLines("wasm", string(fileContent), true)
 
-	// TODO: tokenfactory depends on wasm currently.
 	if relativePath == "go.mod" || relativePath == "go.sum" {
 		fileContent = RemoveGoModImport("github.com/CosmWasm/wasmd", fileContent)
 		fileContent = RemoveGoModImport("github.com/CosmWasm/wasmvm", fileContent)
 	}
 
-	if relativePath == "app/app.go" || relativePath == "app/ante.go" {
+	if relativePath == path.Join("app", "app.go") || relativePath == path.Join("app", "ante.go") {
 		for _, w := range []string{
 			"WasmKeeper", "wasmtypes", "wasmStack",
 			"wasmOpts", "TXCounterStoreService", "WasmConfig",
@@ -358,45 +372,45 @@ func removeWasm(relativePath string, fileContent []byte) []byte {
 
 	}
 
-	if relativePath == "app/ante.go" {
+	if relativePath == path.Join("app", "ante.go") {
 		fileContent = RemoveGeneralModule("wasm", string(fileContent))
 	}
 
-	if relativePath == "app/encoding.go" {
+	if relativePath == path.Join("app", "encoding.go") {
 		fileContent = RemoveGeneralModule("wasmkeeper", string(fileContent))
 	}
 
-	if relativePath == "app/sim_test.go" {
+	if relativePath == path.Join("app", "sim_test.go") {
 		fileContent = RemoveGeneralModule("wasm", string(fileContent))
 	}
 
-	if relativePath == "app/app_test.go" {
+	if relativePath == path.Join("app", "app_test.go") {
 		fileContent = RemoveGeneralModule("wasmOpts", string(fileContent))
 		fileContent = RemoveGeneralModule("wasmkeeper", string(fileContent))
 	}
 
-	if relativePath == "app/test_support.go" {
+	if relativePath == path.Join("app", "test_support.go") {
 		fileContent = RemoveGeneralModule("wasm", string(fileContent))
 	}
 
-	if relativePath == "app/test_helpers.go" {
+	if relativePath == path.Join("app", "test_helpers.go") {
 		for _, w := range []string{"emptyWasmOptions", "wasmkeeper", "WasmOpts", "wasmOpts"} {
 			fileContent = RemoveGeneralModule(w, string(fileContent))
 		}
 
 	}
 
-	if relativePath == "app/wasm.go" {
+	if relativePath == path.Join("app", "wasm.go") {
 		fileContent = []byte("REMOVE")
 	}
 
-	if relativePath == "cmd/wasmd/commands.go" {
+	if relativePath == path.Join("cmd", "wasmd", "commands.go") {
 		for _, w := range []string{"wasm", "wasmOpts", "wasmcli", "wasmtypes"} {
 			fileContent = RemoveGeneralModule(w, string(fileContent))
 		}
 	}
 
-	if relativePath == "cmd/wasmd/root.go" {
+	if relativePath == path.Join("cmd", "wasmd", "root.go") {
 		for _, w := range []string{"wasmtypes", "wasmkeeper"} {
 			fileContent = RemoveGeneralModule(w, string(fileContent))
 		}

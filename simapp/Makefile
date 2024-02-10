@@ -225,4 +225,15 @@ endif
 ###                                    testnet                              ###
 ###############################################################################
 
-testnet: install local-image
+setup-testnet: install local-image
+# import keys from testnet.json into test keyring
+	-`echo "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry" | wasmd keys add acc0 --recover`
+	-`echo "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise" | wasmd keys add acc1 --recover`
+
+testnet: setup-testnet
+	spawn local-ic start testnet
+
+testnet-ibc: setup-testnet
+	spawn local-ic start ibc-testnet
+
+.PHONY: testnet testnet-ibc

@@ -2,6 +2,7 @@
     "chains": [
         {
             "name": "appName",
+            "ibc_paths": ["ibc-connection-1"],
             "chain_id": "chainid-1",
             "denom": "mydenom",
             "binary": "wasmd",
@@ -73,6 +74,21 @@
                 ],
                 "startup_commands": []
             }
+        },
+        {
+            "name": "terra",
+            "chain_id": "localterra-1",
+            "binary": "terrad",
+            "bech32_prefix": "terra",
+            "denom": "uluna",
+            "docker_image": {
+                "version": "v2.3.4"
+            },
+            "block_time": "6s",
+            "encoding-options": ["wasm"],
+            "gas_prices": "0uluna",
+            "gas_adjustment": 2.0,
+            "ibc_paths": ["ibc-connection-1"]
         }
     ]
 }
