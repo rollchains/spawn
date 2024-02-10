@@ -1,4 +1,5 @@
-local-ic
+/local-ic
+/bin/local-ic
 heighliner/
 interchaintest/
 dist/
