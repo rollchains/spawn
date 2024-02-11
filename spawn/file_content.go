@@ -41,6 +41,10 @@ func (fc *FileContent) IsPath(relPath string) bool {
 	return strings.HasSuffix(fc.RelativePath, relPath)
 }
 
+func (fc *FileContent) ContainsPath(relPath string) bool {
+	return strings.Contains(fc.RelativePath, relPath)
+}
+
 func (fc *FileContent) InPaths(relPaths []string) bool {
 	for _, relPath := range relPaths {
 		if fc.IsPath(relPath) {
@@ -72,8 +76,8 @@ func (fc *FileContent) DeleteContents(path string) {
 
 func (fc *FileContent) ReplaceTestNodeScript(cfg *NewChainConfig) {
 	if fc.IsPath(path.Join("scripts", "test_node.sh")) {
-		fc.ReplaceAll("export BINARY=${BINARY:-wasmd}", fmt.Sprintf("export BINARY=${BINARY:-%s}", cfg.BinaryName))
-		fc.ReplaceAll("export DENOM=${DENOM:-token}", fmt.Sprintf("export DENOM=${DENOM:-%s}", cfg.TokenDenom))
+		fc.ReplaceAll("export BINARY=${BINARY:-wasmd}", fmt.Sprintf("export BINARY=${BINARY:-%s}", cfg.BinDaemon))
+		fc.ReplaceAll("export DENOM=${DENOM:-token}", fmt.Sprintf("export DENOM=${DENOM:-%s}", cfg.Denom))
 	}
 }
 
@@ -85,14 +89,14 @@ func (fc *FileContent) ReplaceGithubActionWorkflows(cfg *NewChainConfig) {
 
 func (fc *FileContent) ReplaceDockerFile(cfg *NewChainConfig) {
 	if fc.IsPath("Dockerfile") {
-		fc.ReplaceAll("wasmd", cfg.BinaryName)
+		fc.ReplaceAll("wasmd", cfg.BinDaemon)
 	}
 }
 
 func (fc *FileContent) ReplaceApp(cfg *NewChainConfig) {
 	if fc.IsPath(path.Join("app", "app.go")) {
-		fc.ReplaceAll(".wasmd", cfg.AppDirName)
-		fc.ReplaceAll(`const appName = "WasmApp"`, fmt.Sprintf(`const appName = "%s"`, cfg.AppName))
+		fc.ReplaceAll(".wasmd", cfg.HomeDir)
+		fc.ReplaceAll(`const appName = "WasmApp"`, fmt.Sprintf(`const appName = "%s"`, cfg.ProjectName))
 		fc.ReplaceAll(`Bech32Prefix = "wasm"`, fmt.Sprintf(`Bech32Prefix = "%s"`, cfg.Bech32Prefix))
 	}
 }
@@ -102,18 +106,18 @@ func (fc *FileContent) ReplaceEverywhere(cfg *NewChainConfig) {
 	fc.ReplaceAll("github.com/strangelove-ventures/simapp", cfg.GithubPath())
 
 	wasmBin := path.Join("cmd", "wasmd")
-	if fc.IsPath(wasmBin) {
-		newBinPath := path.Join("cmd", cfg.BinaryName)
+	if fc.ContainsPath(wasmBin) {
+		newBinPath := path.Join("cmd", cfg.BinDaemon)
 		fc.NewPath = strings.ReplaceAll(fc.NewPath, wasmBin, newBinPath)
 	}
 
 }
 
 func (fc *FileContent) ReplaceMakeFile(cfg *NewChainConfig) {
-	bin := cfg.BinaryName
+	bin := cfg.BinDaemon
 
 	fc.ReplaceAll("https://github.com/CosmWasm/wasmd.git", fmt.Sprintf("https://%s.git", cfg.GithubPath()))
-	fc.ReplaceAll("version.Name=wasm", fmt.Sprintf("version.Name=%s", cfg.AppName)) // ldflags
+	fc.ReplaceAll("version.Name=wasm", fmt.Sprintf("version.Name=%s", cfg.ProjectName)) // ldflags
 	fc.ReplaceAll("version.AppName=wasmd", fmt.Sprintf("version.AppName=%s", bin))
 	fc.ReplaceAll("cmd/wasmd", fmt.Sprintf("cmd/%s", bin))
 	fc.ReplaceAll("build/wasmd", fmt.Sprintf("build/%s", bin))
@@ -134,10 +138,10 @@ func (fc *FileContent) ReplaceLocalInterchainJSON(cfg *NewChainConfig) {
 		fc.ReplaceAll(`"repository": "wasmd"`, fmt.Sprintf(`"repository": "%s"`, strings.ToLower(cfg.ProjectName)))
 		fc.ReplaceAll(`"bech32_prefix": "wasm"`, fmt.Sprintf(`"bech32_prefix": "%s"`, cfg.Bech32Prefix))
 		fc.ReplaceAll("appName", cfg.ProjectName)
-		fc.ReplaceAll("mydenom", cfg.TokenDenom)
-		fc.ReplaceAll("wasmd", cfg.BinaryName)
+		fc.ReplaceAll("mydenom", cfg.Denom)
+		fc.ReplaceAll("wasmd", cfg.BinDaemon)
 
-		fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix, cfg.Debugging)
+		fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix, cfg.Debug)
 	}
 
 }

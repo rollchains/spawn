@@ -1,6 +1,7 @@
 package spawn
 
 import (
+	"embed"
 	"fmt"
 	"io/fs"
 	"os"
@@ -15,17 +16,25 @@ var (
 )
 
 type NewChainConfig struct {
-	ProjectName     string // What is the diff between ProjectName and AppName? Can I merge these together?
-	Bech32Prefix    string
-	AppName         string
-	AppDirName      string
-	BinaryName      string
-	TokenDenom      string
-	GithubOrg       string
-	GitInitOnCreate bool
+	// ProjectName is the name of the new chain
+	ProjectName string
+	// Bech32Prefix is the new wallet prefix
+	Bech32Prefix string
+	// The home directory of the new chain (e.g. .simapp/)
+	HomeDir string
+	// BinDaemon is the name of the binary. (e.g. appd)
+	BinDaemon string
+	// Denom is the token denomination (e.g. stake, uatom, etc.)
+	Denom string
+	// GithubOrg is the github organization name to use for the module
+	GithubOrg string
+	// IgnoreGitInit is a flag to ignore git init
+	IgnoreGitInit bool
+	// Debug is a flag to enable debug logging
+	Debug bool
 
-	Debugging bool
-
+	// // FeatureModules is a list
+	// FeatureModules []Module
 	DisabledFeatures []string
 }
 
@@ -39,7 +48,7 @@ func (cfg *NewChainConfig) Validate() error {
 
 func (cfg *NewChainConfig) AnnounceSuccessfulBuild() {
 	projName := cfg.ProjectName
-	bin := cfg.BinaryName
+	bin := cfg.BinDaemon
 
 	fmt.Printf("\n\n🎉 New blockchain '%s' generated!\n", projName)
 	fmt.Println("🏅Getting started:")
@@ -73,43 +82,22 @@ func (cfg *NewChainConfig) NewChain() {
 		fmt.Println(fmt.Errorf("error setting up interchain test: %s", err))
 	}
 
-	if cfg.GitInitOnCreate {
+	if !cfg.IgnoreGitInit {
 		cfg.GitInitNewProjectRepo()
 	}
 }
 
 func (cfg *NewChainConfig) SetupMainChainApp() error {
-	NewDirName := cfg.ProjectName
-	Debugging := cfg.Debugging
+	newDirName := cfg.ProjectName
 
-	return fs.WalkDir(simapp.SimAppFS, ".", func(relPath string, d fs.DirEntry, e error) error {
-		if relPath == "." {
-			return nil
-		}
-
-		if d.IsDir() {
-			return nil
-		}
-
-		fc := NewFileContent(relPath, path.Join(NewDirName, relPath))
-
-		if fc.HasIgnoreFile() {
-			if Debugging {
-				fmt.Println("[!] Ignoring File: ", fc.NewPath)
-			}
-			return nil
-		}
-
-		if cfg.Debugging {
-			fmt.Println(fc)
-		}
-
-		// Read the file contents from the embedded FS
-		if fileContent, err := simapp.SimAppFS.ReadFile(relPath); err != nil {
+	simappFS := simapp.SimAppFS
+	return fs.WalkDir(simappFS, ".", func(relPath string, d fs.DirEntry, e error) error {
+		newPath := path.Join(newDirName, relPath)
+		fc, err := cfg.getFileContent(newPath, simappFS, relPath, d)
+		if err != nil {
 			return err
-		} else {
-			// Save the file's content to the struct
-			fc.Contents = string(fileContent)
+		} else if fc == nil {
+			return nil
 		}
 
 		// Removes any modules we care nothing about
@@ -136,46 +124,25 @@ func (cfg *NewChainConfig) SetupMainChainApp() error {
 }
 
 func (cfg *NewChainConfig) SetupInterchainTest() error {
-	NewDirName := cfg.ProjectName
-	Debugging := cfg.Debugging
+	newDirName := cfg.ProjectName
+	debug := cfg.Debug
 
 	// Interchaintest e2e is a nested submodule. go.mod is renamed to go.mod_ to avoid conflicts
 	// It will be unwound during unpacking to properly nest it.
-	return fs.WalkDir(simapp.ICTestFS, ".", func(relPath string, d fs.DirEntry, e error) error {
-		newPath := path.Join(NewDirName, relPath)
+	ictestFS := simapp.ICTestFS
+	return fs.WalkDir(ictestFS, ".", func(relPath string, d fs.DirEntry, e error) error {
+		newPath := path.Join(newDirName, relPath)
 
 		// work around to make nested embed.FS happy.
 		if strings.HasSuffix(newPath, "go.mod_") {
 			newPath = strings.ReplaceAll(newPath, "go.mod_", "go.mod")
 		}
 
-		if relPath == "." {
-			return nil
-		}
-
-		if d.IsDir() {
-			return nil
-		}
-
-		fc := NewFileContent(relPath, newPath)
-
-		if fc.HasIgnoreFile() {
-			if Debugging {
-				fmt.Println("[!] Ignoring File: ", fc.NewPath)
-			}
-			return nil
-		}
-
-		if cfg.Debugging {
-			fmt.Println(fc)
-		}
-
-		// Read the file contents from the embedded FS
-		if fileContent, err := simapp.ICTestFS.ReadFile(relPath); err != nil {
+		fc, err := cfg.getFileContent(newPath, ictestFS, relPath, d)
+		if err != nil {
 			return err
-		} else {
-			// Save the file's content to the struct
-			fc.Contents = string(fileContent)
+		} else if fc == nil {
+			return nil
 		}
 
 		if fc.IsPath(path.Join("interchaintest", "setup.go")) {
@@ -183,12 +150,12 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 				`ibc.NewDockerImage("wasmd", "local", "1025:1025")`,
 				fmt.Sprintf(`ibc.NewDockerImage("%s", "local", "1025:1025")`, strings.ToLower(cfg.ProjectName)),
 			)
-			fc.ReplaceAll("mydenom", cfg.TokenDenom)
+			fc.ReplaceAll("mydenom", cfg.Denom)
 			fc.ReplaceAll("appName", cfg.ProjectName)
-			fc.ReplaceAll(`Binary  = "wasmd"`, fmt.Sprintf(`Binary  = "%s"`, cfg.BinaryName)) // else it would replace the Cosmwasm/wasmd import path
+			fc.ReplaceAll(`Binary  = "wasmd"`, fmt.Sprintf(`Binary  = "%s"`, cfg.BinDaemon)) // else it would replace the Cosmwasm/wasmd import path
 			fc.ReplaceAll(`Bech32 = "wasm"`, fmt.Sprintf(`Bech32 = "%s"`, cfg.Bech32Prefix))
 
-			fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix, Debugging)
+			fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix, debug)
 
 		}
 
@@ -197,4 +164,36 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 
 		return fc.Save()
 	})
+}
+
+func (cfg *NewChainConfig) getFileContent(newFilePath string, fs embed.FS, relPath string, d fs.DirEntry) (*FileContent, error) {
+	if relPath == "." {
+		return nil, nil
+	}
+
+	if d.IsDir() {
+		return nil, nil
+	}
+
+	fc := NewFileContent(relPath, newFilePath)
+
+	if fc.HasIgnoreFile() {
+		if cfg.Debug {
+			fmt.Println("[!] Ignoring File: ", fc.NewPath)
+		}
+		return nil, nil
+	}
+
+	if cfg.Debug {
+		fmt.Println(fc)
+	}
+
+	// Read the file contents from the embedded FS
+	if fileContent, err := fs.ReadFile(relPath); err != nil {
+		return nil, err
+	} else {
+		fc.Contents = string(fileContent)
+	}
+
+	return fc, nil
 }

@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
-
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 
 	"gitub.com/strangelove-ventures/spawn/spawn"
 )
@@ -18,7 +16,7 @@ var (
 
 const (
 	FlagWalletPrefix = "bech32"
-	FlagBinaryName   = "bin"
+	FlagBinDaemon    = "bin"
 	FlagDebugging    = "debug"
 	FlagTokenDenom   = "denom"
 	FlagGithubOrg    = "org"
@@ -28,12 +26,14 @@ const (
 
 func init() {
 	newChain.Flags().String(FlagWalletPrefix, "cosmos", "chain wallet bech32 prefix")
-	newChain.Flags().String(FlagBinaryName, "appd", "binary name")
-	newChain.Flags().Bool(FlagDebugging, false, "enable debugging")
-	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features: "+strings.Join(SupportedFeatures, ", "))
-	newChain.Flags().String(FlagTokenDenom, "stake", "token denom")
-	newChain.Flags().Bool(FlagNoGit, false, "git init base")
+	newChain.Flags().StringP(FlagBinDaemon, "b", "appd", "binary name")
 	newChain.Flags().String(FlagGithubOrg, "rollchains", "github organization")
+	newChain.Flags().String(FlagTokenDenom, "stake", "token denom")
+	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features: "+strings.Join(SupportedFeatures, ", "))
+	newChain.Flags().Bool(FlagDebugging, false, "enable debugging")
+	newChain.Flags().Bool(FlagNoGit, false, "git init base")
+
+	newChain.Flags().SetNormalizeFunc(normalizeWhitelistVarRun)
 }
 
 var newChain = &cobra.Command{
@@ -41,16 +41,16 @@ var newChain = &cobra.Command{
 	Short: "Create a new project",
 	Example: fmt.Sprintf(
 		`spawn new rollchain --%s=cosmos --%s=appd --%s=token --%s=tokenfactory,poa,globalfee`,
-		FlagWalletPrefix, FlagBinaryName, FlagTokenDenom, FlagDisabled,
+		FlagWalletPrefix, FlagBinDaemon, FlagTokenDenom, FlagDisabled,
 	),
 	Args:    cobra.ExactArgs(1),
 	Aliases: []string{"new", "init"},
 	Run: func(cmd *cobra.Command, args []string) {
 		projName := strings.ToLower(args[0])
-		appName := cases.Title(language.AmericanEnglish).String(projName) + "App"
+		homeDir := "." + projName
 
 		walletPrefix, _ := cmd.Flags().GetString(FlagWalletPrefix)
-		binName, _ := cmd.Flags().GetString(FlagBinaryName)
+		binName, _ := cmd.Flags().GetString(FlagBinDaemon)
 		denom, _ := cmd.Flags().GetString(FlagTokenDenom)
 		debug, _ := cmd.Flags().GetBool(FlagDebugging)
 		disabled, _ := cmd.Flags().GetStringSlice(FlagDisabled)
@@ -60,14 +60,13 @@ var newChain = &cobra.Command{
 		cfg := &spawn.NewChainConfig{
 			ProjectName:  projName,
 			Bech32Prefix: walletPrefix,
-			AppName:      appName,
-			AppDirName:   "." + projName,
-			BinaryName:   binName,
-			TokenDenom:   denom,
-			Debugging:    debug,
+			HomeDir:      homeDir,
+			BinDaemon:    binName,
+			Denom:        denom,
+			Debug:        debug,
 			GithubOrg:    githubOrg,
 
-			GitInitOnCreate: !ignoreGitInit,
+			IgnoreGitInit: ignoreGitInit,
 
 			// by default everything is on, then we remove what the user wants to disable
 			DisabledFeatures: disabled,
@@ -80,4 +79,15 @@ var newChain = &cobra.Command{
 		cfg.NewChain()
 		cfg.AnnounceSuccessfulBuild()
 	},
+}
+
+func normalizeWhitelistVarRun(f *pflag.FlagSet, name string) pflag.NormalizedName {
+	switch name {
+	case "binary":
+		name = FlagBinDaemon
+	case "disabled":
+		name = FlagDisabled
+	}
+
+	return pflag.NormalizedName(name)
 }

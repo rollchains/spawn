@@ -66,7 +66,7 @@ template-default: install
 	spawn new myproject --debug --bech32=cosmos --bin=appd --disable=tokenfactory
 
 template-specific: install
-	spawn new myproject --no-git --bin=rolld --bech32=roll --denom=uroll --disable=globalfee,poa
+	spawn new myproject --debug --no-git --bin=rolld --bech32=roll --denom=uroll --disable=globalfee,poa
 
 
 .DEFAULT_GOAL := install
