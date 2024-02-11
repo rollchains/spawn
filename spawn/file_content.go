@@ -119,7 +119,7 @@ func (fc *FileContent) ReplaceLocalInterchainJSON(cfg *NewChainConfig) {
 		fc.ReplaceAll("mydenom", cfg.TokenDenom)
 		fc.ReplaceAll("wasmd", cfg.BinaryName)
 
-		fc.FindAndReplaceStandardWalletsBech32("wasm", cfg.Bech32Prefix, cfg.Debugging)
+		fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix, cfg.Debugging)
 	}
 
 }

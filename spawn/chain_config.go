@@ -180,7 +180,7 @@ func (cfg *NewChainConfig) NewChain() {
 			myFileContent.ReplaceAll(`Binary  = "wasmd"`, fmt.Sprintf(`Binary  = "%s"`, cfg.BinaryName)) // else it would replace the Cosmwasm/wasmd import path
 			myFileContent.ReplaceAll(`Bech32 = "wasm"`, fmt.Sprintf(`Bech32 = "%s"`, cfg.Bech32Prefix))
 
-			myFileContent.FindAndReplaceStandardWalletsBech32("wasm", cfg.Bech32Prefix, Debugging)
+			myFileContent.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix, Debugging)
 
 		}
 
@@ -198,10 +198,15 @@ func (cfg *NewChainConfig) NewChain() {
 	}
 }
 
-func (fc *FileContent) FindAndReplaceStandardWalletsBech32(oldPrefix, newPrefix string, isDebugging bool) {
-	// StdAcc: wasm1[0-9a-z]{38}
-	// Contract: wasm1[0-9a-z]{59} not yet supported
-	r := regexp.MustCompile(oldPrefix + `[0-9a-z]{39}`) // e.g. wasm10d07y265gmmuvt4z0w9aw880jnsr700js7zslc
+// FindAndReplaceStandardWalletsBech32 finds a prefix1... address and replaces it with a new prefix1... address
+// This works for both standard wallets (38 length after prefix1) and also smart contracts (58)
+func (fc *FileContent) FindAndReplaceAddressBech32(oldPrefix, newPrefix string, isDebugging bool) {
+	oldPrefix = strings.TrimSuffix(oldPrefix, "1")
+	newPrefix = strings.TrimSuffix(newPrefix, "1")
+
+	// 58 must be first to match smart contracts fully else it would only match the first 38
+	// e.g. wasm10d07y265gmmuvt4z0w9aw880jnsr700js7zslc & wasm1qsrercqegvs4ye0yqg93knv73ye5dc3prqwd6jcdcuj8ggp6w0usrfxlpt
+	r := regexp.MustCompile(oldPrefix + `1([0-9a-z]{58}|[0-9a-z]{38})`)
 
 	foundAddrs := r.FindAllString(fc.Contents, -1)
 	if isDebugging {
@@ -211,12 +216,12 @@ func (fc *FileContent) FindAndReplaceStandardWalletsBech32(oldPrefix, newPrefix 
 	for _, addr := range foundAddrs {
 		_, bz, err := bech32.Decode(addr, 100)
 		if err != nil {
-			panic(err)
+			panic(fmt.Sprintf("error decoding bech32 address: %s. err: %s", addr, err.Error()))
 		}
 
 		newAddr, err := bech32.Encode(newPrefix, bz)
 		if err != nil {
-			panic(err)
+			panic(fmt.Sprintf("error encoding bech32 address: %s. err: %s", addr, err.Error()))
 		}
 
 		fc.ReplaceAll(addr, newAddr)
