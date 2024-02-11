@@ -77,6 +77,12 @@ func (fc *FileContent) ReplaceTestNodeScript(cfg *NewChainConfig) {
 	}
 }
 
+func (fc *FileContent) ReplaceGithubActionWorkflows(cfg *NewChainConfig) {
+	if fc.IsPath(path.Join(".github", "workflows", "interchaintest-e2e.yml")) {
+		fc.ReplaceAll("wasmd:local", fmt.Sprintf("%s:local", strings.ToLower(cfg.ProjectName)))
+	}
+}
+
 func (fc *FileContent) ReplaceDockerFile(cfg *NewChainConfig) {
 	if fc.IsPath("Dockerfile") {
 		fc.ReplaceAll("wasmd", cfg.BinaryName)

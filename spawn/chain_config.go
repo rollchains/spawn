@@ -55,21 +55,34 @@ func (cfg *NewChainConfig) GithubPath() string {
 }
 
 func (cfg *NewChainConfig) NewChain() {
-	var err error
-
 	NewDirName := cfg.ProjectName
-	Debugging := cfg.Debugging
 	disabled := cfg.DisabledFeatures
 
 	fmt.Println("Spawning new app:", NewDirName)
 	fmt.Println("Disabled features:", disabled)
 
-	// Create the new project directory
 	if err := os.MkdirAll(NewDirName, 0755); err != nil {
 		panic(err)
 	}
 
-	err = fs.WalkDir(simapp.SimAppFS, ".", func(relPath string, d fs.DirEntry, e error) error {
+	if err := cfg.SetupMainChainApp(); err != nil {
+		fmt.Println(fmt.Errorf("error setting up main chain app: %s", err))
+	}
+
+	if err := cfg.SetupInterchainTest(); err != nil {
+		fmt.Println(fmt.Errorf("error setting up interchain test: %s", err))
+	}
+
+	if cfg.GitInitOnCreate {
+		cfg.GitInitNewProjectRepo()
+	}
+}
+
+func (cfg *NewChainConfig) SetupMainChainApp() error {
+	NewDirName := cfg.ProjectName
+	Debugging := cfg.Debugging
+
+	return fs.WalkDir(simapp.SimAppFS, ".", func(relPath string, d fs.DirEntry, e error) error {
 		if relPath == "." {
 			return nil
 		}
@@ -78,17 +91,17 @@ func (cfg *NewChainConfig) NewChain() {
 			return nil
 		}
 
-		myFileContent := NewFileContent(relPath, path.Join(NewDirName, relPath))
+		fc := NewFileContent(relPath, path.Join(NewDirName, relPath))
 
-		if myFileContent.HasIgnoreFile() {
+		if fc.HasIgnoreFile() {
 			if Debugging {
-				fmt.Println("[!] Ignoring File: ", myFileContent.NewPath)
+				fmt.Println("[!] Ignoring File: ", fc.NewPath)
 			}
 			return nil
 		}
 
 		if cfg.Debugging {
-			fmt.Println(myFileContent)
+			fmt.Println(fc)
 		}
 
 		// Read the file contents from the embedded FS
@@ -96,35 +109,39 @@ func (cfg *NewChainConfig) NewChain() {
 			return err
 		} else {
 			// Save the file's content to the struct
-			myFileContent.Contents = string(fileContent)
+			fc.Contents = string(fileContent)
 		}
 
 		// Removes any modules we care nothing about
-		myFileContent.RemoveDisabledFeatures(cfg)
+		fc.RemoveDisabledFeatures(cfg)
 
 		// scripts/test_node.sh
-		myFileContent.ReplaceTestNodeScript(cfg)
+		fc.ReplaceTestNodeScript(cfg)
+		// .github/workflows/interchaintest-e2e.yml
+		fc.ReplaceGithubActionWorkflows(cfg)
 		// Dockerfile
-		myFileContent.ReplaceDockerFile(cfg)
+		fc.ReplaceDockerFile(cfg)
 		// app/app.go
-		myFileContent.ReplaceApp(cfg)
+		fc.ReplaceApp(cfg)
 		// Makefile
-		myFileContent.ReplaceMakeFile(cfg)
+		fc.ReplaceMakeFile(cfg)
 		// *testnet.json (chains/ directory)
-		myFileContent.ReplaceLocalInterchainJSON(cfg)
+		fc.ReplaceLocalInterchainJSON(cfg)
 
 		// *All Files
-		myFileContent.ReplaceEverywhere(cfg)
+		fc.ReplaceEverywhere(cfg)
 
-		return myFileContent.Save()
+		return fc.Save()
 	})
-	if err != nil {
-		fmt.Println(err)
-	}
+}
+
+func (cfg *NewChainConfig) SetupInterchainTest() error {
+	NewDirName := cfg.ProjectName
+	Debugging := cfg.Debugging
 
 	// Interchaintest e2e is a nested submodule. go.mod is renamed to go.mod_ to avoid conflicts
 	// It will be unwound during unpacking to properly nest it.
-	err = fs.WalkDir(simapp.ICTestFS, ".", func(relPath string, d fs.DirEntry, e error) error {
+	return fs.WalkDir(simapp.ICTestFS, ".", func(relPath string, d fs.DirEntry, e error) error {
 		newPath := path.Join(NewDirName, relPath)
 
 		// work around to make nested embed.FS happy.
@@ -140,17 +157,17 @@ func (cfg *NewChainConfig) NewChain() {
 			return nil
 		}
 
-		myFileContent := NewFileContent(relPath, newPath)
+		fc := NewFileContent(relPath, newPath)
 
-		if myFileContent.HasIgnoreFile() {
+		if fc.HasIgnoreFile() {
 			if Debugging {
-				fmt.Println("[!] Ignoring File: ", myFileContent.NewPath)
+				fmt.Println("[!] Ignoring File: ", fc.NewPath)
 			}
 			return nil
 		}
 
 		if cfg.Debugging {
-			fmt.Println(myFileContent)
+			fmt.Println(fc)
 		}
 
 		// Read the file contents from the embedded FS
@@ -158,33 +175,26 @@ func (cfg *NewChainConfig) NewChain() {
 			return err
 		} else {
 			// Save the file's content to the struct
-			myFileContent.Contents = string(fileContent)
+			fc.Contents = string(fileContent)
 		}
 
-		if myFileContent.IsPath(path.Join("interchaintest", "setup.go")) {
-			myFileContent.ReplaceAll( // must be first
+		if fc.IsPath(path.Join("interchaintest", "setup.go")) {
+			fc.ReplaceAll( // must be first
 				`ibc.NewDockerImage("wasmd", "local", "1025:1025")`,
 				fmt.Sprintf(`ibc.NewDockerImage("%s", "local", "1025:1025")`, strings.ToLower(cfg.ProjectName)),
 			)
-			myFileContent.ReplaceAll("mydenom", cfg.TokenDenom)
-			myFileContent.ReplaceAll("appName", cfg.ProjectName)
-			myFileContent.ReplaceAll(`Binary  = "wasmd"`, fmt.Sprintf(`Binary  = "%s"`, cfg.BinaryName)) // else it would replace the Cosmwasm/wasmd import path
-			myFileContent.ReplaceAll(`Bech32 = "wasm"`, fmt.Sprintf(`Bech32 = "%s"`, cfg.Bech32Prefix))
+			fc.ReplaceAll("mydenom", cfg.TokenDenom)
+			fc.ReplaceAll("appName", cfg.ProjectName)
+			fc.ReplaceAll(`Binary  = "wasmd"`, fmt.Sprintf(`Binary  = "%s"`, cfg.BinaryName)) // else it would replace the Cosmwasm/wasmd import path
+			fc.ReplaceAll(`Bech32 = "wasm"`, fmt.Sprintf(`Bech32 = "%s"`, cfg.Bech32Prefix))
 
-			myFileContent.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix, Debugging)
+			fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix, Debugging)
 
 		}
 
 		// Removes any modules references after we modify interchaintest values
-		myFileContent.RemoveDisabledFeatures(cfg)
+		fc.RemoveDisabledFeatures(cfg)
 
-		return myFileContent.Save()
+		return fc.Save()
 	})
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	if cfg.GitInitOnCreate {
-		cfg.GitInitNewProjectRepo()
-	}
 }
