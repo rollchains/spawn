@@ -15,7 +15,6 @@ const (
 func main() {
 	rootCmd.AddCommand(newChain)
 	rootCmd.AddCommand(LocalICCmd)
-	rootCmd.AddCommand(BuildAppImage)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "error while executing your CLI. Err: %v\n", err)
@@ -27,7 +26,7 @@ var rootCmd = &cobra.Command{
 	Use:   "spawn",
 	Short: "Entry into the Interchain",
 	CompletionOptions: cobra.CompletionOptions{
-		HiddenDefaultCmd: true,
+		HiddenDefaultCmd: false,
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := cmd.Help(); err != nil {

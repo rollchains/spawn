@@ -14,9 +14,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const DefaultVersion = "v8.1.0"
-
-var LocalICURL = "https://github.com/strangelove-ventures/interchaintest/releases/download/" + DefaultVersion + "/local-ic"
+var (
+	LocalICDefaultVersion = "v8.1.0"
+	LocalICURL            = "https://github.com/strangelove-ventures/interchaintest/releases/download/" + LocalICDefaultVersion + "/local-ic"
+)
 
 const (
 	FlagVersionOverride = "version"
@@ -25,7 +26,7 @@ const (
 )
 
 func init() {
-	LocalICCmd.Flags().String(FlagVersionOverride, DefaultVersion, "change the local-ic version to use")
+	LocalICCmd.Flags().String(FlagVersionOverride, LocalICDefaultVersion, "change the local-ic version to use")
 	LocalICCmd.Flags().Bool(FlagForceDownload, false, "force download of local-ic")
 	LocalICCmd.Flags().Bool(FlagLocationPath, false, "print the location of local-ic binary")
 }
@@ -108,12 +109,12 @@ func downloadBin(version string) error {
 		return err
 	}
 
-	if version != "" && version != DefaultVersion {
+	if version != "" && version != LocalICDefaultVersion {
 		if version[0] != 'v' {
 			version = "v" + version
 		}
 
-		LocalICURL = strings.ReplaceAll(LocalICURL, DefaultVersion, version)
+		LocalICURL = strings.ReplaceAll(LocalICURL, LocalICDefaultVersion, version)
 	}
 
 	dir := path.Join(currentDir, "bin")

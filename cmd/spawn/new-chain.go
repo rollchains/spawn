@@ -13,44 +13,23 @@ import (
 	"github.com/cosmos/btcutil/bech32"
 	"github.com/spf13/cobra"
 	"github.com/strangelove-ventures/simapp"
+
+	spawntypes "gitub.com/strangelove-ventures/spawn/types"
 )
 
-type SpawnNewConfig struct {
-	ProjectName  string
-	Bech32Prefix string
-	AppName      string
-	AppDirName   string
-	BinaryName   string
-	TokenDenom   string
-
-	IgnoreFiles []string
-
-	Debugging bool
-
-	DisabledFeatures []string
-}
-
-func (cfg *SpawnNewConfig) Validate() error {
-	if strings.ContainsAny(cfg.ProjectName, `~!@#$%^&*()_+{}|:"<>?/.,;'[]\=-`) {
-		return fmt.Errorf("project name cannot contain special characters %s", cfg.ProjectName)
-	}
-
-	return nil
-}
+var (
+	IgnoredFiles      = []string{"embed.go", "heighliner/"}
+	SupportedFeatures = []string{"tokenfactory", "poa", "globalfee", "wasm", "icahost", "icacontroller"}
+)
 
 const (
 	FlagWalletPrefix = "bech32"
 	FlagBinaryName   = "bin"
 	FlagDebugging    = "debug"
 	FlagTokenDenom   = "denom"
-
-	FlagDisabled = "disable"
-	FlagNoGit    = "no-git"
-)
-
-var (
-	IgnoredFiles      = []string{"embed.go", "heighliner/"}
-	SupportedFeatures = []string{"tokenfactory", "poa", "globalfee", "wasm", "icahost", "icacontroller"}
+	FlagGithubOrg    = "org"
+	FlagDisabled     = "disable"
+	FlagNoGit        = "no-git"
 )
 
 func init() {
@@ -60,6 +39,7 @@ func init() {
 	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features: "+strings.Join(SupportedFeatures, ", "))
 	newChain.Flags().String(FlagTokenDenom, "stake", "token denom")
 	newChain.Flags().Bool(FlagNoGit, false, "git init base")
+	newChain.Flags().String(FlagGithubOrg, "rollchains", "github organization")
 }
 
 var newChain = &cobra.Command{
@@ -78,14 +58,12 @@ var newChain = &cobra.Command{
 		walletPrefix, _ := cmd.Flags().GetString(FlagWalletPrefix)
 		binName, _ := cmd.Flags().GetString(FlagBinaryName)
 		denom, _ := cmd.Flags().GetString(FlagTokenDenom)
-
 		debug, _ := cmd.Flags().GetBool(FlagDebugging)
-
 		disabled, _ := cmd.Flags().GetStringSlice(FlagDisabled)
-
 		ignoreGitInit, _ := cmd.Flags().GetBool(FlagNoGit)
+		githubOrg, _ := cmd.Flags().GetString(FlagGithubOrg)
 
-		cfg := &SpawnNewConfig{
+		cfg := &spawntypes.NewChainConfig{
 			ProjectName:  projName,
 			Bech32Prefix: walletPrefix,
 			AppName:      appName,
@@ -93,6 +71,9 @@ var newChain = &cobra.Command{
 			BinaryName:   binName,
 			TokenDenom:   denom,
 			Debugging:    debug,
+			GithubOrg:    githubOrg,
+
+			GitInitOnCreate: !ignoreGitInit,
 
 			// by default everything is on, then we remove what the user wants to disable
 			DisabledFeatures: disabled,
@@ -102,37 +83,14 @@ var newChain = &cobra.Command{
 			return
 		}
 
+		// TODO: Error?
 		NewChain(cfg)
 
-		// Create the base git repo
-		if !ignoreGitInit {
-			// if git already exists, don't init
-			if err := execCommand("git", "init", projName, "--quiet"); err != nil {
-				fmt.Println("Error initializing git:", err)
-			}
-			if err := os.Chdir(projName); err != nil {
-				fmt.Println("Error changing to project directory:", err)
-			}
-			if err := execCommand("git", "add", "."); err != nil {
-				fmt.Println("Error adding files to git:", err)
-			}
-			if err := execCommand("git", "commit", "-m", "initial commit", "--quiet"); err != nil {
-				fmt.Println("Error committing initial files:", err)
-			}
-		}
-
-		// Announce how to use it
-		fmt.Printf("\n\n🎉 New blockchain '%s' generated!\n", projName)
-		fmt.Println("🏅Getting started:")
-		fmt.Println("  - $ cd " + projName)
-		fmt.Println("  - $ make testnet      # build & start a testnet")
-		fmt.Println("  - $ make testnet-ibc  # build & start an ibc testnet")
-		fmt.Printf("  - $ make install      # build the %s binary\n", binName)
-		fmt.Println("  - $ make local-image  # build docker image")
+		cfg.AnnounceSuccessfulBuild()
 	},
 }
 
-func NewChain(cfg *SpawnNewConfig) {
+func NewChain(cfg *spawntypes.NewChainConfig) {
 	var err error
 
 	NewDirName := cfg.ProjectName
@@ -351,6 +309,23 @@ func NewChain(cfg *SpawnNewConfig) {
 	})
 	if err != nil {
 		fmt.Println(err)
+	}
+
+	// Create the base git repo
+	if cfg.GitInitOnCreate {
+		// if git already exists, don't init
+		if err := execCommand("git", "init", projName, "--quiet"); err != nil {
+			fmt.Println("Error initializing git:", err)
+		}
+		if err := os.Chdir(projName); err != nil {
+			fmt.Println("Error changing to project directory:", err)
+		}
+		if err := execCommand("git", "add", "."); err != nil {
+			fmt.Println("Error adding files to git:", err)
+		}
+		if err := execCommand("git", "commit", "-m", "initial commit", "--quiet"); err != nil {
+			fmt.Println("Error committing initial files:", err)
+		}
 	}
 
 }
