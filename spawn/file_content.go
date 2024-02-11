@@ -5,8 +5,6 @@ import (
 	"os"
 	"path"
 	"strings"
-
-	"github.com/cosmos/btcutil/bech32"
 )
 
 type FileContent struct {
@@ -121,21 +119,7 @@ func (fc *FileContent) ReplaceLocalInterchainJSON(cfg *NewChainConfig) {
 		fc.ReplaceAll("mydenom", cfg.TokenDenom)
 		fc.ReplaceAll("wasmd", cfg.BinaryName)
 
-		// TODO: make dynamic so we can perform on any file.
-		// if \"(wasm1...)", grab value in group & bech32 replace
-		for _, addr := range []string{"wasm1hj5fveer5cjtn4wd6wstzugjfdxzl0xpvsr89g", "wasm1efd63aw40lxf3n4mhf7dzhjkr453axursysrvp"} {
-			_, bz, err := bech32.Decode(addr, 100)
-			if err != nil {
-				panic(err)
-			}
-
-			newAddr, err := bech32.Encode(cfg.Bech32Prefix, bz)
-			if err != nil {
-				panic(err)
-			}
-
-			fc.ReplaceAll(addr, newAddr)
-		}
+		fc.FindAndReplaceStandardWalletsBech32("wasm", cfg.Bech32Prefix, cfg.Debugging)
 	}
 
 }

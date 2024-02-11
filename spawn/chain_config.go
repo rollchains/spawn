@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 
 	"github.com/cosmos/btcutil/bech32"
@@ -16,7 +17,7 @@ var (
 )
 
 type NewChainConfig struct {
-	ProjectName     string
+	ProjectName     string // What is the diff between ProjectName and AppName? Can I merge these together?
 	Bech32Prefix    string
 	AppName         string
 	AppDirName      string
@@ -130,7 +131,6 @@ func (cfg *NewChainConfig) NewChain() {
 		fmt.Println(err)
 	}
 
-	// TODO: - fc.IsPath
 	// Interchaintest e2e is a nested submodule. go.mod is renamed to go.mod_ to avoid conflicts
 	// It will be unwound during unpacking to properly nest it.
 	err = fs.WalkDir(simapp.ICTestFS, ".", func(relPath string, d fs.DirEntry, e error) error {
@@ -170,9 +170,6 @@ func (cfg *NewChainConfig) NewChain() {
 			myFileContent.Contents = string(fileContent)
 		}
 
-		// Removes any modules references within interchaintest that we do not care about
-		myFileContent.RemoveDisabledFeatures(cfg)
-
 		if myFileContent.IsPath(path.Join("interchaintest", "setup.go")) {
 			myFileContent.ReplaceAll( // must be first
 				`ibc.NewDockerImage("wasmd", "local", "1025:1025")`,
@@ -183,23 +180,12 @@ func (cfg *NewChainConfig) NewChain() {
 			myFileContent.ReplaceAll(`Binary  = "wasmd"`, fmt.Sprintf(`Binary  = "%s"`, cfg.BinaryName)) // else it would replace the Cosmwasm/wasmd import path
 			myFileContent.ReplaceAll(`Bech32 = "wasm"`, fmt.Sprintf(`Bech32 = "%s"`, cfg.Bech32Prefix))
 
-			// making dynamic would be nice (req: regex. Would always be \"wasm1.*\" or something like that)
-			// gov, acc0, acc1
-			for _, addr := range []string{"wasm10d07y265gmmuvt4z0w9aw880jnsr700js7zslc", "wasm1hj5fveer5cjtn4wd6wstzugjfdxzl0xpvsr89g", "wasm1efd63aw40lxf3n4mhf7dzhjkr453axursysrvp"} {
-				_, bz, err := bech32.Decode(addr, 100)
-				if err != nil {
-					panic(err)
-				}
-
-				newAddr, err := bech32.Encode(cfg.Bech32Prefix, bz)
-				if err != nil {
-					panic(err)
-				}
-
-				myFileContent.ReplaceAll(addr, newAddr)
-			}
+			myFileContent.FindAndReplaceStandardWalletsBech32("wasm", cfg.Bech32Prefix, Debugging)
 
 		}
+
+		// Removes any modules references after we modify interchaintest values
+		myFileContent.RemoveDisabledFeatures(cfg)
 
 		return myFileContent.Save()
 	})
@@ -209,6 +195,31 @@ func (cfg *NewChainConfig) NewChain() {
 
 	if cfg.GitInitOnCreate {
 		cfg.GitInitNewProjectRepo()
+	}
+}
+
+func (fc *FileContent) FindAndReplaceStandardWalletsBech32(oldPrefix, newPrefix string, isDebugging bool) {
+	// StdAcc: wasm1[0-9a-z]{38}
+	// Contract: wasm1[0-9a-z]{59} not yet supported
+	r := regexp.MustCompile(oldPrefix + `[0-9a-z]{39}`) // e.g. wasm10d07y265gmmuvt4z0w9aw880jnsr700js7zslc
+
+	foundAddrs := r.FindAllString(fc.Contents, -1)
+	if isDebugging {
+		fmt.Println("Regex: Found Addresses:", foundAddrs, fc.NewPath)
+	}
+
+	for _, addr := range foundAddrs {
+		_, bz, err := bech32.Decode(addr, 100)
+		if err != nil {
+			panic(err)
+		}
+
+		newAddr, err := bech32.Encode(newPrefix, bz)
+		if err != nil {
+			panic(err)
+		}
+
+		fc.ReplaceAll(addr, newAddr)
 	}
 }
 
