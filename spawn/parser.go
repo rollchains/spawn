@@ -10,7 +10,7 @@ const (
 	commentFormat  = "?spawntag:"
 )
 
-// Sometimes if we remove a module, we want to delete one line and use another.
+// Sometimes we remove a module line and would like to swap it for another.
 func (fc *FileContent) HandleCommentSwaps(name string) {
 	newContent := make([]string, 0, len(strings.Split(fc.Contents, "\n")))
 

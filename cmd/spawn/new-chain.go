@@ -32,9 +32,9 @@ const (
 
 func init() {
 	newChain.Flags().String(FlagWalletPrefix, "cosmos", "chain wallet bech32 prefix")
-	newChain.Flags().StringP(FlagBinDaemon, "b", "appd", "binary name")
+	newChain.Flags().StringP(FlagBinDaemon, "b", "simd", "binary name")
 	newChain.Flags().String(FlagGithubOrg, "rollchains", "github organization")
-	newChain.Flags().String(FlagTokenDenom, "stake", "token denom")
+	newChain.Flags().String(FlagTokenDenom, "token", "bank token denomination")
 	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features: "+SupportedModules.String())
 	newChain.Flags().Bool(FlagDebugging, false, "enable debugging")
 	newChain.Flags().Bool(FlagNoGit, false, "git init base")
@@ -47,11 +47,11 @@ var newChain = &cobra.Command{
 	Use:   "new-chain [project-name]",
 	Short: "Create a new project",
 	Example: fmt.Sprintf(
-		`spawn new rollchain --%s=cosmos --%s=appd --%s=token --%s=tokenfactory,poa,globalfee`,
+		`spawn new rollchain --%s=cosmos --%s=simd --%s=token --%s=tokenfactory,poa,globalfee`,
 		FlagWalletPrefix, FlagBinDaemon, FlagTokenDenom, FlagDisabled,
 	),
 	Args:    cobra.ExactArgs(1),
-	Aliases: []string{"new", "init"},
+	Aliases: []string{"new", "init", "create"},
 	Run: func(cmd *cobra.Command, args []string) {
 		projName := strings.ToLower(args[0])
 		homeDir := "." + projName

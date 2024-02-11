@@ -63,10 +63,10 @@ help: Makefile
 
 # ---- Developer Templates ----
 template-default: install
-	spawn new myproject --debug --bech32=cosmos --bin=appd --disable=tokenfactory
+	spawn new myproject --debug --bech32=cosmos --bin=appd --disable=poa
 
-template-specific: install
-	spawn new myproject --debug --no-git --bin=rolld --bech32=roll --denom=uroll --disable=globalfee,poa
+template-poa: install
+	spawn new myproject --debug --no-git --bin=rolld --bech32=roll --denom=uroll --disable=globalfee
 
 
 .DEFAULT_GOAL := install

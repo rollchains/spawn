@@ -117,7 +117,7 @@ func (cfg *NewChainConfig) SetupMainChainApp() error {
 		// *All Files
 		fc.ReplaceEverywhere(cfg)
 
-		return fc.Save()
+		return fc.Save(cfg.Debug)
 	})
 }
 
@@ -160,7 +160,7 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 		// Removes any modules references after we modify interchaintest values
 		fc.RemoveDisabledFeatures(cfg)
 
-		return fc.Save()
+		return fc.Save(cfg.Debug)
 	})
 }
 

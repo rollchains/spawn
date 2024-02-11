@@ -35,19 +35,9 @@ func (i *items) NOTSlice() []string {
 	return s
 }
 
-// return a slice of strings from the items
-func (i items) Slice() []string {
-	var s []string
-	for _, item := range i {
-		s = append(s, item.ID)
-	}
-	return s
-}
-
 // selectItems() prompts user to select one or more items in the given slice
 func selectItems(selectedPos int, allItems items, returnOpposite bool) (items, error) {
-	// Always prepend a "Done" item to the slice if it doesn't
-	// already exist.
+	// Always prepend a "Done" item to the slice if it doesn't already exist.
 	const doneID = "Done"
 	if len(allItems) > 0 && allItems[0].ID != doneID {
 		var items = []*item{

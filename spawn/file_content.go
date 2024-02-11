@@ -16,9 +16,7 @@ type FileContent struct {
 	// The new location of the file
 	NewPath string
 	// The contents of the file from the embededFileSystem (initially unmodified)
-	// Content []byte // TODO: maybe save as string? Then we convert to bytes when saving?
-
-	Contents string // add a way to iterate over the \n lines?
+	Contents string
 }
 
 func NewFileContent(relativePath, newPath string) *FileContent {
@@ -196,9 +194,11 @@ func (fc *FileContent) RemoveGoModImport(importPath string) {
 	fc.Contents = strings.Join(newLines, "\n")
 }
 
-func (fc *FileContent) Save() error {
+func (fc *FileContent) Save(debug bool) error {
 	if fc.Contents == "" {
-		fmt.Printf("Save() No contents for %s. Not saving\n", fc.NewPath)
+		if debug {
+			fmt.Printf("Save() No contents for %s. Not saving\n", fc.NewPath)
+		}
 		return nil
 	}
 
