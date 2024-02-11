@@ -130,6 +130,11 @@ func (fc *FileContent) ReplaceLocalInterchainJSON(cfg *NewChainConfig) {
 }
 
 func (fc *FileContent) Save() error {
+	if fc.Contents == "" {
+		fmt.Printf("Save() No contents for %s. Not saving\n", fc.NewPath)
+		return nil
+	}
+
 	if err := os.MkdirAll(path.Dir(fc.NewPath), 0755); err != nil {
 		return err
 	}

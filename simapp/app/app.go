@@ -685,9 +685,11 @@ func NewChainApp(
 
 	wasmDir := filepath.Join(homePath, "wasm")
 	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
-	if err != nil { // spawntag:wasm
-		panic(fmt.Sprintf("error while reading wasm config: %s", err)) // spawntag:wasm
-	} // spawntag:wasm
+	// !spawntag:wasm
+	if err != nil {
+		panic(fmt.Sprintf("error while reading wasm config: %s", err))
+	}
+	// !spawntag:wasm
 
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
@@ -1007,9 +1009,9 @@ func NewChainApp(
 		if err := app.LoadLatestVersion(); err != nil { // spawntag:test
 			panic(fmt.Errorf("error loading last version: %w", err))
 		}
-		ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{}) // spawntag:wasm
 
 		// Initialize pinned codes in wasmvm as they are not persisted there
+		ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{}) // spawntag:wasm
 		if err := app.WasmKeeper.InitializePinnedCodes(ctx); err != nil {
 			panic(fmt.Sprintf("failed initialize pinned codes %s", err))
 		}

@@ -5,13 +5,15 @@ import (
 	"strings"
 )
 
+const expectedFormat = "// spawntag:"
+
 // Sometimes if we remove a module, we want to delete one line and use another.
-func HandleCommentSwaps(name string, fileContent string) []byte {
-	newContent := make([]string, 0, len(strings.Split(fileContent, "\n")))
+func (fc *FileContent) HandleCommentSwaps(name string) {
+	newContent := make([]string, 0, len(strings.Split(fc.Contents, "\n")))
 
 	uncomment := fmt.Sprintf("?spawntag:%s", name)
 
-	for idx, line := range strings.Split(fileContent, "\n") {
+	for idx, line := range strings.Split(fc.Contents, "\n") {
 		hasUncommentTag := strings.Contains(line, uncomment)
 		if hasUncommentTag {
 			line = strings.Replace(line, "//", "", 1)
@@ -22,18 +24,17 @@ func HandleCommentSwaps(name string, fileContent string) []byte {
 		newContent = append(newContent, line)
 	}
 
-	return []byte(strings.Join(newContent, "\n"))
+	fc.Contents = strings.Join(newContent, "\n")
 }
 
-const expectedFormat = "// spawntag:"
-
 // RemoveTaggedLines deletes tagged lines or just removes the comment if desired.
-func RemoveTaggedLines(name string, fileContent string, deleteLine bool) []byte {
-	newContent := make([]string, 0, len(strings.Split(fileContent, "\n")))
+func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
+	newContent := make([]string, 0, len(strings.Split(fc.Contents, "\n")))
 
 	startIdx := -1
-	for idx, line := range strings.Split(fileContent, "\n") {
+	for idx, line := range strings.Split(fc.Contents, "\n") {
 		// TODO: regex anything in between // and spawntag such as spaces, symbols, etc?
+		// TODO: Do this for all content on load?
 		line = strings.ReplaceAll(line, "//spawntag:", expectedFormat) // just QOL for us to not tear our hair out
 
 		hasTag := strings.Contains(line, fmt.Sprintf("spawntag:%s", name))
@@ -72,7 +73,15 @@ func RemoveTaggedLines(name string, fileContent string, deleteLine bool) []byte 
 		newContent = append(newContent, line)
 	}
 
-	return []byte(strings.Join(newContent, "\n"))
+	// return []byte(strings.Join(newContent, "\n"))
+	fc.Contents = strings.Join(newContent, "\n")
+}
+
+func (fc *FileContent) DeleteContents(path string) {
+	if strings.HasSuffix(fc.NewPath, path) {
+		fmt.Println("Deleting contents for", path)
+		fc.Contents = ""
+	}
 }
 
 // RemoveGeneralModule removes any matching names from the fileContent.
@@ -80,7 +89,22 @@ func RemoveTaggedLines(name string, fileContent string, deleteLine bool) []byte 
 // including comments.
 // If an import or other line depends on a solo module a user wishes to remove, add a comment to the line
 // such as `// tag:tokenfactory` to also remove other lines within the simapp template
-func (fc *FileContent) RemoveGeneralModule(removeText string) {
+func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...string) {
+	// if !strings.HasSuffix(fc.NewPath, pathSuffix) {
+	// 	return
+	// }
+
+	found := false
+	for _, suffix := range pathSuffix {
+		if strings.HasSuffix(fc.RelativePath, suffix) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return
+	}
+
 	newContent := make([]string, 0, len(strings.Split(fc.Contents, "\n")))
 
 	startIdx := -1

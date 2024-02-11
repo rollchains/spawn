@@ -238,14 +238,13 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 	for _, name := range cfg.DisabledFeatures {
 		switch strings.ToLower(name) {
 		case "tokenfactory", "token-factory", "tf":
-			fc.RemoveTokenFactory(cfg)
-		// case "poa":
-		// fileContent = removePoa(newPath, fileContent)
-		// case "globalfee":
-		// fileContent = removeGlobalFee(newPath, fileContent)
-		// case "wasm", "cosmwasm", "cw":
-		// fileContent = removeWasm(newPath, fileContent)
-		// 	continue
+			fc.RemoveTokenFactory()
+		case "poa":
+			fc.RemovePOA()
+		case "globalfee":
+			fc.RemoveGlobalFee()
+		case "wasm", "cosmwasm", "cw":
+			fc.RemoveCosmWasm()
 		default:
 			// is this acceptable? or should we just print and continue?
 			panic("unknown feature to remove " + name)
@@ -258,24 +257,81 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 	// return fileContent
 }
 
-func (fc *FileContent) RemoveTokenFactory(cfg *NewChainConfig) {
-	name := "tokenfactory"
-
+func (fc *FileContent) RemoveTokenFactory() {
+	text := "tokenfactory"
 	fc.RemoveGoModImport("github.com/reecepbcups/tokenfactory")
 
-	// TODO: I would likle to do a hash suffix check within the func itself.
-	if fc.RelativePath == path.Join("app", "app.go") {
-		fc.RemoveGeneralModule(name)
+	fc.RemoveModuleFromText(text, path.Join("app", "app.go"))
+	fc.RemoveModuleFromText(text, path.Join("scripts", "test_node.sh"))
+	fc.RemoveModuleFromText(text, path.Join("interchaintest", "setup.go"))
+}
+
+func (fc *FileContent) RemovePOA() {
+	text := "poa"
+	fc.RemoveGoModImport("github.com/strangelove-ventures/poa")
+
+	fc.RemoveModuleFromText(text,
+		path.Join("app", "app.go"),
+		path.Join("app", "ante.go"),
+		path.Join("scripts", "test_node.sh"),
+		path.Join("interchaintest", "setup.go"),
+	)
+}
+
+func (fc *FileContent) RemoveGlobalFee() {
+	text := "globalfee"
+	fc.RemoveGoModImport("github.com/reecepbcups/globalfee")
+
+	fc.HandleCommentSwaps(text)
+	fc.RemoveTaggedLines(text, true)
+
+	fc.RemoveModuleFromText(text,
+		path.Join("app", "app.go"),
+		path.Join("app", "ante.go"),
+		path.Join("scripts", "test_node.sh"),
+		path.Join("interchaintest", "setup.go"),
+	)
+
+	fc.RemoveModuleFromText("GlobalFee", path.Join("app", "app.go"))
+}
+
+func (fc *FileContent) RemoveCosmWasm() {
+	text := "wasm"
+	fc.RemoveGoModImport("github.com/CosmWasm/wasmd")
+	fc.RemoveGoModImport("github.com/CosmWasm/wasmvm")
+
+	fc.RemoveTaggedLines(text, true)
+
+	fc.DeleteContents(path.Join("app", "wasm.go"))
+
+	for _, word := range []string{
+		"WasmKeeper", "wasmtypes", "wasmStack",
+		"wasmOpts", "TXCounterStoreService", "WasmConfig",
+		"wasmDir", "tokenfactorybindings", "github.com/CosmWasm/wasmd", "wasmvm",
+	} {
+		fc.RemoveModuleFromText(word,
+			path.Join("app", "app.go"),
+			path.Join("app", "ante.go"),
+		)
 	}
 
-	if fc.RelativePath == path.Join("scripts", "test_node.sh") {
-		fc.RemoveGeneralModule(name)
-	}
+	fc.RemoveModuleFromText("wasmkeeper",
+		path.Join("app", "encoding.go"),
+		path.Join("app", "app_test.go"),
+		path.Join("app", "test_helpers.go"),
+		path.Join("cmd", "wasmd", "root.go"),
+	)
 
-	// interchaintest
-	if strings.HasSuffix(fc.RelativePath, path.Join("interchaintest", "setup.go")) {
-		fc.RemoveGeneralModule(name)
-	}
+	fc.RemoveModuleFromText(text,
+		path.Join("app", "ante.go"),
+		path.Join("app", "sim_test.go"),
+		path.Join("app", "test_helpers.go"),
+		path.Join("app", "test_support.go"),
+		path.Join("interchaintest", "setup.go"),
+		path.Join("cmd", "wasmd", "commands.go"),
+		path.Join("app", "app_test.go"),
+		path.Join("cmd", "wasmd", "root.go"),
+	)
 }
 
 // given a go mod, remove line(s) with the importPath present.
@@ -302,175 +358,9 @@ func (fc *FileContent) RemoveGoModImport(importPath string) {
 /*
 
 
-// Removes all references from the tokenfactory file
-func removeTokenFactory(relativePath string, fileContent []byte) []byte {
-	name := "tokenfactory"
 
-	if strings.HasSuffix(relativePath, "go.mod") || strings.HasSuffix(relativePath, "go.sum") {
-		fmt.Println("removing go.mod import", relativePath)
-		fileContent = RemoveGoModImport("github.com/reecepbcups/tokenfactory", fileContent)
-	}
 
-	if relativePath == path.Join("app", "app.go") {
-		fileContent = RemoveGeneralModule(name, string(fileContent))
-	}
 
-	if relativePath == path.Join("scripts", "test_node.sh") {
-		fileContent = RemoveGeneralModule(name, string(fileContent))
-	}
-
-	// interchaintest
-	if strings.HasSuffix(relativePath, path.Join("interchaintest", "setup.go")) {
-		fileContent = RemoveGeneralModule(name, string(fileContent))
-	}
-
-	return fileContent
-}
-
-func removePoa(relativePath string, fileContent []byte) []byte {
-	name := "poa"
-
-	if strings.HasSuffix(relativePath, "go.mod") || strings.HasSuffix(relativePath, "go.sum") {
-		fileContent = RemoveGoModImport("github.com/strangelove-ventures/poa", fileContent)
-	}
-
-	if relativePath == path.Join("app", "app.go") || relativePath == path.Join("app", "ante.go") {
-		fileContent = RemoveGeneralModule(name, string(fileContent))
-	}
-
-	if relativePath == path.Join("scripts", "test_node.sh") {
-		fileContent = RemoveGeneralModule(name, string(fileContent))
-	}
-
-	// interchaintest
-	if strings.HasSuffix(relativePath, path.Join("interchaintest", "setup.go")) {
-		fileContent = RemoveGeneralModule(name, string(fileContent))
-	}
-
-	return fileContent
-}
-
-func removeGlobalFee(relativePath string, fileContent []byte) []byte {
-	name := "globalfee"
-
-	fileContent = HandleCommentSwaps(name, string(fileContent))
-	fileContent = RemoveTaggedLines(name, string(fileContent), true)
-
-	if strings.HasSuffix(relativePath, "go.mod") || strings.HasSuffix(relativePath, "go.sum") {
-		fileContent = RemoveGoModImport("github.com/reecepbcups/globalfee", fileContent)
-	}
-
-	if relativePath == path.Join("app", "app.go") || relativePath == path.Join("app", "ante.go") {
-		fileContent = RemoveGeneralModule(name, string(fileContent))
-		fileContent = RemoveGeneralModule("GlobalFee", string(fileContent))
-	}
-
-	if relativePath == path.Join("scripts", "test_node.sh") {
-		fileContent = RemoveGeneralModule(name, string(fileContent))
-	}
-
-	// interchaintest
-	if strings.HasSuffix(relativePath, path.Join("interchaintest", "setup.go")) {
-		fileContent = RemoveGeneralModule(name, string(fileContent))
-	}
-
-	return fileContent
-}
-
-func removeWasm(relativePath string, fileContent []byte) []byte {
-	name := "wasm"
-
-	// remove any line with spawntag:wasm
-	// if strings.Contains(string(fileContent), "spawntag:wasm") {}
-	fileContent = RemoveTaggedLines(name, string(fileContent), true)
-
-	if strings.HasSuffix(relativePath, "go.mod") || strings.HasSuffix(relativePath, "go.sum") {
-		fileContent = RemoveGoModImport("github.com/CosmWasm/wasmd", fileContent)
-		fileContent = RemoveGoModImport("github.com/CosmWasm/wasmvm", fileContent)
-	}
-
-	if relativePath == path.Join("app", "app.go") || relativePath == path.Join("app", "ante.go") {
-		for _, w := range []string{
-			"WasmKeeper", "wasmtypes", "wasmStack",
-			"wasmOpts", "TXCounterStoreService", "WasmConfig",
-			"wasmDir", "tokenfactorybindings", "github.com/CosmWasm/wasmd", "wasmvm",
-		} {
-			fileContent = RemoveGeneralModule(w, string(fileContent))
-		}
-
-	}
-
-	if relativePath == path.Join("app", "ante.go") {
-		fileContent = RemoveGeneralModule(name, string(fileContent))
-	}
-
-	if relativePath == path.Join("app", "encoding.go") {
-		fileContent = RemoveGeneralModule("wasmkeeper", string(fileContent))
-	}
-
-	if relativePath == path.Join("app", "sim_test.go") {
-		fileContent = RemoveGeneralModule(name, string(fileContent))
-	}
-
-	if relativePath == path.Join("app", "app_test.go") {
-		fileContent = RemoveGeneralModule("wasmOpts", string(fileContent))
-		fileContent = RemoveGeneralModule("wasmkeeper", string(fileContent))
-	}
-
-	if relativePath == path.Join("app", "test_support.go") {
-		fileContent = RemoveGeneralModule(name, string(fileContent))
-	}
-
-	if relativePath == path.Join("app", "test_helpers.go") {
-		for _, w := range []string{"emptyWasmOptions", "wasmkeeper", "WasmOpts", "wasmOpts"} {
-			fileContent = RemoveGeneralModule(w, string(fileContent))
-		}
-
-	}
-
-	if relativePath == path.Join("app", "wasm.go") {
-		fileContent = []byte("REMOVE")
-	}
-
-	if relativePath == path.Join("cmd", "wasmd", "commands.go") {
-		for _, w := range []string{name, "wasmOpts", "wasmcli", "wasmtypes"} {
-			fileContent = RemoveGeneralModule(w, string(fileContent))
-		}
-	}
-
-	if relativePath == path.Join("cmd", "wasmd", "root.go") {
-		for _, w := range []string{"wasmtypes", "wasmkeeper"} {
-			fileContent = RemoveGeneralModule(w, string(fileContent))
-		}
-	}
-
-	// interchaintest
-	if strings.HasSuffix(relativePath, path.Join("interchaintest", "setup.go")) {
-		fileContent = RemoveGeneralModule(name, string(fileContent))
-	}
-
-	return fileContent
-}
-
-// Sometimes if we remove a module, we want to delete one line and use another.
-func HandleCommentSwaps(name string, fileContent string) []byte {
-	newContent := make([]string, 0, len(strings.Split(fileContent, "\n")))
-
-	uncomment := fmt.Sprintf("?spawntag:%s", name)
-
-	for idx, line := range strings.Split(fileContent, "\n") {
-		hasUncommentTag := strings.Contains(line, uncomment)
-		if hasUncommentTag {
-			line = strings.Replace(line, "//", "", 1)
-			line = strings.TrimRight(strings.Replace(line, fmt.Sprintf("// %s", uncomment), "", 1), " ")
-			fmt.Printf("uncomment %s: %d, %s\n", name, idx, line)
-		}
-
-		newContent = append(newContent, line)
-	}
-
-	return []byte(strings.Join(newContent, "\n"))
-}
 
 const expectedFormat = "// spawntag:"
 
@@ -522,12 +412,12 @@ func RemoveTaggedLines(name string, fileContent string, deleteLine bool) []byte 
 	return []byte(strings.Join(newContent, "\n"))
 }
 
-// RemoveGeneralModule removes any matching names from the fileContent.
+// RemoveModuleFromText removes any matching names from the fileContent.
 // i.e. if moduleFind is "tokenfactory" any lines with "tokenfactory" will be removed
 // including comments.
 // If an import or other line depends on a solo module a user wishes to remove, add a comment to the line
 // such as `// tag:tokenfactory` to also remove other lines within the simapp template
-func RemoveGeneralModule(removeText string, fileContent string) []byte {
+func RemoveModuleFromText(removeText string, fileContent string) []byte {
 	newContent := make([]string, 0, len(strings.Split(fileContent, "\n")))
 
 	startIdx := -1
