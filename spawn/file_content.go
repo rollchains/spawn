@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"regexp"
 	"strings"
+
+	"github.com/cosmos/btcutil/bech32"
 )
 
 type FileContent struct {
@@ -36,6 +39,15 @@ func (fc *FileContent) ReplaceAll(old, new string) {
 
 func (fc *FileContent) IsPath(relPath string) bool {
 	return strings.HasSuffix(fc.RelativePath, relPath)
+}
+
+func (fc *FileContent) InPaths(relPaths []string) bool {
+	for _, relPath := range relPaths {
+		if fc.IsPath(relPath) {
+			return true
+		}
+	}
+	return false
 }
 
 func (fc *FileContent) IsPathPrefixed(relPath string) bool {
@@ -122,6 +134,56 @@ func (fc *FileContent) ReplaceLocalInterchainJSON(cfg *NewChainConfig) {
 		fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix, cfg.Debugging)
 	}
 
+}
+
+// FindAndReplaceStandardWalletsBech32 finds a prefix1... address and replaces it with a new prefix1... address
+// This works for both standard wallets (38 length after prefix1) and also smart contracts (58)
+func (fc *FileContent) FindAndReplaceAddressBech32(oldPrefix, newPrefix string, isDebugging bool) {
+	oldPrefix = strings.TrimSuffix(oldPrefix, "1")
+	newPrefix = strings.TrimSuffix(newPrefix, "1")
+
+	// 58 must be first to match smart contracts fully else it would only match the first 38
+	// e.g. wasm10d07y265gmmuvt4z0w9aw880jnsr700js7zslc & wasm1qsrercqegvs4ye0yqg93knv73ye5dc3prqwd6jcdcuj8ggp6w0usrfxlpt
+	r := regexp.MustCompile(oldPrefix + `1([0-9a-z]{58}|[0-9a-z]{38})`)
+
+	foundAddrs := r.FindAllString(fc.Contents, -1)
+	if isDebugging {
+		fmt.Println("Regex: Found Addresses:", foundAddrs, fc.NewPath)
+	}
+
+	for _, addr := range foundAddrs {
+		_, bz, err := bech32.Decode(addr, 100)
+		if err != nil {
+			panic(fmt.Sprintf("error decoding bech32 address: %s. err: %s", addr, err.Error()))
+		}
+
+		newAddr, err := bech32.Encode(newPrefix, bz)
+		if err != nil {
+			panic(fmt.Sprintf("error encoding bech32 address: %s. err: %s", addr, err.Error()))
+		}
+
+		fc.ReplaceAll(addr, newAddr)
+	}
+}
+
+// given a go mod, remove line(s) with the importPath present.
+func (fc *FileContent) RemoveGoModImport(importPath string) {
+	if !fc.IsPath("go.mod") && !fc.IsPath("go.sum") {
+		return
+	}
+
+	fmt.Println("removing go.mod import", fc.RelativePath, "for", importPath)
+
+	lines := strings.Split(fc.Contents, "\n")
+
+	newLines := make([]string, 0, len(lines))
+	for _, line := range lines {
+		if !strings.Contains(line, importPath) {
+			newLines = append(newLines, line)
+		}
+	}
+
+	fc.Contents = strings.Join(newLines, "\n")
 }
 
 func (fc *FileContent) Save() error {

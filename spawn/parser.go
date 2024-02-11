@@ -5,13 +5,16 @@ import (
 	"strings"
 )
 
-const expectedFormat = "// spawntag:"
+const (
+	expectedFormat = "// spawntag:"
+	commentFormat  = "?spawntag:"
+)
 
 // Sometimes if we remove a module, we want to delete one line and use another.
 func (fc *FileContent) HandleCommentSwaps(name string) {
 	newContent := make([]string, 0, len(strings.Split(fc.Contents, "\n")))
 
-	uncomment := fmt.Sprintf("?spawntag:%s", name)
+	uncomment := fmt.Sprintf("%s:%s", commentFormat, name)
 
 	for idx, line := range strings.Split(fc.Contents, "\n") {
 		hasUncommentTag := strings.Contains(line, uncomment)
@@ -33,14 +36,11 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 
 	startIdx := -1
 	for idx, line := range strings.Split(fc.Contents, "\n") {
-		// TODO: regex anything in between // and spawntag such as spaces, symbols, etc?
-		// TODO: Do this for all content on load?
-		line = strings.ReplaceAll(line, "//spawntag:", expectedFormat) // just QOL for us to not tear our hair out
-
 		hasTag := strings.Contains(line, fmt.Sprintf("spawntag:%s", name))
 		hasMultiLineTag := strings.Contains(line, fmt.Sprintf("!spawntag:%s", name))
 
-		// if the line has a tag, and the tag starts with a !, then we will continue until we find the end of the tag with another.
+		// if the line has a tag, and the tag starts with a !, then we will continue until we
+		// find the end of the tag with another.
 		if startIdx != -1 {
 			if !hasMultiLineTag {
 				continue
@@ -66,8 +66,7 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 				continue
 			}
 
-			line = strings.Split(line, expectedFormat)[0]
-			line = strings.TrimRight(line, " ")
+			line = removeJustSpawnTagLineComment(line)
 		}
 
 		newContent = append(newContent, line)
@@ -77,20 +76,24 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 	fc.Contents = strings.Join(newContent, "\n")
 }
 
+// removeLineComment removes just the spawntag comment from a line of code.
+// this way it is not user facing
+func removeJustSpawnTagLineComment(line string) string {
+	// QOL for us to not tear our hair out if we have a space or not
+	// Could do this for all contents on load?
+	line = strings.ReplaceAll(line, "//spawntag:", expectedFormat)
+
+	line = strings.Split(line, expectedFormat)[0]
+	return strings.TrimRight(line, " ")
+}
+
 // RemoveGeneralModule removes any matching names from the fileContent.
 // i.e. if moduleFind is "tokenfactory" any lines with "tokenfactory" will be removed
 // including comments.
 // If an import or other line depends on a solo module a user wishes to remove, add a comment to the line
 // such as `// tag:tokenfactory` to also remove other lines within the simapp template
 func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...string) {
-	found := false
-	for _, suffix := range pathSuffix {
-		if fc.IsPath(suffix) {
-			found = true
-			break
-		}
-	}
-	if !found {
+	if !fc.InPaths(pathSuffix) {
 		return
 	}
 
@@ -114,7 +117,7 @@ func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...str
 
 		// if line contains //ignore or // ignore, then we use that line
 		// useful if some text is 'wasm' as a bech32 prefix, not a variable / type.
-		if strings.Contains(line, "//ignore") || strings.Contains(line, "// ignore") {
+		if hasIgnoreComment(line) {
 			fmt.Printf("Ignoring removal: %s: %d, %s\n", removeText, idx, line)
 			newContent = append(newContent, line)
 			continue
@@ -137,17 +140,6 @@ func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...str
 	fc.Contents = strings.Join(newContent, "\n")
 }
 
-// given a go mod, remove a line within the file content
-func RemoveGoModImport(module string, fileContent []byte) []byte {
-	fcs := string(fileContent)
-	lines := strings.Split(fcs, "\n")
-
-	newLines := make([]string, 0, len(lines))
-	for _, line := range lines {
-		if !strings.Contains(line, module) {
-			newLines = append(newLines, line)
-		}
-	}
-
-	return []byte(strings.Join(newLines, "\n"))
+func hasIgnoreComment(line string) bool {
+	return strings.Contains(line, "//ignore") || strings.Contains(line, "// ignore")
 }

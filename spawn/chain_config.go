@@ -5,10 +5,8 @@ import (
 	"io/fs"
 	"os"
 	"path"
-	"regexp"
 	"strings"
 
-	"github.com/cosmos/btcutil/bech32"
 	"github.com/strangelove-ventures/simapp"
 )
 
@@ -41,14 +39,14 @@ func (cfg *NewChainConfig) Validate() error {
 
 func (cfg *NewChainConfig) AnnounceSuccessfulBuild() {
 	projName := cfg.ProjectName
-	binName := cfg.BinaryName
+	bin := cfg.BinaryName
 
 	fmt.Printf("\n\n🎉 New blockchain '%s' generated!\n", projName)
 	fmt.Println("🏅Getting started:")
 	fmt.Println("  - $ cd " + projName)
 	fmt.Println("  - $ make testnet      # build & start a testnet")
 	fmt.Println("  - $ make testnet-ibc  # build & start an ibc testnet")
-	fmt.Printf("  - $ make install      # build the %s binary\n", binName)
+	fmt.Println("  - $ make install      # build the " + bin + " binary")
 	fmt.Println("  - $ make local-image  # build docker image")
 }
 
@@ -56,17 +54,10 @@ func (cfg *NewChainConfig) GithubPath() string {
 	return fmt.Sprintf("github.com/%s/%s", cfg.GithubOrg, cfg.ProjectName)
 }
 
-// --- Logic ---
-
 func (cfg *NewChainConfig) NewChain() {
 	var err error
 
 	NewDirName := cfg.ProjectName
-	// bech32Prefix := cfg.Bech32Prefix
-	// projName := cfg.ProjectName
-	// appName := cfg.AppName
-	// appDirName := cfg.AppDirName
-	// binaryName := cfg.BinaryName
 	Debugging := cfg.Debugging
 	disabled := cfg.DisabledFeatures
 
@@ -196,153 +187,4 @@ func (cfg *NewChainConfig) NewChain() {
 	if cfg.GitInitOnCreate {
 		cfg.GitInitNewProjectRepo()
 	}
-}
-
-// FindAndReplaceStandardWalletsBech32 finds a prefix1... address and replaces it with a new prefix1... address
-// This works for both standard wallets (38 length after prefix1) and also smart contracts (58)
-func (fc *FileContent) FindAndReplaceAddressBech32(oldPrefix, newPrefix string, isDebugging bool) {
-	oldPrefix = strings.TrimSuffix(oldPrefix, "1")
-	newPrefix = strings.TrimSuffix(newPrefix, "1")
-
-	// 58 must be first to match smart contracts fully else it would only match the first 38
-	// e.g. wasm10d07y265gmmuvt4z0w9aw880jnsr700js7zslc & wasm1qsrercqegvs4ye0yqg93knv73ye5dc3prqwd6jcdcuj8ggp6w0usrfxlpt
-	r := regexp.MustCompile(oldPrefix + `1([0-9a-z]{58}|[0-9a-z]{38})`)
-
-	foundAddrs := r.FindAllString(fc.Contents, -1)
-	if isDebugging {
-		fmt.Println("Regex: Found Addresses:", foundAddrs, fc.NewPath)
-	}
-
-	for _, addr := range foundAddrs {
-		_, bz, err := bech32.Decode(addr, 100)
-		if err != nil {
-			panic(fmt.Sprintf("error decoding bech32 address: %s. err: %s", addr, err.Error()))
-		}
-
-		newAddr, err := bech32.Encode(newPrefix, bz)
-		if err != nil {
-			panic(fmt.Sprintf("error encoding bech32 address: %s. err: %s", addr, err.Error()))
-		}
-
-		fc.ReplaceAll(addr, newAddr)
-	}
-}
-
-// Removes disabled features from the files specified
-func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
-	for _, name := range cfg.DisabledFeatures {
-		switch strings.ToLower(name) {
-		case "tokenfactory", "token-factory", "tf":
-			fc.RemoveTokenFactory()
-		case "poa":
-			fc.RemovePOA()
-		case "globalfee":
-			fc.RemoveGlobalFee()
-		case "wasm", "cosmwasm", "cw":
-			fc.RemoveCosmWasm()
-		default:
-			// is this acceptable? or should we just print and continue?
-			panic("unknown feature to remove " + name)
-		}
-	}
-
-	// remove any left over `// spawntag:` comments
-	fc.RemoveTaggedLines("", false)
-}
-
-func (fc *FileContent) RemoveTokenFactory() {
-	text := "tokenfactory"
-	fc.RemoveGoModImport("github.com/reecepbcups/tokenfactory")
-
-	fc.RemoveModuleFromText(text, path.Join("app", "app.go"))
-	fc.RemoveModuleFromText(text, path.Join("scripts", "test_node.sh"))
-	fc.RemoveModuleFromText(text, path.Join("interchaintest", "setup.go"))
-}
-
-func (fc *FileContent) RemovePOA() {
-	text := "poa"
-	fc.RemoveGoModImport("github.com/strangelove-ventures/poa")
-
-	fc.RemoveModuleFromText(text,
-		path.Join("app", "app.go"),
-		path.Join("app", "ante.go"),
-		path.Join("scripts", "test_node.sh"),
-		path.Join("interchaintest", "setup.go"),
-	)
-}
-
-func (fc *FileContent) RemoveGlobalFee() {
-	text := "globalfee"
-	fc.RemoveGoModImport("github.com/reecepbcups/globalfee")
-
-	fc.HandleCommentSwaps(text)
-	fc.RemoveTaggedLines(text, true)
-
-	fc.RemoveModuleFromText(text,
-		path.Join("app", "app.go"),
-		path.Join("app", "ante.go"),
-		path.Join("scripts", "test_node.sh"),
-		path.Join("interchaintest", "setup.go"),
-	)
-
-	fc.RemoveModuleFromText("GlobalFee", path.Join("app", "app.go"))
-}
-
-func (fc *FileContent) RemoveCosmWasm() {
-	text := "wasm"
-	fc.RemoveGoModImport("github.com/CosmWasm/wasmd")
-	fc.RemoveGoModImport("github.com/CosmWasm/wasmvm")
-
-	fc.RemoveTaggedLines(text, true)
-
-	fc.DeleteContents(path.Join("app", "wasm.go"))
-
-	for _, word := range []string{
-		"WasmKeeper", "wasmtypes", "wasmStack",
-		"wasmOpts", "TXCounterStoreService", "WasmConfig",
-		"wasmDir", "tokenfactorybindings", "github.com/CosmWasm/wasmd", "wasmvm",
-	} {
-		fc.RemoveModuleFromText(word,
-			path.Join("app", "app.go"),
-			path.Join("app", "ante.go"),
-		)
-	}
-
-	fc.RemoveModuleFromText("wasmkeeper",
-		path.Join("app", "encoding.go"),
-		path.Join("app", "app_test.go"),
-		path.Join("app", "test_helpers.go"),
-		path.Join("cmd", "wasmd", "root.go"),
-	)
-
-	fc.RemoveModuleFromText(text,
-		path.Join("app", "ante.go"),
-		path.Join("app", "sim_test.go"),
-		path.Join("app", "test_helpers.go"),
-		path.Join("app", "test_support.go"),
-		path.Join("interchaintest", "setup.go"),
-		path.Join("cmd", "wasmd", "commands.go"),
-		path.Join("app", "app_test.go"),
-		path.Join("cmd", "wasmd", "root.go"),
-	)
-}
-
-// given a go mod, remove line(s) with the importPath present.
-func (fc *FileContent) RemoveGoModImport(importPath string) {
-	if !fc.IsPath("go.mod") && !fc.IsPath("go.sum") {
-		return
-	}
-
-	fmt.Println("removing go.mod import", fc.RelativePath, "for", importPath)
-
-	lines := strings.Split(fc.Contents, "\n")
-
-	newLines := make([]string, 0, len(lines))
-	for _, line := range lines {
-		if !strings.Contains(line, importPath) {
-			newLines = append(newLines, line)
-		}
-	}
-
-	fc.Contents = strings.Join(newLines, "\n")
 }
