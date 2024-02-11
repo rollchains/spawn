@@ -11,7 +11,12 @@ import (
 )
 
 var (
-	SupportedFeatures = []string{"tokenfactory", "poa", "globalfee", "wasm", "icahost", "icacontroller"}
+	SupportedModules = items{
+		{ID: "tokenfactory", IsSelected: true, Details: "Native token minting, sending, and burning on the chain"},
+		{ID: "poa", IsSelected: true, Details: "Proof-of-Authority consensus algorithm (permissioned network)"},
+		{ID: "globalfee", IsSelected: true, Details: "Static minimum fee(s) for all transactions, controlled by governance"},
+		{ID: "cosmwasm", IsSelected: true, Details: "Cosmos smart contracts"},
+	}
 )
 
 const (
@@ -22,6 +27,7 @@ const (
 	FlagGithubOrg    = "org"
 	FlagDisabled     = "disable"
 	FlagNoGit        = "no-git"
+	FlagBypassPrompt = "bypass-prompt"
 )
 
 func init() {
@@ -29,9 +35,10 @@ func init() {
 	newChain.Flags().StringP(FlagBinDaemon, "b", "appd", "binary name")
 	newChain.Flags().String(FlagGithubOrg, "rollchains", "github organization")
 	newChain.Flags().String(FlagTokenDenom, "stake", "token denom")
-	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features: "+strings.Join(SupportedFeatures, ", "))
+	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features: "+SupportedModules.String())
 	newChain.Flags().Bool(FlagDebugging, false, "enable debugging")
 	newChain.Flags().Bool(FlagNoGit, false, "git init base")
+	newChain.Flags().Bool(FlagBypassPrompt, false, "bypass UI prompt")
 
 	newChain.Flags().SetNormalizeFunc(normalizeWhitelistVarRun)
 }
@@ -49,26 +56,33 @@ var newChain = &cobra.Command{
 		projName := strings.ToLower(args[0])
 		homeDir := "." + projName
 
+		disabled, _ := cmd.Flags().GetStringSlice(FlagDisabled)
 		walletPrefix, _ := cmd.Flags().GetString(FlagWalletPrefix)
 		binName, _ := cmd.Flags().GetString(FlagBinDaemon)
 		denom, _ := cmd.Flags().GetString(FlagTokenDenom)
 		debug, _ := cmd.Flags().GetBool(FlagDebugging)
-		disabled, _ := cmd.Flags().GetStringSlice(FlagDisabled)
 		ignoreGitInit, _ := cmd.Flags().GetBool(FlagNoGit)
 		githubOrg, _ := cmd.Flags().GetString(FlagGithubOrg)
 
+		bypassPrompt, _ := cmd.Flags().GetBool(FlagBypassPrompt)
+		if len(disabled) == 0 && !bypassPrompt {
+			items, err := selectItems(0, SupportedModules, true)
+			if err != nil {
+				fmt.Println("Error selecting disabled:", err)
+				return
+			}
+			disabled = items.NOTSlice()
+		}
+
 		cfg := &spawn.NewChainConfig{
-			ProjectName:  projName,
-			Bech32Prefix: walletPrefix,
-			HomeDir:      homeDir,
-			BinDaemon:    binName,
-			Denom:        denom,
-			Debug:        debug,
-			GithubOrg:    githubOrg,
-
-			IgnoreGitInit: ignoreGitInit,
-
-			// by default everything is on, then we remove what the user wants to disable
+			ProjectName:     projName,
+			Bech32Prefix:    walletPrefix,
+			HomeDir:         homeDir,
+			BinDaemon:       binName,
+			Denom:           denom,
+			Debug:           debug,
+			GithubOrg:       githubOrg,
+			IgnoreGitInit:   ignoreGitInit,
 			DisabledModules: disabled,
 		}
 		if err := cfg.Validate(); err != nil {
@@ -87,6 +101,8 @@ func normalizeWhitelistVarRun(f *pflag.FlagSet, name string) pflag.NormalizedNam
 		name = FlagBinDaemon
 	case "disabled":
 		name = FlagDisabled
+	case "bypass", "skip", "force", "prompt-bypass", "bypass-ui", "no-ui":
+		name = FlagBypassPrompt
 	}
 
 	return pflag.NormalizedName(name)
