@@ -611,7 +611,7 @@ func NewChainApp(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
-	// Create the TokenFactory Keeper
+	// Create the tokenfactory keeper
 	app.TokenFactoryKeeper = tokenfactorykeeper.NewKeeper(
 		appCodec,
 		app.keys[tokenfactorytypes.StoreKey],

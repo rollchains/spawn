@@ -80,11 +80,11 @@ func RemoveTaggedLines(name string, fileContent string, deleteLine bool) []byte 
 // including comments.
 // If an import or other line depends on a solo module a user wishes to remove, add a comment to the line
 // such as `// tag:tokenfactory` to also remove other lines within the simapp template
-func RemoveGeneralModule(removeText string, fileContent string) []byte {
-	newContent := make([]string, 0, len(strings.Split(fileContent, "\n")))
+func (fc *FileContent) RemoveGeneralModule(removeText string) {
+	newContent := make([]string, 0, len(strings.Split(fc.Contents, "\n")))
 
 	startIdx := -1
-	for idx, line := range strings.Split(fileContent, "\n") {
+	for idx, line := range strings.Split(fc.Contents, "\n") {
 		// if we are in a startIdx, then we need to continue until we find the close parenthesis (i.e. NewKeeper)
 		if startIdx != -1 {
 			fmt.Printf("rm %s startIdx: %d, %s\n", removeText, idx, line)
@@ -121,7 +121,7 @@ func RemoveGeneralModule(removeText string, fileContent string) []byte {
 		newContent = append(newContent, line)
 	}
 
-	return []byte(strings.Join(newContent, "\n"))
+	fc.Contents = strings.Join(newContent, "\n")
 }
 
 // given a go mod, remove a line within the file content

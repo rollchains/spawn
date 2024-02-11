@@ -85,11 +85,7 @@ func (cfg *NewChainConfig) NewChain() {
 			return nil
 		}
 
-		myFileContent := FileContent{
-			RelativePath: relPath,
-			NewPath:      path.Join(NewDirName, relPath),
-			Content:      nil,
-		}
+		myFileContent := NewFileContent(relPath, path.Join(NewDirName, relPath))
 
 		if myFileContent.HasIgnoreFile() {
 			if Debugging {
@@ -107,7 +103,7 @@ func (cfg *NewChainConfig) NewChain() {
 			return err
 		} else {
 			// Save the file's content to the struct
-			myFileContent.Content = fileContent
+			myFileContent.Contents = string(fileContent)
 		}
 
 		// TODO:
@@ -267,18 +263,18 @@ func (fc *FileContent) RemoveTokenFactory(cfg *NewChainConfig) {
 
 	fc.RemoveGoModImport("github.com/reecepbcups/tokenfactory")
 
+	// TODO: I would likle to do a hash suffix check within the func itself.
 	if fc.RelativePath == path.Join("app", "app.go") {
-		fc.Content = RemoveGeneralModule(name, string(fc.Content))
-		fc.Content = RemoveGeneralModule("TokenFactory", string(fc.Content)) // comment
+		fc.RemoveGeneralModule(name)
 	}
 
 	if fc.RelativePath == path.Join("scripts", "test_node.sh") {
-		fc.Content = RemoveGeneralModule(name, string(fc.Content))
+		fc.RemoveGeneralModule(name)
 	}
 
 	// interchaintest
 	if strings.HasSuffix(fc.RelativePath, path.Join("interchaintest", "setup.go")) {
-		fc.Content = RemoveGeneralModule(name, string(fc.Content))
+		fc.RemoveGeneralModule(name)
 	}
 }
 
@@ -291,7 +287,7 @@ func (fc *FileContent) RemoveGoModImport(importPath string) {
 
 	fmt.Println("removing go.mod import", fc.RelativePath, "for", importPath)
 
-	lines := strings.Split(string(fc.Content), "\n")
+	lines := strings.Split(fc.Contents, "\n")
 
 	newLines := make([]string, 0, len(lines))
 	for _, line := range lines {
@@ -300,7 +296,7 @@ func (fc *FileContent) RemoveGoModImport(importPath string) {
 		}
 	}
 
-	fc.Content = []byte(strings.Join(newLines, "\n"))
+	fc.Contents = strings.Join(newLines, "\n")
 }
 
 /*
