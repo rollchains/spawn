@@ -7,7 +7,7 @@ import (
 
 // Removes disabled features from the files specified
 func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
-	for _, name := range cfg.DisabledFeatures {
+	for _, name := range cfg.DisabledModules {
 		switch strings.ToLower(name) {
 		case "tokenfactory", "token-factory", "tf":
 			fc.RemoveTokenFactory()

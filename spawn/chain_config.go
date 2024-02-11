@@ -33,9 +33,7 @@ type NewChainConfig struct {
 	// Debug is a flag to enable debug logging
 	Debug bool
 
-	// // FeatureModules is a list
-	// FeatureModules []Module
-	DisabledFeatures []string
+	DisabledModules []string
 }
 
 func (cfg *NewChainConfig) Validate() error {
@@ -65,7 +63,7 @@ func (cfg *NewChainConfig) GithubPath() string {
 
 func (cfg *NewChainConfig) NewChain() {
 	NewDirName := cfg.ProjectName
-	disabled := cfg.DisabledFeatures
+	disabled := cfg.DisabledModules
 
 	fmt.Println("Spawning new app:", NewDirName)
 	fmt.Println("Disabled features:", disabled)

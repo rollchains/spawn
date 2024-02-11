@@ -69,7 +69,7 @@ var newChain = &cobra.Command{
 			IgnoreGitInit: ignoreGitInit,
 
 			// by default everything is on, then we remove what the user wants to disable
-			DisabledFeatures: disabled,
+			DisabledModules: disabled,
 		}
 		if err := cfg.Validate(); err != nil {
 			fmt.Println("Error validating config:", err)
