@@ -12,6 +12,8 @@ import (
 
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
+
+	"gitub.com/strangelove-ventures/spawn/spawn"
 )
 
 var (
@@ -68,7 +70,7 @@ var LocalICCmd = &cobra.Command{
 			}
 		}
 
-		if err := execCommand(loc, args...); err != nil {
+		if err := spawn.ExecCommand(loc, args...); err != nil {
 			fmt.Println("Error calling local-ic:", err)
 		}
 	},
@@ -86,13 +88,6 @@ func whereIsLocalICInstalled() string {
 	}
 
 	return ""
-}
-
-func execCommand(command string, args ...string) error {
-	cmd := exec.Command(command, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
 }
 
 func downloadBin(version string) error {
