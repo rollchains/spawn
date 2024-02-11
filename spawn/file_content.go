@@ -85,16 +85,15 @@ func (fc *FileContent) ReplaceApp(cfg *NewChainConfig) {
 func (fc *FileContent) ReplaceEverywhere(cfg *NewChainConfig) {
 	fc.ReplaceAll("github.com/strangelove-ventures/simapp", cfg.GithubPath())
 
-	// if the relPath is cmd/wasmd, replace it to be cmd/binaryName
 	wasmBin := path.Join("cmd", "wasmd")
-	if strings.HasPrefix(fc.RelativePath, wasmBin) {
-		fc.NewPath = strings.ReplaceAll(fc.NewPath, wasmBin, path.Join("cmd", cfg.BinaryName))
+	if fc.IsPath(wasmBin) {
+		newBinPath := path.Join("cmd", cfg.BinaryName)
+		fc.NewPath = strings.ReplaceAll(fc.NewPath, wasmBin, newBinPath)
 	}
 
 }
 
 func (fc *FileContent) ReplaceMakeFile(cfg *NewChainConfig) {
-
 	bin := cfg.BinaryName
 
 	fc.ReplaceAll("https://github.com/CosmWasm/wasmd.git", fmt.Sprintf("https://%s.git", cfg.GithubPath()))
@@ -104,21 +103,17 @@ func (fc *FileContent) ReplaceMakeFile(cfg *NewChainConfig) {
 	fc.ReplaceAll("build/wasmd", fmt.Sprintf("build/%s", bin))
 	fc.ReplaceAll("wasmd keys", fmt.Sprintf("%s keys", bin)) // for testnet
 
-	// heighliner (not working atm)
 	fc.ReplaceAll("docker build . -t wasmd:local", fmt.Sprintf(`docker build . -t %s:local`, strings.ToLower(cfg.ProjectName)))
 
-	// TODO: remember to make the below path.Join
-	// fc = strings.ReplaceAll(fc, "heighliner build -c wasmd --local --dockerfile=cosmos -f chains.yaml", fmt.Sprintf(`heighliner build -c %s --local --dockerfile=cosmos -f chains.yaml`, strings.ToLower(appName)))
-	// if fx.IsPath("chains.yaml") {
-	// 	fc = strings.ReplaceAll(fc, "myappname", strings.ToLower(appName))
-	// 	fc = strings.ReplaceAll(fc, "/go/bin/wasmd", fmt.Sprintf("/go/bin/%s", binaryName))
-	// }
+	fc.ReplaceAll("heighliner build -c wasmd", fmt.Sprintf(`heighliner build -c %s`, strings.ToLower(cfg.ProjectName)))
+	if fc.IsPath("chains.yaml") {
+		fc.ReplaceAll("myappname", strings.ToLower(cfg.ProjectName))
+		fc.ReplaceAll("/go/bin/wasmd", fmt.Sprintf("/go/bin/%s", bin))
+	}
 
 }
 
 func (fc *FileContent) ReplaceLocalInterchainJSON(cfg *NewChainConfig) {
-
-	// local-interchain config
 	if fc.IsPath("testnet.json") { // this matches testnet.json and ibc-testnet.json
 		fc.ReplaceAll(`"repository": "wasmd"`, fmt.Sprintf(`"repository": "%s"`, strings.ToLower(cfg.ProjectName)))
 		fc.ReplaceAll(`"bech32_prefix": "wasm"`, fmt.Sprintf(`"bech32_prefix": "%s"`, cfg.Bech32Prefix))
@@ -129,7 +124,6 @@ func (fc *FileContent) ReplaceLocalInterchainJSON(cfg *NewChainConfig) {
 		// TODO: make dynamic so we can perform on any file.
 		// if \"(wasm1...)", grab value in group & bech32 replace
 		for _, addr := range []string{"wasm1hj5fveer5cjtn4wd6wstzugjfdxzl0xpvsr89g", "wasm1efd63aw40lxf3n4mhf7dzhjkr453axursysrvp"} {
-			// bech32 convert to the new prefix
 			_, bz, err := bech32.Decode(addr, 100)
 			if err != nil {
 				panic(err)

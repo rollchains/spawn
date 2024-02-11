@@ -71,10 +71,10 @@ func (app *ChainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs 
 		allowedAddrsMap[addr] = true
 	}
 
-	/* Just to be safe, assert the invariants on current state. */
+	// Just to be safe, assert the invariants on current state.
 	app.CrisisKeeper.AssertInvariants(ctx)
 
-	/* Handle fee distribution state. */
+	// Handle fee distribution state.
 
 	// withdraw all validator commission
 	err := app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
@@ -169,7 +169,7 @@ func (app *ChainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs 
 	// reset context height
 	ctx = ctx.WithBlockHeight(height)
 
-	/* Handle staking state. */
+	// Handle staking state.
 
 	// iterate through redelegations, reset creation height
 	err = app.StakingKeeper.IterateRedelegations(ctx, func(_ int64, red stakingtypes.Redelegation) (stop bool) {
@@ -234,7 +234,7 @@ func (app *ChainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs 
 		log.Fatal(err)
 	}
 
-	/* Handle slashing state. */
+	// Handle slashing state.
 
 	// reset start height on signing infos
 	err = app.SlashingKeeper.IterateValidatorSigningInfos(
