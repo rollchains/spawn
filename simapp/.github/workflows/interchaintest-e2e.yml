@@ -42,7 +42,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          tags: juno:local
+          tags: wasmd:local
           outputs: type=docker,dest=${{ env.TAR_PATH }}
 
       - name: Upload artifact

@@ -2,10 +2,21 @@
 
 CWD := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 
+# don't override user values
+ifeq (,$(VERSION))
+  VERSION := $(shell git describe --tags)
+  # if VERSION is empty, then populate it with branch's name and raw commit hash
+  ifeq (,$(VERSION))
+    VERSION := $(BRANCH)-$(COMMIT)
+  endif
+endif
+
 DATE := $(shell date '+%Y-%m-%dT%H:%M:%S')
 HEAD = $(shell git rev-parse HEAD)
-LD_FLAGS =
+LD_FLAGS = -X main.SpawnVersion=$(VERSION)
 BUILD_FLAGS = -mod=readonly -ldflags='$(LD_FLAGS)'
+
+
 
 ## install: Install the binary.
 install:
@@ -49,5 +60,13 @@ help: Makefile
 	@echo
 
 .PHONY: help
+
+# ---- Developer Templates ----
+template-default: install
+	spawn new myproject --debug --bech32=cosmos --bin=appd --disable=tokenfactory
+
+template-specific: install
+	spawn new myproject --debug --no-git --bin=rolld --bech32=roll --denom=uroll --disable=globalfee,poa
+
 
 .DEFAULT_GOAL := install

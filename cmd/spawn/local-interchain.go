@@ -12,11 +12,14 @@ import (
 
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
+
+	"gitub.com/strangelove-ventures/spawn/spawn"
 )
 
-const DefaultVersion = "v8.1.0"
-
-var LocalICURL = "https://github.com/strangelove-ventures/interchaintest/releases/download/" + DefaultVersion + "/local-ic"
+var (
+	LocalICDefaultVersion = "v8.1.0"
+	LocalICURL            = "https://github.com/strangelove-ventures/interchaintest/releases/download/" + LocalICDefaultVersion + "/local-ic"
+)
 
 const (
 	FlagVersionOverride = "version"
@@ -25,7 +28,7 @@ const (
 )
 
 func init() {
-	LocalICCmd.Flags().String(FlagVersionOverride, DefaultVersion, "change the local-ic version to use")
+	LocalICCmd.Flags().String(FlagVersionOverride, LocalICDefaultVersion, "change the local-ic version to use")
 	LocalICCmd.Flags().Bool(FlagForceDownload, false, "force download of local-ic")
 	LocalICCmd.Flags().Bool(FlagLocationPath, false, "print the location of local-ic binary")
 }
@@ -34,7 +37,7 @@ func init() {
 // make install && ICTEST_HOME=./simapp spawn local-ic start testnet
 // make install && cd simapp && spawn local-ic start testnet
 // ---
-// TODO: Do something like `curl https://get.ignite.com/cli! | bash`? just with windows support
+// TODO: Do something like `curl https://get.ignite.com/cli! | bash`? just with windows support for path
 var LocalICCmd = &cobra.Command{
 	Use:   "local-ic",
 	Short: "Local Interchain",
@@ -67,7 +70,7 @@ var LocalICCmd = &cobra.Command{
 			}
 		}
 
-		if err := execCommand(loc, args...); err != nil {
+		if err := spawn.ExecCommand(loc, args...); err != nil {
 			fmt.Println("Error calling local-ic:", err)
 		}
 	},
@@ -87,13 +90,6 @@ func whereIsLocalICInstalled() string {
 	return ""
 }
 
-func execCommand(command string, args ...string) error {
-	cmd := exec.Command(command, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
-}
-
 func downloadBin(version string) error {
 	file := "local-ic"
 
@@ -108,12 +104,12 @@ func downloadBin(version string) error {
 		return err
 	}
 
-	if version != "" && version != DefaultVersion {
+	if version != "" && version != LocalICDefaultVersion {
 		if version[0] != 'v' {
 			version = "v" + version
 		}
 
-		LocalICURL = strings.ReplaceAll(LocalICURL, DefaultVersion, version)
+		LocalICURL = strings.ReplaceAll(LocalICURL, LocalICDefaultVersion, version)
 	}
 
 	dir := path.Join(currentDir, "bin")

@@ -8,14 +8,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	SPAWN_VERSION = "0.1"
-)
+// Set in the makefile ld_flags on compile
+var SpawnVersion = ""
 
 func main() {
 	rootCmd.AddCommand(newChain)
 	rootCmd.AddCommand(LocalICCmd)
-	rootCmd.AddCommand(BuildAppImage)
+	rootCmd.AddCommand(versionCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "error while executing your CLI. Err: %v\n", err)
@@ -27,11 +26,19 @@ var rootCmd = &cobra.Command{
 	Use:   "spawn",
 	Short: "Entry into the Interchain",
 	CompletionOptions: cobra.CompletionOptions{
-		HiddenDefaultCmd: true,
+		HiddenDefaultCmd: false,
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := cmd.Help(); err != nil {
 			log.Fatal(err)
 		}
+	},
+}
+
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print the version number of spawn",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(SpawnVersion)
 	},
 }
