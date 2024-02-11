@@ -77,9 +77,7 @@ var newChain = &cobra.Command{
 			return
 		}
 
-		// TODO: Error?
 		cfg.NewChain()
-
 		cfg.AnnounceSuccessfulBuild()
 	},
 }

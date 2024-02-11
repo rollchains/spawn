@@ -7,6 +7,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/cosmos/btcutil/bech32"
 	"github.com/strangelove-ventures/simapp"
 )
 
@@ -132,91 +133,79 @@ func (cfg *NewChainConfig) NewChain() {
 	// TODO: - fc.IsPath
 	// Interchaintest e2e is a nested submodule. go.mod is renamed to go.mod_ to avoid conflicts
 	// It will be unwound during unpacking to properly nest it.
-	/*
-		icTestFS := simapp.ICTestFS
-		err = fs.WalkDir(icTestFS, ".", func(relPath string, d fs.DirEntry, e error) error {
-			newPath := path.Join(NewDirName, relPath)
-			if strings.HasSuffix(newPath, "go.mod_") {
-				newPath = strings.ReplaceAll(newPath, "go.mod_", "go.mod")
-			}
+	err = fs.WalkDir(simapp.ICTestFS, ".", func(relPath string, d fs.DirEntry, e error) error {
+		newPath := path.Join(NewDirName, relPath)
 
-			// if Debugging {
-			// 	fmt.Printf("relPath: %s, newPath: %s\n", relPath, newPath)
-			// }
-
-			if relPath == "." {
-				return nil
-			}
-
-			if d.IsDir() {
-				// if relPath is a dir, continue walking
-				return nil
-			}
-
-			for _, ignoreFile := range IgnoredFiles {
-				if strings.HasSuffix(newPath, ignoreFile) || strings.HasPrefix(newPath, ignoreFile) {
-					if Debugging {
-						fmt.Println("ignoring", newPath)
-					}
-					return nil
-				}
-			}
-
-			// grab the file contents from path
-			fileContent, err := icTestFS.ReadFile(relPath)
-			if err != nil {
-				return err
-			}
-			fileContent = removeDisabledFeatures(disabled, newPath, fileContent)
-
-			fc := string(fileContent)
-
-			if fc == "REMOVE" {
-				// don't save this file
-				return nil
-			}
-
-			// replace high level info
-			if strings.HasSuffix(relPath, path.Join("interchaintest", "setup.go")) {
-				// TODO: a lot of this is the same for the testnet, re-use it in a helper func for the basic conversion types.
-				// The hardcoding of values is also not nice, but it's a start.
-
-				fc = strings.ReplaceAll(fc, `ibc.NewDockerImage("wasmd", "local", "1025:1025")`, fmt.Sprintf(`ibc.NewDockerImage("%s", "local", "1025:1025")`, strings.ToLower(projName))) // must be first
-				fc = strings.ReplaceAll(fc, "mydenom", cfg.TokenDenom)
-				fc = strings.ReplaceAll(fc, `Binary  = "wasmd"`, fmt.Sprintf(`Binary  = "%s"`, binaryName)) // else it would replace the Cosmwasm/wasmd import path
-				fc = strings.ReplaceAll(fc, "appName", projName)
-				fc = strings.ReplaceAll(fc, `Bech32 = "wasm"`, fmt.Sprintf(`Bech32 = "%s"`, bech32Prefix))
-
-				// making dynamic would be nice (req: regex. Would always be \"wasm1.*\" or something like that)
-				// gov, acc0, acc1
-				for _, addr := range []string{"wasm10d07y265gmmuvt4z0w9aw880jnsr700js7zslc", "wasm1hj5fveer5cjtn4wd6wstzugjfdxzl0xpvsr89g", "wasm1efd63aw40lxf3n4mhf7dzhjkr453axursysrvp"} {
-					_, bz, err := bech32.Decode(addr, 100)
-					if err != nil {
-						panic(err)
-					}
-
-					newAddr, err := bech32.Encode(bech32Prefix, bz)
-					if err != nil {
-						panic(err)
-					}
-
-					fc = strings.ReplaceAll(fc, addr, newAddr)
-				}
-			}
-
-			if err := os.MkdirAll(path.Dir(newPath), 0755); err != nil {
-				return err
-			}
-			if err := os.WriteFile(newPath, []byte(fc), 0644); err != nil {
-				return err
-			}
-
-			return nil
-		})
-		if err != nil {
-			fmt.Println(err)
+		// work around to make nested embed.FS happy.
+		if strings.HasSuffix(newPath, "go.mod_") {
+			newPath = strings.ReplaceAll(newPath, "go.mod_", "go.mod")
 		}
-	*/
+
+		if relPath == "." {
+			return nil
+		}
+
+		if d.IsDir() {
+			return nil
+		}
+
+		myFileContent := NewFileContent(relPath, newPath)
+
+		if myFileContent.HasIgnoreFile() {
+			if Debugging {
+				fmt.Println("[!] Ignoring File: ", myFileContent.NewPath)
+			}
+			return nil
+		}
+
+		if cfg.Debugging {
+			fmt.Println(myFileContent)
+		}
+
+		// Read the file contents from the embedded FS
+		if fileContent, err := simapp.ICTestFS.ReadFile(relPath); err != nil {
+			return err
+		} else {
+			// Save the file's content to the struct
+			myFileContent.Contents = string(fileContent)
+		}
+
+		// Removes any modules references within interchaintest that we do not care about
+		myFileContent.RemoveDisabledFeatures(cfg)
+
+		if myFileContent.IsPath(path.Join("interchaintest", "setup.go")) {
+			myFileContent.ReplaceAll( // must be first
+				`ibc.NewDockerImage("wasmd", "local", "1025:1025")`,
+				fmt.Sprintf(`ibc.NewDockerImage("%s", "local", "1025:1025")`, strings.ToLower(cfg.ProjectName)),
+			)
+			myFileContent.ReplaceAll("mydenom", cfg.TokenDenom)
+			myFileContent.ReplaceAll("appName", cfg.ProjectName)
+			myFileContent.ReplaceAll(`Binary  = "wasmd"`, fmt.Sprintf(`Binary  = "%s"`, cfg.BinaryName)) // else it would replace the Cosmwasm/wasmd import path
+			myFileContent.ReplaceAll(`Bech32 = "wasm"`, fmt.Sprintf(`Bech32 = "%s"`, cfg.Bech32Prefix))
+
+			// making dynamic would be nice (req: regex. Would always be \"wasm1.*\" or something like that)
+			// gov, acc0, acc1
+			for _, addr := range []string{"wasm10d07y265gmmuvt4z0w9aw880jnsr700js7zslc", "wasm1hj5fveer5cjtn4wd6wstzugjfdxzl0xpvsr89g", "wasm1efd63aw40lxf3n4mhf7dzhjkr453axursysrvp"} {
+				_, bz, err := bech32.Decode(addr, 100)
+				if err != nil {
+					panic(err)
+				}
+
+				newAddr, err := bech32.Encode(cfg.Bech32Prefix, bz)
+				if err != nil {
+					panic(err)
+				}
+
+				myFileContent.ReplaceAll(addr, newAddr)
+			}
+
+		}
+
+		return myFileContent.Save()
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	if cfg.GitInitOnCreate {
 		cfg.GitInitNewProjectRepo()
@@ -242,9 +231,7 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 	}
 
 	// remove any left over `// spawntag:` comments
-	// fileContent = RemoveTaggedLines("", string(fileContent), false)
-
-	// return fileContent
+	fc.RemoveTaggedLines("", false)
 }
 
 func (fc *FileContent) RemoveTokenFactory() {
