@@ -77,26 +77,15 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 	fc.Contents = strings.Join(newContent, "\n")
 }
 
-func (fc *FileContent) DeleteContents(path string) {
-	if strings.HasSuffix(fc.NewPath, path) {
-		fmt.Println("Deleting contents for", path)
-		fc.Contents = ""
-	}
-}
-
 // RemoveGeneralModule removes any matching names from the fileContent.
 // i.e. if moduleFind is "tokenfactory" any lines with "tokenfactory" will be removed
 // including comments.
 // If an import or other line depends on a solo module a user wishes to remove, add a comment to the line
 // such as `// tag:tokenfactory` to also remove other lines within the simapp template
 func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...string) {
-	// if !strings.HasSuffix(fc.NewPath, pathSuffix) {
-	// 	return
-	// }
-
 	found := false
 	for _, suffix := range pathSuffix {
-		if strings.HasSuffix(fc.RelativePath, suffix) {
+		if fc.IsPath(suffix) {
 			found = true
 			break
 		}

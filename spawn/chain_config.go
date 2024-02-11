@@ -106,17 +106,7 @@ func (cfg *NewChainConfig) NewChain() {
 			myFileContent.Contents = string(fileContent)
 		}
 
-		// TODO:
-		// - Remove data we do nto care about
-		// - Replace  (Maybe we do the replaces first? not sure if there is a benifit)
-
-		// fileContent = removeDisabledFeatures(disabled, relPath, fileContent)
-		// fc := string(fileContent)
-		// if fc == "REMOVE" {
-		// 	// don't save this file
-		// 	return nil
-		// }
-
+		// Removes any modules we care nothing about
 		myFileContent.RemoveDisabledFeatures(cfg)
 
 		// scripts/test_node.sh
@@ -130,7 +120,7 @@ func (cfg *NewChainConfig) NewChain() {
 		// *testnet.json (chains/ directory)
 		myFileContent.ReplaceLocalInterchainJSON(cfg)
 
-		// * All Files (maybe do first?)
+		// *All Files
 		myFileContent.ReplaceEverywhere(cfg)
 
 		return myFileContent.Save()
@@ -139,7 +129,7 @@ func (cfg *NewChainConfig) NewChain() {
 		fmt.Println(err)
 	}
 
-	// TODO:
+	// TODO: - fc.IsPath
 	// Interchaintest e2e is a nested submodule. go.mod is renamed to go.mod_ to avoid conflicts
 	// It will be unwound during unpacking to properly nest it.
 	/*
@@ -337,7 +327,7 @@ func (fc *FileContent) RemoveCosmWasm() {
 // given a go mod, remove line(s) with the importPath present.
 func (fc *FileContent) RemoveGoModImport(importPath string) {
 	// must be a go.mod file to remove the importPath
-	if !strings.HasSuffix(fc.RelativePath, "go.mod") && !strings.HasSuffix(fc.RelativePath, "go.sum") {
+	if !fc.IsPath("go.mod") && !fc.IsPath("go.sum") {
 		return
 	}
 
