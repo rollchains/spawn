@@ -6,18 +6,29 @@ import (
 )
 
 const (
-	expectedFormat = "// spawntag:"
-	commentFormat  = "?spawntag:"
+	ExpectedFormat    = "// spawntag:"
+	CommentSwapFormat = "?spawntag:"
 )
+
+func hasIgnoreComment(line string) bool {
+	return strings.Contains(line, "//ignore") || strings.Contains(line, "// ignore") || strings.Contains(line, "spawntag:ignore")
+}
 
 // Sometimes we remove a module line and would like to swap it for another.
 func (fc *FileContent) HandleCommentSwaps(name string) {
-	newContent := make([]string, 0, len(strings.Split(fc.Contents, "\n")))
+	if !strings.Contains(fc.Contents, CommentSwapFormat) {
+		return
+	}
 
-	uncomment := fmt.Sprintf("%s:%s", commentFormat, name)
+	splitContent := strings.Split(fc.Contents, "\n")
 
-	for idx, line := range strings.Split(fc.Contents, "\n") {
+	newContent := make([]string, 0, len(splitContent))
+
+	uncomment := fmt.Sprintf("%s:%s", CommentSwapFormat, name)
+
+	for idx, line := range splitContent {
 		hasUncommentTag := strings.Contains(line, uncomment)
+
 		if hasUncommentTag {
 			line = strings.Replace(line, "//", "", 1)
 			line = strings.TrimRight(strings.Replace(line, fmt.Sprintf("// %s", uncomment), "", 1), " ")
@@ -32,10 +43,11 @@ func (fc *FileContent) HandleCommentSwaps(name string) {
 
 // RemoveTaggedLines deletes tagged lines or just removes the comment if desired.
 func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
-	newContent := make([]string, 0, len(strings.Split(fc.Contents, "\n")))
+	splitContent := strings.Split(fc.Contents, "\n")
+	newContent := make([]string, 0, len(splitContent))
 
 	startIdx := -1
-	for idx, line := range strings.Split(fc.Contents, "\n") {
+	for idx, line := range splitContent {
 		hasTag := strings.Contains(line, fmt.Sprintf("spawntag:%s", name))
 		hasMultiLineTag := strings.Contains(line, fmt.Sprintf("!spawntag:%s", name))
 
@@ -81,9 +93,9 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 func removeJustSpawnTagLineComment(line string) string {
 	// QOL for us to not tear our hair out if we have a space or not
 	// Could do this for all contents on load?
-	line = strings.ReplaceAll(line, "//spawntag:", expectedFormat)
+	line = strings.ReplaceAll(line, "//spawntag:", ExpectedFormat)
 
-	line = strings.Split(line, expectedFormat)[0]
+	line = strings.Split(line, ExpectedFormat)[0]
 	return strings.TrimRight(line, " ")
 }
 
@@ -91,16 +103,17 @@ func removeJustSpawnTagLineComment(line string) string {
 // i.e. if moduleFind is "tokenfactory" any lines with "tokenfactory" will be removed
 // including comments.
 // If an import or other line depends on a solo module a user wishes to remove, add a comment to the line
-// such as `// tag:tokenfactory` to also remove other lines within the simapp template
+// such as `// spawntag:tokenfactory` to also remove other lines within the simapp template
 func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...string) {
 	if !fc.InPaths(pathSuffix) {
 		return
 	}
 
-	newContent := make([]string, 0, len(strings.Split(fc.Contents, "\n")))
+	splitContent := strings.Split(fc.Contents, "\n")
+	newContent := make([]string, 0, len(splitContent))
 
 	startIdx := -1
-	for idx, line := range strings.Split(fc.Contents, "\n") {
+	for idx, line := range splitContent {
 		// if we are in a startIdx, then we need to continue until we find the close parenthesis (i.e. NewKeeper)
 		if startIdx != -1 {
 			fmt.Printf("rm %s startIdx: %d, %s\n", removeText, idx, line)
@@ -113,17 +126,17 @@ func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...str
 			continue
 		}
 
-		lineHas := strings.Contains(line, removeText)
-
 		// if line contains //ignore or // ignore, then we use that line
-		// useful if some text is 'wasm' as a bech32 prefix, not a variable / type.
+		// useful if some text is 'wasm' as a bech32 prefix, not a variable / type we need to remove.
 		if hasIgnoreComment(line) {
 			fmt.Printf("Ignoring removal: %s: %d, %s\n", removeText, idx, line)
 			newContent = append(newContent, line)
 			continue
 		}
 
-		if lineHas && (strings.HasSuffix(strings.TrimSpace(line), "(") || strings.HasSuffix(strings.TrimSpace(line), "{")) {
+		lineHas := strings.Contains(line, removeText)
+
+		if lineHas && DoesLineEndWithOpenSymbol(line) {
 			startIdx = idx
 			fmt.Printf("startIdx %s: %d, %s\n", removeText, idx, line)
 			continue
@@ -140,6 +153,12 @@ func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...str
 	fc.Contents = strings.Join(newContent, "\n")
 }
 
-func hasIgnoreComment(line string) bool {
-	return strings.Contains(line, "//ignore") || strings.Contains(line, "// ignore")
+// doesLineEndWithOpenSymbol returns true if the end of a line opens a statement such as a multi-line function.
+func DoesLineEndWithOpenSymbol(line string) bool {
+	// remove comment if there is one
+	if strings.Contains(line, "//") {
+		line = strings.Split(line, "//")[0]
+	}
+
+	return strings.HasSuffix(strings.TrimSpace(line), "(") || strings.HasSuffix(strings.TrimSpace(line), "{")
 }
