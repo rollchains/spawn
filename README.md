@@ -60,7 +60,7 @@ make testnet
 rolld keys list
 
 # send a transaction from one account to another
-rolld tx bank send acc0 $(rolld keys show acc1 -a) 1stake --chain-id=chainid-1
+rolld tx bank send acc0 $(rolld keys show acc1 -a) 1uroll --chain-id=chainid-1
 
 # copy the tx hash and replace the "..." in the next line
 rolld q bank balances $(rolld keys show acc1 -a)
