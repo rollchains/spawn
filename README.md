@@ -1,4 +1,13 @@
-# spawn
+<div align="center">
+  <h1>Spawn</h1>
+
+Spawn is the customized modular Cosmos-SDK blockchain building platform with the best developer experience. Pick and choose modules to create a blockchain tailor-fit for your needs. Use the Cosmos tools you're already familiar with. Quickly test interoperability between your new network and established networks like the Cosmos-Hub across local-devnet, public testnet, and mainnet through native InterchainTest support. Take advantage of the latest innovations, such as Proof-Of-Authority consensus and Celestia Data Availability. 
+
+## Getting Started
+
+https://github.com/rollchains/spawn/assets/10821110/e097ab05-0dfb-406e-a66d-f2ccf37fb66c
+
+
 
 ## Goals
 - Easy templating for a new chain from base
