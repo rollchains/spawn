@@ -204,8 +204,14 @@ proto-check-breaking:
 
 ## --- Testnet Utilities ---
 get-localic:
-	git clone --branch v8.1.0 https://github.com/strangelove-ventures/interchaintest.git
-	cd interchaintest/local-interchain && make install
+	@echo "Installing local-interchain"
+	git clone --branch v8.1.0 https://github.com/strangelove-ventures/interchaintest.git interchaintest-downloader
+	cd interchaintest-downloader/local-interchain && make install
+
+is-localic-installed:
+ifeq (,$(shell which local-ic))
+	make get-localic
+endif
 
 get-heighliner:
 	git clone https://github.com/strangelove-ventures/heighliner.git
@@ -219,7 +225,7 @@ else
 	docker build . -t wasmd:local
 endif
 
-.PHONY: get-heighliner local-image
+.PHONY: get-heighliner local-image is-localic-installed
 
 ###############################################################################
 ###                                     e2e                                 ###
@@ -233,7 +239,9 @@ ictest-basic:
 ###                                    testnet                              ###
 ###############################################################################
 
-setup-testnet: install local-image
+setup-testnet: is-localic-installed install local-image setup-testnet-keys
+
+setup-testnet-keys:
 # import keys from testnet.json into test keyring
 	-`echo "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry" | wasmd keys add acc0 --recover`
 	-`echo "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise" | wasmd keys add acc1 --recover`
