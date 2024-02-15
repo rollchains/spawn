@@ -98,7 +98,7 @@ func (cfg *NewChainConfig) SetupMainChainApp() error {
 	simappFS := simapp.SimAppFS
 	return fs.WalkDir(simappFS, ".", func(relPath string, d fs.DirEntry, e error) error {
 		newPath := path.Join(newDirName, relPath)
-		fc, err := cfg.getFileContent(newPath, simappFS, relPath, d)
+		fc, err := GetFileContent(cfg.Logger, newPath, simappFS, relPath, d)
 		if err != nil {
 			return err
 		} else if fc == nil {
@@ -142,7 +142,7 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 			newPath = strings.ReplaceAll(newPath, "go.mod_", "go.mod")
 		}
 
-		fc, err := cfg.getFileContent(newPath, ictestFS, relPath, d)
+		fc, err := GetFileContent(cfg.Logger, newPath, ictestFS, relPath, d)
 		if err != nil {
 			return err
 		} else if fc == nil {
@@ -170,7 +170,7 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 	})
 }
 
-func (cfg *NewChainConfig) getFileContent(newFilePath string, fs embed.FS, relPath string, d fs.DirEntry) (*FileContent, error) {
+func GetFileContent(logger *slog.Logger, newFilePath string, fs embed.FS, relPath string, d fs.DirEntry) (*FileContent, error) {
 	if relPath == "." {
 		return nil, nil
 	}
@@ -179,10 +179,10 @@ func (cfg *NewChainConfig) getFileContent(newFilePath string, fs embed.FS, relPa
 		return nil, nil
 	}
 
-	fc := NewFileContent(cfg.Logger, relPath, newFilePath)
+	fc := NewFileContent(logger, relPath, newFilePath)
 
 	if fc.HasIgnoreFile() {
-		cfg.Logger.Debug("Ignoring file", "file", fc.NewPath)
+		logger.Debug("Ignoring file", "file", fc.NewPath)
 		return nil, nil
 	}
 

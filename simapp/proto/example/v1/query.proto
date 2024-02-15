@@ -10,7 +10,7 @@ option go_package = "github.com/strangelove-ventures/simapp/x/example/types";
 service Query {
   // Params queries all parameters of the packetforward module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/edxample/v1/params";
+    option (google.api.http).get = "/example/v1/params";
   }
 }
 

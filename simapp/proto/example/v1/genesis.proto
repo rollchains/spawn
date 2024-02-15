@@ -14,7 +14,7 @@ message GenesisState {
 
 // Params defines the set of packetforward parameters.
 message Params {
-  option (amino.name) = "poa/params";
+  option (amino.name) = "example/params";
   option (gogoproto.equal) = true;
   option (gogoproto.goproto_stringer) = false;
 

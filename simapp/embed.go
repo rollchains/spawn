@@ -17,4 +17,4 @@ var ICTestFS embed.FS
 // We only need to copy over the proto/ here, since the x/ will be generated automatically
 //
 //go:embed proto/*
-var ProtoModule embed.FS
+var ProtoModuleFS embed.FS
