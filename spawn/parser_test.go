@@ -1,6 +1,7 @@
 package spawn
 
 import (
+	"log/slog"
 	"path"
 	"strings"
 	"testing"
@@ -59,6 +60,7 @@ func TestBatchRemoveText(t *testing.T) {
 		)
 		third line of source
 		// some comment`,
+		Logger: slog.Default(),
 	}
 
 	fc.RemoveModuleFromText("test", path.Join("wrong-dir", "app.go"))
@@ -80,6 +82,7 @@ final line`
 
 	fc := &FileContent{
 		Contents: content,
+		Logger:   slog.Default(),
 	}
 
 	require.Equal(t, 8, contentLen(fc))
