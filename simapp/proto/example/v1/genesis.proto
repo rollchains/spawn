@@ -1,10 +1,10 @@
 syntax = "proto3";
-package packetforward.v1;
+package simapp.v1;
 
 import "gogoproto/gogo.proto";
 import "amino/amino.proto";
 
-option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types";
+option go_package = "github.com/strangelove-ventures/simapp/x/module/types";
 
 // GenesisState defines the packetforward genesis state
 message GenesisState {

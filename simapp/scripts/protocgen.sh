@@ -21,7 +21,7 @@ buf generate --template buf.gen.pulsar.yaml
 
 cd ..
 
-cp -r github.com/strangelove-ventures/poa/* ./
+cp -r github.com/strangelove-ventures/simapp/* ./
 rm -rf api && mkdir api
 mv strangelove_ventures/poa/* ./api
 rm -rf github.com strangelove_ventures

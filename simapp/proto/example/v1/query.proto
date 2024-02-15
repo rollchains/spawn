@@ -1,10 +1,10 @@
 syntax = "proto3";
-package packetforward.v1;
+package simapp.v1;
 
 import "google/api/annotations.proto";
-import "packetforward/v1/genesis.proto";
+import "simapp/v1/genesis.proto";
 
-option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types";
+option go_package = "github.com/strangelove-ventures/simapp/x/module/types";
 
 // Query provides defines the gRPC querier service.
 service Query {
