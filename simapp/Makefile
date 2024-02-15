@@ -10,7 +10,7 @@ SIMAPP = ./app
 
 # for dockerized protobuf tools
 DOCKER := $(shell which docker)
-HTTPS_GIT := https://github.com/CosmWasm/wasmd.git
+HTTPS_GIT := github.com/strangelove-ventures/simapp.git
 
 export GO111MODULE = on
 

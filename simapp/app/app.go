@@ -152,7 +152,7 @@ import (
 	globalfeetypes "github.com/reecepbcups/globalfee/x/globalfee/types"
 )
 
-const appName = "WasmApp"
+const appName = "CosmWasmApp"
 
 var (
 	NodeDir      = ".wasmd"

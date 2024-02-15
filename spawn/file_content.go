@@ -98,7 +98,7 @@ func (fc *FileContent) ReplaceDockerFile(cfg *NewChainConfig) {
 func (fc *FileContent) ReplaceApp(cfg *NewChainConfig) {
 	if fc.IsPath(path.Join("app", "app.go")) {
 		fc.ReplaceAll(".wasmd", cfg.HomeDir)
-		fc.ReplaceAll(`const appName = "WasmApp"`, fmt.Sprintf(`const appName = "%s"`, cfg.ProjectName))
+		fc.ReplaceAll(`CosmWasmApp`, cfg.ProjectName)
 		fc.ReplaceAll(`Bech32Prefix = "wasm"`, fmt.Sprintf(`Bech32Prefix = "%s"`, cfg.Bech32Prefix))
 	}
 }
@@ -118,7 +118,7 @@ func (fc *FileContent) ReplaceEverywhere(cfg *NewChainConfig) {
 func (fc *FileContent) ReplaceMakeFile(cfg *NewChainConfig) {
 	bin := cfg.BinDaemon
 
-	fc.ReplaceAll("https://github.com/CosmWasm/wasmd.git", fmt.Sprintf("https://%s.git", cfg.GithubPath()))
+	fc.ReplaceAll("https://github.com/strangelove-ventures/simapp.git", fmt.Sprintf("https://%s.git", cfg.GithubPath()))
 	fc.ReplaceAll("version.Name=wasm", fmt.Sprintf("version.Name=%s", cfg.ProjectName)) // ldflags
 	fc.ReplaceAll("version.AppName=wasmd", fmt.Sprintf("version.AppName=%s", bin))
 	fc.ReplaceAll("cmd/wasmd", fmt.Sprintf("cmd/%s", bin))
