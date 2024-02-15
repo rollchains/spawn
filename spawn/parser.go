@@ -96,7 +96,6 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 		newContent = append(newContent, line)
 	}
 
-	// return []byte(strings.Join(newContent, "\n"))
 	fc.Contents = strings.Join(newContent, "\n")
 }
 
@@ -137,6 +136,7 @@ func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...str
 		// (i.e. NewKeeper in app.go is a good example fo this)
 		if startBatchDelete {
 			fmt.Printf("rm %s startIdx: %d, %s\n", removeText, idx, line)
+
 			if strings.TrimSpace(line) == ")" || strings.TrimSpace(line) == "}" {
 				fmt.Println("endIdx:", idx, line)
 				startBatchDelete = false
