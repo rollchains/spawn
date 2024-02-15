@@ -20,10 +20,19 @@ var moduleCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(1),
 	Aliases: []string{"m", "mod", "proto"},
 	Run: func(cmd *cobra.Command, args []string) {
+		logger := GetLogger()
 
 		// TODO: Are special characters allowed?
 		// ext name is the x/ 'module' name.
 		extName := strings.ToLower(args[0])
+
+		specialChars := "!@#$%^&*()_+{}|-:<>?`=[]\\;',./~"
+		for _, char := range specialChars {
+			if strings.Contains(extName, string(char)) {
+				logger.Error("Special characters are not allowed in module names")
+				return
+			}
+		}
 
 		// TODO: `module name` will regen if it does not already exist,
 		// else it will add in a base template. (Smart create/edit)
@@ -77,13 +86,8 @@ func SetupModule(logger *slog.Logger, extName string) error {
 		fc.ReplaceAll("github.com/strangelove-ventures/simapp", moduleName)
 		fc.ReplaceAll("strangelove_ventures.simapp", moduleNameProto)
 
+		// replace example -> the new x/ name
 		fc.ReplaceAll("example", extName)
-		// fc.ReplaceAll("example.module.v1", fmt.Sprintf("%s.module.v1", extName))
-		// fc.ReplaceAll("x/example", fmt.Sprintf("x/%s", extName))
-		// fc.ReplaceAll("example/Params", fmt.Sprintf("%s/Params", extName))
-		// fc.ReplaceAll("example/v1/params", fmt.Sprintf("%s/v1/params", extName))
-		// fc.ReplaceAll("package example.v1", fmt.Sprintf("package %s.v1", extName))
-		// fc.ReplaceAll(`import "example`, fmt.Sprintf(`import "%s`, extName))
 
 		// TODO: set the values in the keepers / msg server automatically
 

@@ -18,5 +18,5 @@ message Params {
   option (gogoproto.equal) = true;
   option (gogoproto.goproto_stringer) = false;
 
-  bool example_bool = 2;
+  bool some_value = 2;
 }
