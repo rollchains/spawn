@@ -20,7 +20,7 @@ https://github.com/rollchains/spawn/assets/10821110/0de7bf37-c82a-4826-a3e3-13de
 - Docker - [official site](https://docs.docker.com/get-docker/)
 
 ## Getting Started
-In this tutorial, we'll create a new Cosmos-SDK blockchain called "rollchain". This chain has tokenfactory, POA, and globalfee modules enabled, but we'll disable cosmwasm.
+In this tutorial, we'll create and interact with a new Cosmos-SDK blockchain called "rollchain", with the token denomination "uroll". This chain has tokenfactory, POA, and globalfee modules enabled, but we'll disable cosmwasm.
 
 1. Clone this repo and install
 
@@ -73,8 +73,9 @@ rolld q bank balances $(rolld keys show acc1 -a)
 git remote add origin https://github.com/{your_github_username}/rollchain.git
 git push -u origin master
 ```
+In this tutorial, we configured a new custom chain, launched a testnet for it, tested a simple token transfer, and then pushed the custom chain code to a new git repo. This tutorial demonstrates just how easy it is to create a brand new custom Cosmos-SDK blockchain from scratch, saving developers time.
 
-## Goals
+## Spawn Product Goals
 
 - Easy templating for a new chain from base
 
