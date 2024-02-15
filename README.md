@@ -4,37 +4,81 @@
 
 Spawn is the best development platform for building custom modular Cosmos-SDK blockchains. Pick and choose modules to create a network tailor-fit to your needs. Use the native Cosmos tools and standards you're already familiar with. Quickly test interoperability between your new chain and established networks like the Cosmos-Hub across local devnet, public testnet, and mainnet through native InterchainTest support. Take advantage of the latest innovations, such as Proof-Of-Authority consensus and Celestia Data Availability. Build without limits.
 
-## 1 Minute Demo
+## Spawn in Action
+
+In this demo @Reecepbcups:
+- Downloads and installs `spawn`
+- Creates a new chain, customizing the modules and genesis
+- Installs the chain binary and spins up a local testnet
+- Interacts with the chain using the `appd` CLI
 
 https://github.com/rollchains/spawn/assets/10821110/0de7bf37-c82a-4826-a3e3-13def6a53327
 
+## Requirements
+
+- `go 1.21+` - [official site](https://go.dev/doc/install)
+- Docker - [official site](https://docs.docker.com/get-docker/)
+
 ## Getting Started
-1. Install `go 1.21+` - [official site](https://go.dev/doc/install)
-2. Clone this repo and install
-    ```shell
-    $ git clone https://github.com/rollchains/spawn.git
-    $ cd spawn
-    $ make install
-    ```
-3. Scaffold a new custom chain
-    ```shell
-    $ spawn new customchain --bech32=customchain --disable=tokenfactory
-    ```
-4. Install the binary, and instantiate a testnet for your new chain
-   ```shell
-    $ cd customchain
-    $ make testnet
-    ```
-5. Open a new terminal and interact with your new chain. The command defaults to `appd`
-   ```shell
-    $ appd keys list
-    # copy the address for acc1 and replace the "..." in the next line
-    $ appd tx bank send acc0 ... 1stake --chain-id=chainid-1
-    # copy the tx hash and replace the "..." in the next line
-    $ appd q tx ...
-    ```
+1. Clone this repo and install
+
+```shell
+git clone https://github.com/rollchains/spawn.git
+cd spawn
+make install
+```
+
+2. Create your chain using the `spawn` command and customize it to your needs!
+
+```shell
+spawn new rollchain \ 
+    # the prefix for addresses
+    --bech32=roll \
+    # the coin denomination to create
+    --denom=uroll \ 
+    # the name of the binary
+    --bin=rolld \ 
+    # modules to disable
+    --disable=cosmwasm \
+    # the github username or organization to use for the module imports 
+    --org={your_github_username}
+```
+
+> *NOTE:* `spawn` creates a ready to use repository complete with `git` and GitHub CI. It can be quickly pushed to a new repository getting you and your team up and running quickly.
+
+3. Spin up a local testnet for your chain
+
+```shell
+cd rollchain
+make testnet
+```
+
+4. Send a transaction on your new chain
+
+```shell
+# list the keys that have been provisioned with funds in genesis
+rolld keys list
+
+# send a transaction from one account to another
+rolld tx bank send acc0 $(rolld keys show acc1 -a) 1uroll --chain-id=chainid-1
+
+# copy the tx hash and replace the "..." in the next line
+rolld q bank balances $(rolld keys show acc1 -a)
+```
+
+5. Push your new chain to a new repository
+
+> [Create a new repository on GitHub](https://github.com/new)
+
+```shell
+git add .
+git commit -m "My world changing world "
+git remote add origin https://github.com/{your_github_username}/rollchain.git
+git push -u origin master
+```
 
 ## Goals
+
 - Easy templating for a new chain from base
 
 - Local-Interchain nested, easy JSON configured starts
