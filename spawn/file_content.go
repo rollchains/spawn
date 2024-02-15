@@ -143,14 +143,14 @@ func (fc *FileContent) ReplaceLocalInterchainJSON(cfg *NewChainConfig) {
 		fc.ReplaceAll("mydenom", cfg.Denom)
 		fc.ReplaceAll("wasmd", cfg.BinDaemon)
 
-		fc.FindAndReplaceAddressBech32(cfg.Logger, "wasm", cfg.Bech32Prefix)
+		fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix)
 	}
 
 }
 
 // FindAndReplaceStandardWalletsBech32 finds a prefix1... address and replaces it with a new prefix1... address
 // This works for both standard wallets (38 length after prefix1) and also smart contracts (58)
-func (fc *FileContent) FindAndReplaceAddressBech32(logger *slog.Logger, oldPrefix, newPrefix string) {
+func (fc *FileContent) FindAndReplaceAddressBech32(oldPrefix, newPrefix string) {
 	oldPrefix = strings.TrimSuffix(oldPrefix, "1")
 	newPrefix = strings.TrimSuffix(newPrefix, "1")
 
@@ -159,7 +159,7 @@ func (fc *FileContent) FindAndReplaceAddressBech32(logger *slog.Logger, oldPrefi
 	r := regexp.MustCompile(oldPrefix + `1([0-9a-z]{58}|[0-9a-z]{38})`)
 
 	foundAddrs := r.FindAllString(fc.Contents, -1)
-	logger.Debug("Regex: Found Addresses", "addresses", foundAddrs, "path", fc.NewPath)
+	fc.Logger.Debug("Regex: Found Addresses", "addresses", foundAddrs, "path", fc.NewPath)
 
 	for _, addr := range foundAddrs {
 		_, bz, err := bech32.Decode(addr, 100)
