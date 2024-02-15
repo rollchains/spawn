@@ -8,7 +8,7 @@ option go_package = "github.com/strangelove-ventures/simapp/x/example/types";
 
 // Query provides defines the gRPC querier service.
 service Query {
-  // Params queries all parameters of the packetforward module.
+  // Params queries all parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/example/v1/params";
   }
