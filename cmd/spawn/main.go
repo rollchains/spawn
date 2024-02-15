@@ -34,30 +34,12 @@ func main() {
 func GetLogger() *slog.Logger {
 	w := os.Stderr
 
-	logLevel, err := rootCmd.PersistentFlags().GetString(LogLevelFlag)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var lvl slog.Level
-
-	switch strings.ToLower(logLevel) {
-	case "debug", "d":
-		lvl = slog.LevelDebug
-	case "info", "i":
-		lvl = slog.LevelInfo
-	case "warn", "w":
-		lvl = slog.LevelWarn
-	case "error", "e", "err":
-		lvl = slog.LevelError
-	default:
-		lvl = slog.LevelInfo
-	}
+	logLevel := parseLogLevelFromFlags()
 
 	slog.SetDefault(slog.New(
 		// TODO: Windows support colored logs: https://github.com/mattn/go-colorable `tint.NewHandler(colorable.NewColorable(w), nil)`
 		tint.NewHandler(w, &tint.Options{
-			Level:      lvl,
+			Level:      logLevel,
 			TimeFormat: time.Kitchen,
 			// Enables colors only if the terminal supports it
 			NoColor: !isatty.IsTerminal(w.Fd()),
@@ -86,4 +68,28 @@ var versionCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(SpawnVersion)
 	},
+}
+
+func parseLogLevelFromFlags() slog.Level {
+	logLevel, err := rootCmd.PersistentFlags().GetString(LogLevelFlag)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var lvl slog.Level
+
+	switch strings.ToLower(logLevel) {
+	case "debug", "d", "dbg":
+		lvl = slog.LevelDebug
+	case "info", "i", "inf":
+		lvl = slog.LevelInfo
+	case "warn", "w", "wrn":
+		lvl = slog.LevelWarn
+	case "error", "e", "err", "fatal", "f", "ftl":
+		lvl = slog.LevelError
+	default:
+		lvl = slog.LevelInfo
+	}
+
+	return lvl
 }
