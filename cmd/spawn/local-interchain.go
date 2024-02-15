@@ -2,34 +2,20 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"os/exec"
 	"path"
-	"strings"
-	"time"
 
-	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
 
 	"gitub.com/strangelove-ventures/spawn/spawn"
 )
 
-var (
-	LocalICDefaultVersion = "v8.1.0"
-	LocalICURL            = "https://github.com/strangelove-ventures/interchaintest/releases/download/" + LocalICDefaultVersion + "/local-ic"
-)
-
 const (
-	FlagVersionOverride = "version"
-	FlagForceDownload   = "download"
-	FlagLocationPath    = "print-location"
+	FlagLocationPath = "print-location"
 )
 
 func init() {
-	LocalICCmd.Flags().String(FlagVersionOverride, LocalICDefaultVersion, "change the local-ic version to use")
-	LocalICCmd.Flags().Bool(FlagForceDownload, false, "force download of local-ic")
 	LocalICCmd.Flags().Bool(FlagLocationPath, false, "print the location of local-ic binary")
 }
 
@@ -37,21 +23,18 @@ func init() {
 // make install && ICTEST_HOME=./simapp spawn local-ic start testnet
 // make install && cd simapp && spawn local-ic start testnet
 // ---
-// TODO: Do something like `curl https://get.ignite.com/cli! | bash`? just with windows support for path
 var LocalICCmd = &cobra.Command{
 	Use:   "local-ic",
 	Short: "Local Interchain",
-	Long:  fmt.Sprintf("Download Local Interchain from %s", LocalICURL),
+	Long:  "Wrapper for Local Interchain. Download with `make get-localic`",
 	// Args:  cobra.
 	Run: func(cmd *cobra.Command, args []string) {
-		version, _ := cmd.Flags().GetString(FlagVersionOverride)
-		forceDownload, _ := cmd.Flags().GetBool(FlagForceDownload)
 		debugBinaryLoc, _ := cmd.Flags().GetBool(FlagLocationPath)
 
 		loc := whereIsLocalICInstalled()
-		if (forceDownload || loc == "") && version != "" {
-			downloadBin(version)
-			loc = whereIsLocalICInstalled()
+		if loc == "" {
+			fmt.Println("local-ic not found. Please run `make get-localic`")
+			return
 		}
 
 		if debugBinaryLoc {
@@ -88,77 +71,4 @@ func whereIsLocalICInstalled() string {
 	}
 
 	return ""
-}
-
-func downloadBin(version string) error {
-	file := "local-ic"
-
-	f, err := os.Create(file)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-
-	if version != "" && version != LocalICDefaultVersion {
-		if version[0] != 'v' {
-			version = "v" + version
-		}
-
-		LocalICURL = strings.ReplaceAll(LocalICURL, LocalICDefaultVersion, version)
-	}
-
-	dir := path.Join(currentDir, "bin")
-	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-		return err
-	}
-
-	filePath := path.Join(dir, file)
-
-	if err := downloadWithProgress(filePath, LocalICURL); err != nil {
-		return err
-	}
-
-	if err := os.Chmod(file, 0755); err != nil {
-		return err
-	}
-
-	fmt.Printf("✅ Local Interchain Downloaded to %s\n", filePath)
-	return nil
-}
-
-func downloadWithProgress(destinationPath, downloadUrl string) error {
-	req, err := http.NewRequest("GET", downloadUrl, nil)
-	if err != nil {
-		return err
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
-
-	f, err := os.OpenFile(destinationPath, os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return err
-	}
-
-	bar := progressbar.NewOptions64(
-		resp.ContentLength,
-		progressbar.OptionSetDescription("⏳ Downloading Local-Interchain..."),
-		progressbar.OptionSetWidth(50),
-		progressbar.OptionThrottle(0*time.Millisecond),
-		progressbar.OptionOnCompletion(func() {
-			fmt.Fprint(os.Stderr, "\n")
-		}),
-	)
-
-	io.Copy(io.MultiWriter(f, bar), resp.Body)
-	return nil
 }
