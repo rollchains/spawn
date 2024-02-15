@@ -73,10 +73,12 @@ func SetupModule(logger *slog.Logger, extName string) error {
 		}
 
 		// any file content that has github.com/strangelove-ventures/simapp replace to moduleName
+
 		fc.ReplaceAll("github.com/strangelove-ventures/simapp", moduleName)
 		fc.ReplaceAll("strangelove_ventures.simapp", moduleNameProto)
 
 		// TODO: maybe juts a straight up replace all on 'example' here instead?
+		fc.ReplaceAll("example.module.v1", fmt.Sprintf("%s.module.v1", extName))
 		fc.ReplaceAll("x/example", fmt.Sprintf("x/%s", extName))
 		fc.ReplaceAll("example/Params", fmt.Sprintf("%s/Params", extName))
 		fc.ReplaceAll("example/v1/params", fmt.Sprintf("%s/v1/params", extName))
