@@ -22,7 +22,6 @@ var moduleCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		logger := GetLogger()
 
-		// TODO: Are special characters allowed?
 		// ext name is the x/ 'module' name.
 		extName := strings.ToLower(args[0])
 
@@ -34,13 +33,19 @@ var moduleCmd = &cobra.Command{
 			}
 		}
 
-		// TODO: `module name` will regen if it does not already exist,
-		// else it will add in a base template. (Smart create/edit)
+		cwd, err := os.Getwd()
+		if err != nil {
+			logger.Error("Error getting current working directory", err)
+			return
+		}
 
-		// if does not exist:
+		// see if cwd/x/extName exists
+		if _, err := os.Stat(path.Join(cwd, "x", extName)); err == nil {
+			logger.Error("TODO: Module already exists in x/. (Prompt UI to perform actions? (protoc-gen, generate keeper, setup to app.go, etc?))", "module", extName)
+			return
+		}
+
 		SetupModule(GetLogger(), extName)
-		// else:
-		// make proto-gen for the user / refresh?
 
 		// Announce the new module & how to code gen
 		fmt.Printf("\n🎉 New Module '%s' generated!\n", extName)
