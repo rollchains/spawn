@@ -14,5 +14,7 @@ var SimAppFS embed.FS
 //go:embed interchaintest/*
 var ICTestFS embed.FS
 
-//go:embed proto/* x/*
+// We only need to copy over the proto/ here, since the x/ will be generated automatically
+//
+//go:embed proto/*
 var ProtoModule embed.FS
