@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	SupportedModules = items{
+	SupportedFeatures = items{
 		{ID: "tokenfactory", IsSelected: true, Details: "Native token minting, sending, and burning on the chain"},
 		{ID: "poa", IsSelected: true, Details: "Proof-of-Authority consensus algorithm (permissioned network)"},
 		{ID: "globalfee", IsSelected: true, Details: "Static minimum fee(s) for all transactions, controlled by governance"},
@@ -35,7 +35,7 @@ func init() {
 	newChain.Flags().StringP(FlagBinDaemon, "b", "simd", "binary name")
 	newChain.Flags().String(FlagGithubOrg, "rollchains", "github organization")
 	newChain.Flags().String(FlagTokenDenom, "token", "bank token denomination")
-	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features: "+SupportedModules.String())
+	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features: "+SupportedFeatures.String())
 	newChain.Flags().Bool(FlagDebugging, false, "enable debugging")
 	newChain.Flags().Bool(FlagNoGit, false, "git init base")
 	newChain.Flags().Bool(FlagBypassPrompt, false, "bypass UI prompt")
@@ -66,7 +66,7 @@ var newChain = &cobra.Command{
 
 		bypassPrompt, _ := cmd.Flags().GetBool(FlagBypassPrompt)
 		if len(disabled) == 0 && !bypassPrompt {
-			items, err := selectItems(0, SupportedModules, true)
+			items, err := selectItems(0, SupportedFeatures, true)
 			if err != nil {
 				fmt.Println("Error selecting disabled:", err)
 				return

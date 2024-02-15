@@ -6,39 +6,50 @@ import (
 )
 
 const (
-	ExpectedFormat    = "// spawntag:"
-	CommentSwapFormat = "?spawntag:"
-)
+	// StdFormat is the standard format for removing a line if a feature is removed.
+	StdFormat = "spawntag:%s"
 
-func hasIgnoreComment(line string) bool {
-	return strings.Contains(line, "//ignore") || strings.Contains(line, "// ignore") || strings.Contains(line, "spawntag:ignore")
-}
+	// ExpectedFormat is the standard format for removing a line if a module is removed.
+	// e.g. // spawntag:tokenfactory would remove the line if tokenfactory is removed.
+	// NOTE: This is not user facing, and is only used for internal parsing of the simapp.
+	ExpectedFormat = "// spawntag:"
+
+	// CommentSwapFormat is the format for swapping a line with another if a module is removed.
+	CommentSwapFormat = "?spawntag:%s"
+
+	// MultiLineStartFormat is the format for starting a multi-line comment which removes all text
+	// until the end of the comment.
+	// <spawntag:[searchTerm]
+	MultiLineStartFormat = "<" + StdFormat
+
+	// spawntag:[searchTerm]>
+	MultiLineEndFormat = StdFormat + ">"
+)
 
 // Sometimes we remove a module line and would like to swap it for another.
 func (fc *FileContent) HandleCommentSwaps(name string) {
-	if !strings.Contains(fc.Contents, CommentSwapFormat) {
-		return
-	}
-
 	splitContent := strings.Split(fc.Contents, "\n")
 
-	newContent := make([]string, 0, len(splitContent))
-
-	uncomment := fmt.Sprintf("%s:%s", CommentSwapFormat, name)
+	uncommentSearchTag := fmt.Sprintf(CommentSwapFormat, name)
 
 	for idx, line := range splitContent {
-		hasUncommentTag := strings.Contains(line, uncomment)
-
-		if hasUncommentTag {
-			line = strings.Replace(line, "//", "", 1)
-			line = strings.TrimRight(strings.Replace(line, fmt.Sprintf("// %s", uncomment), "", 1), " ")
-			fmt.Printf("uncomment %s: %d, %s\n", name, idx, line)
+		// If the line does not have the comment swap tag, then continue
+		if !strings.Contains(line, uncommentSearchTag) {
+			continue
 		}
 
-		newContent = append(newContent, line)
+		// removes the // spawntag:[name] comment from the end of the source code
+		line = removeSpawnTagLineComment(line, uncommentSearchTag)
+
+		// uncomments the line (to expose the source code)
+		line = uncommentLine(line)
+
+		// Since we are just uncommenting the line, it's safe to just replace the line at the index
+		splitContent[idx] = line
+
 	}
 
-	fc.Contents = strings.Join(newContent, "\n")
+	fc.Contents = strings.Join(splitContent, "\n")
 }
 
 // RemoveTaggedLines deletes tagged lines or just removes the comment if desired.
@@ -46,39 +57,41 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 	splitContent := strings.Split(fc.Contents, "\n")
 	newContent := make([]string, 0, len(splitContent))
 
-	startIdx := -1
+	startMultiLineDelete := false
 	for idx, line := range splitContent {
-		hasTag := strings.Contains(line, fmt.Sprintf("spawntag:%s", name))
-		hasMultiLineTag := strings.Contains(line, fmt.Sprintf("!spawntag:%s", name))
 
 		// if the line has a tag, and the tag starts with a !, then we will continue until we
 		// find the end of the tag with another.
-		if startIdx != -1 {
-			if !hasMultiLineTag {
+		if startMultiLineDelete {
+			hasMultiLineEndTag := strings.Contains(line, fmt.Sprintf(MultiLineEndFormat, name))
+			if !hasMultiLineEndTag {
 				continue
 			}
 
-			startIdx = -1
+			// the line which has the closing multiline end tag, we then continue to add lines as normal
+			startMultiLineDelete = false
 			fmt.Println("endIdx:", idx, line)
 			continue
 		}
 
-		if hasMultiLineTag {
+		// <spawntag:[searchTerm]
+		if strings.Contains(line, fmt.Sprintf(MultiLineStartFormat, name)) {
 			if !deleteLine {
 				continue
 			}
 
-			startIdx = idx
+			startMultiLineDelete = true
 			fmt.Printf("startIdx %s: %d, %s\n", name, idx, line)
 			continue
 		}
 
-		if hasTag {
+		// remove a line if it contains spawntag:[searchTerm]
+		if strings.Contains(line, fmt.Sprintf(StdFormat, name)) {
 			if deleteLine {
 				continue
 			}
 
-			line = removeJustSpawnTagLineComment(line)
+			line = removeSpawnTagLineComment(line, ExpectedFormat)
 		}
 
 		newContent = append(newContent, line)
@@ -88,14 +101,13 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 	fc.Contents = strings.Join(newContent, "\n")
 }
 
-// removeLineComment removes just the spawntag comment from a line of code.
-// this way it is not user facing
-func removeJustSpawnTagLineComment(line string) string {
+// removeSpawnTagLineComment removes just the spawntag comment from a line of code.
+func removeSpawnTagLineComment(line string, tag string) string {
 	// QOL for us to not tear our hair out if we have a space or not
 	// Could do this for all contents on load?
 	line = strings.ReplaceAll(line, "//spawntag:", ExpectedFormat)
 
-	line = strings.Split(line, ExpectedFormat)[0]
+	line = strings.Split(line, fmt.Sprintf("// %s", tag))[0]
 	return strings.TrimRight(line, " ")
 }
 
@@ -126,9 +138,9 @@ func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...str
 			continue
 		}
 
-		// if line contains //ignore or // ignore, then we use that line
+		// if line contains //spawntag:ignorem then we use that line
 		// useful if some text is 'wasm' as a bech32 prefix, not a variable / type we need to remove.
-		if hasIgnoreComment(line) {
+		if strings.Contains(line, fmt.Sprintf(StdFormat, "ignore")) {
 			fmt.Printf("Ignoring removal: %s: %d, %s\n", removeText, idx, line)
 			newContent = append(newContent, line)
 			continue
@@ -161,4 +173,18 @@ func DoesLineEndWithOpenSymbol(line string) bool {
 	}
 
 	return strings.HasSuffix(strings.TrimSpace(line), "(") || strings.HasSuffix(strings.TrimSpace(line), "{")
+}
+
+// getCommentText returns the trimmed text from a line comment.
+func getCommentText(line string) string {
+	if strings.Contains(line, "//") {
+		text := strings.Split(line, "//")[1]
+		return strings.TrimSpace(text)
+	}
+
+	return ""
+}
+
+func uncommentLine(line string) string {
+	return strings.Replace(line, "//", "", 1)
 }

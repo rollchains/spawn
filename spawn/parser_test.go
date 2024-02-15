@@ -1,4 +1,4 @@
-package spawn_test
+package spawn
 
 import (
 	"fmt"
@@ -6,15 +6,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	spawn "gitub.com/strangelove-ventures/spawn/spawn"
+	// spawn "gitub.com/strangelove-ventures/spawn/spawn"
 )
 
 func TestUncomment(t *testing.T) {
 	content := `SourceCode goes here!
-//this is line 1 which should be uncommented // ?spawntag::test
+//this is line 1 which should be uncommented // ?spawntag:test
 untouched line 3 // spawntag:test`
 
-	fc := &spawn.FileContent{
+	fc := &FileContent{
 		Contents: content,
 	}
 
@@ -29,7 +29,7 @@ func TestRemoveLine(t *testing.T) {
 //this is line 1 which should be uncommented // ?spawntag::test
 this line gets deleted //spawntag:test`
 
-	fc := &spawn.FileContent{
+	fc := &FileContent{
 		Contents: content,
 	}
 
@@ -43,15 +43,15 @@ this line gets deleted //spawntag:test`
 
 func TestRemoveMultiLine(t *testing.T) {
 	content := `SourceCode goes here!
-// !spawntag:test
+// <spawntag:test
 these
 lines
 are
 removed
-// !spawntag:test
+// spawntag:test>
 final line`
 
-	fc := &spawn.FileContent{
+	fc := &FileContent{
 		Contents: content,
 	}
 
@@ -65,17 +65,22 @@ final line`
 	require.Equal(t, 2, contentLen(fc))
 }
 
-func TestLineEndsWithSymbol(t *testing.T) {
-	require.True(t, spawn.DoesLineEndWithOpenSymbol(`tokenfactory.NewKeeper(`))
-	require.True(t, spawn.DoesLineEndWithOpenSymbol(`tokenfactory.NewKeeper( // comment`))
-	require.True(t, spawn.DoesLineEndWithOpenSymbol(`tokenfactory.NewKeeper(    `))
-	require.True(t, spawn.DoesLineEndWithOpenSymbol(`tokenfactory{`))
-	require.True(t, spawn.DoesLineEndWithOpenSymbol(`tokenfactory{ // comment}`))
-
-	require.False(t, spawn.DoesLineEndWithOpenSymbol(` ) `))
-	require.False(t, spawn.DoesLineEndWithOpenSymbol(` )((((())))(}{}`))
+func TestCommentText(t *testing.T) {
+	require.Equal(t, getCommentText("test // my comment"), "my comment")
+	require.Equal(t, getCommentText("test //my comment"), "my comment")
 }
 
-func contentLen(fs *spawn.FileContent) int {
+func TestLineEndsWithSymbol(t *testing.T) {
+	require.True(t, DoesLineEndWithOpenSymbol(`tokenfactory.NewKeeper(`))
+	require.True(t, DoesLineEndWithOpenSymbol(`tokenfactory.NewKeeper( // comment`))
+	require.True(t, DoesLineEndWithOpenSymbol(`tokenfactory.NewKeeper(    `))
+	require.True(t, DoesLineEndWithOpenSymbol(`tokenfactory{`))
+	require.True(t, DoesLineEndWithOpenSymbol(`tokenfactory{ // comment}`))
+
+	require.False(t, DoesLineEndWithOpenSymbol(` ) `))
+	require.False(t, DoesLineEndWithOpenSymbol(` )((((())))(}{}`))
+}
+
+func contentLen(fs *FileContent) int {
 	return len(strings.Split(fs.Contents, "\n"))
 }
