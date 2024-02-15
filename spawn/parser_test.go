@@ -2,6 +2,7 @@ package spawn
 
 import (
 	"fmt"
+	"path"
 	"strings"
 	"testing"
 
@@ -24,21 +25,50 @@ untouched line 3 // spawntag:test`
 	require.Equal(t, "this is line 1 which should be uncommented", strings.Split(fc.Contents, "\n")[1])
 }
 
-func TestRemoveLine(t *testing.T) {
-	content := `SourceCode goes here!
-//this is line 1 which should be uncommented // ?spawntag::test
-this line gets deleted //spawntag:test`
-
+func TestRemoveLineWithTag(t *testing.T) {
 	fc := &FileContent{
-		Contents: content,
+		Contents: `SourceCode goes here!
+		//this is line 1 which should be uncommented // ?spawntag::test
+		this line gets deleted //spawntag:test`,
 	}
 
 	deleteLine := true
 	fc.RemoveTaggedLines("test", deleteLine)
-
-	fmt.Println(fc.Contents)
-
+	// fmt.Println(fc.Contents)
 	require.Equal(t, 2, contentLen(fc))
+}
+
+func TestBatchRemoveText(t *testing.T) {
+	happyDir := path.Join("app", "app.go")
+
+	fc := &FileContent{
+		RelativePath: happyDir,
+		Contents: `// Some random comment here
+		first line of source
+		second line of source
+
+		app.TestKeeper = testkeeper.NewKeeper(
+			appCodec,
+			app.keys[testtypes.StoreKey],
+			app.AccountKeeper,
+			app.BankKeeper,
+			app.DistrKeeper,
+			[]string{
+				testtypes.1,
+				testtypes.2,
+				testtypes.3,
+			},
+			authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		)
+		third line of source
+		// some comment`,
+	}
+
+	fc.RemoveModuleFromText("test", path.Join("wrong-dir", "app.go"))
+	require.Equal(t, 19, contentLen(fc))
+
+	fc.RemoveModuleFromText("test", happyDir)
+	require.Equal(t, 6, contentLen(fc))
 }
 
 func TestRemoveMultiLine(t *testing.T) {

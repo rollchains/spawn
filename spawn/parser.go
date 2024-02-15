@@ -29,20 +29,19 @@ const (
 // Sometimes we remove a module line and would like to swap it for another.
 func (fc *FileContent) HandleCommentSwaps(name string) {
 	splitContent := strings.Split(fc.Contents, "\n")
-
-	uncommentSearchTag := fmt.Sprintf(CommentSwapFormat, name)
+	tag := fmt.Sprintf(CommentSwapFormat, name)
 
 	for idx, line := range splitContent {
 		// If the line does not have the comment swap tag, then continue
-		if !strings.Contains(line, uncommentSearchTag) {
+		if !strings.Contains(line, tag) {
 			continue
 		}
 
 		// removes the // spawntag:[name] comment from the end of the source code
-		line = removeSpawnTagLineComment(line, uncommentSearchTag)
+		line = removeSpawnTagLineComment(line, tag)
 
-		// uncomments the line (to expose the source code)
-		line = uncommentLine(line)
+		// uncomments the line (to expose the source code for application usage)
+		line = uncommentLineSource(line)
 
 		// Since we are just uncommenting the line, it's safe to just replace the line at the index
 		splitContent[idx] = line
@@ -124,21 +123,9 @@ func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...str
 	splitContent := strings.Split(fc.Contents, "\n")
 	newContent := make([]string, 0, len(splitContent))
 
-	startIdx := -1
+	startBatchDelete := false
 	for idx, line := range splitContent {
-		// if we are in a startIdx, then we need to continue until we find the close parenthesis (i.e. NewKeeper)
-		if startIdx != -1 {
-			fmt.Printf("rm %s startIdx: %d, %s\n", removeText, idx, line)
-			if strings.TrimSpace(line) == ")" || strings.TrimSpace(line) == "}" {
-				fmt.Println("endIdx:", idx, line)
-				startIdx = -1
-				continue
-			}
-
-			continue
-		}
-
-		// if line contains //spawntag:ignorem then we use that line
+		// if line contains //spawntag:ignore then we use that line.
 		// useful if some text is 'wasm' as a bech32 prefix, not a variable / type we need to remove.
 		if strings.Contains(line, fmt.Sprintf(StdFormat, "ignore")) {
 			fmt.Printf("Ignoring removal: %s: %d, %s\n", removeText, idx, line)
@@ -146,15 +133,28 @@ func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...str
 			continue
 		}
 
-		lineHas := strings.Contains(line, removeText)
+		// if we are in a batch delete, then we need to continue until we find the close parenthesis or bracket
+		// (i.e. NewKeeper in app.go is a good example fo this)
+		if startBatchDelete {
+			fmt.Printf("rm %s startIdx: %d, %s\n", removeText, idx, line)
+			if strings.TrimSpace(line) == ")" || strings.TrimSpace(line) == "}" {
+				fmt.Println("endIdx:", idx, line)
+				startBatchDelete = false
+				continue
+			}
 
-		if lineHas && DoesLineEndWithOpenSymbol(line) {
-			startIdx = idx
-			fmt.Printf("startIdx %s: %d, %s\n", removeText, idx, line)
 			continue
 		}
 
-		if lineHas {
+		// if the line has the text we wish to remove, begin the removal process.
+		if strings.Contains(line, removeText) {
+			// if the line ends with an opening symbol, we start a batch delete process
+			if DoesLineEndWithOpenSymbol(line) {
+				startBatchDelete = true
+				fmt.Printf("startIdx %s: %d, %s\n", removeText, idx, line)
+				continue
+			}
+
 			fmt.Printf("rm %s: %d, %s\n", removeText, idx, line)
 			continue
 		}
@@ -185,6 +185,6 @@ func getCommentText(line string) string {
 	return ""
 }
 
-func uncommentLine(line string) string {
+func uncommentLineSource(line string) string {
 	return strings.Replace(line, "//", "", 1)
 }
