@@ -12,7 +12,7 @@ import (
 	"github.com/strangelove-ventures/simapp/x/example/types"
 )
 
-// NewTxCmd returns a root CLI command handler for certain modules/Clock
+// NewTxCmd returns a root CLI command handler for certain modules
 // transaction commands.
 func NewTxCmd() *cobra.Command {
 	txCmd := &cobra.Command{
@@ -24,18 +24,17 @@ func NewTxCmd() *cobra.Command {
 	}
 
 	txCmd.AddCommand(
-		NewRegisterClockContract(),
+		MsgUpdateParams(),
 	)
 	return txCmd
 }
 
-// NewRegisterClockContract returns a CLI command handler for registering a
-// contract for the clock module.
-func NewRegisterClockContract() *cobra.Command {
+// Returns a CLI command handler for registering a
+// contract for the module.
+func MsgUpdateParams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update-params [some-value]",
 		Short: "Update the params (must be submitted from the authority)",
-		Long:  "Register a clock contract. Sender must be admin of the contract.",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx, err := client.GetClientTxContext(cmd)
