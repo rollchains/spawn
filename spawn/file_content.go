@@ -2,6 +2,7 @@ package spawn
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path"
 	"regexp"
@@ -17,13 +18,16 @@ type FileContent struct {
 	NewPath string
 	// The contents of the file from the embededFileSystem (initially unmodified)
 	Contents string
+
+	Logger *slog.Logger
 }
 
-func NewFileContent(relativePath, newPath string) *FileContent {
+func NewFileContent(logger *slog.Logger, relativePath, newPath string) *FileContent {
 	return &FileContent{
 		RelativePath: relativePath,
 		NewPath:      newPath,
 		Contents:     "",
+		Logger:       logger,
 	}
 }
 
@@ -67,7 +71,7 @@ func (fc *FileContent) HasIgnoreFile() bool {
 
 func (fc *FileContent) DeleteContents(path string) {
 	if fc.IsPath(path) {
-		fmt.Println("Deleting contents for", path)
+		fc.Logger.Debug("Deleting contents for", "path", path)
 		fc.Contents = ""
 	}
 }
@@ -139,14 +143,14 @@ func (fc *FileContent) ReplaceLocalInterchainJSON(cfg *NewChainConfig) {
 		fc.ReplaceAll("mydenom", cfg.Denom)
 		fc.ReplaceAll("wasmd", cfg.BinDaemon)
 
-		fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix, cfg.Debug)
+		fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix)
 	}
 
 }
 
 // FindAndReplaceStandardWalletsBech32 finds a prefix1... address and replaces it with a new prefix1... address
 // This works for both standard wallets (38 length after prefix1) and also smart contracts (58)
-func (fc *FileContent) FindAndReplaceAddressBech32(oldPrefix, newPrefix string, isDebugging bool) {
+func (fc *FileContent) FindAndReplaceAddressBech32(oldPrefix, newPrefix string) {
 	oldPrefix = strings.TrimSuffix(oldPrefix, "1")
 	newPrefix = strings.TrimSuffix(newPrefix, "1")
 
@@ -155,9 +159,7 @@ func (fc *FileContent) FindAndReplaceAddressBech32(oldPrefix, newPrefix string, 
 	r := regexp.MustCompile(oldPrefix + `1([0-9a-z]{58}|[0-9a-z]{38})`)
 
 	foundAddrs := r.FindAllString(fc.Contents, -1)
-	if isDebugging {
-		fmt.Println("Regex: Found Addresses:", foundAddrs, fc.NewPath)
-	}
+	fc.Logger.Debug("Regex: Found Addresses", "addresses", foundAddrs, "path", fc.NewPath)
 
 	for _, addr := range foundAddrs {
 		_, bz, err := bech32.Decode(addr, 100)
@@ -180,7 +182,7 @@ func (fc *FileContent) RemoveGoModImport(importPath string) {
 		return
 	}
 
-	fmt.Println("removing go.mod import", fc.RelativePath, "for", importPath)
+	fc.Logger.Debug("removing go.mod import", "path", fc.RelativePath, "import", importPath)
 
 	lines := strings.Split(fc.Contents, "\n")
 
@@ -194,11 +196,9 @@ func (fc *FileContent) RemoveGoModImport(importPath string) {
 	fc.Contents = strings.Join(newLines, "\n")
 }
 
-func (fc *FileContent) Save(debug bool) error {
+func (fc *FileContent) Save() error {
 	if fc.Contents == "" {
-		if debug {
-			fmt.Printf("Save() No contents for %s. Not saving\n", fc.NewPath)
-		}
+		fc.Logger.Debug("Save() No contents for", "path", fc.NewPath)
 		return nil
 	}
 

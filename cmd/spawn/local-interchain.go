@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 	"path"
@@ -31,30 +30,32 @@ var LocalICCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		debugBinaryLoc, _ := cmd.Flags().GetBool(FlagLocationPath)
 
+		logger := GetLogger()
+
 		loc := whereIsLocalICInstalled()
 		if loc == "" {
-			fmt.Println("local-ic not found. Please run `make get-localic`")
+			logger.Error("local-ic not found. Please run `make get-localic`")
 			return
 		}
 
 		if debugBinaryLoc {
-			fmt.Println(loc)
+			logger.Debug("local-ic binary", "location", loc)
 			return
 		}
 
 		if err := os.Chmod(loc, 0755); err != nil {
-			fmt.Println("Error setting local-ic permissions:", err)
+			logger.Error("Error setting local-ic permissions", "err", err)
 		}
 
 		// set to use the current dir if it is not overrriden
 		if os.Getenv("ICTEST_HOME") == "" {
 			if err := os.Setenv("ICTEST_HOME", "."); err != nil {
-				fmt.Println("Error setting ICTEST_HOME:", err)
+				logger.Error("Error setting ICTEST_HOME", "err", err)
 			}
 		}
 
 		if err := spawn.ExecCommand(loc, args...); err != nil {
-			fmt.Println("Error calling local-ic:", err)
+			logger.Error("Error calling local-ic", "err", err)
 		}
 	},
 }

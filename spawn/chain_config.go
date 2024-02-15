@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"os"
 	"path"
 	"strings"
@@ -30,15 +31,19 @@ type NewChainConfig struct {
 	GithubOrg string
 	// IgnoreGitInit is a flag to ignore git init
 	IgnoreGitInit bool
-	// Debug is a flag to enable debug logging
-	Debug bool
 
 	DisabledModules []string
+
+	Logger *slog.Logger
 }
 
 func (cfg *NewChainConfig) Validate() error {
 	if strings.ContainsAny(cfg.ProjectName, `~!@#$%^&*()_+{}|:"<>?/.,;'[]\=-`) {
 		return fmt.Errorf("project name cannot contain special characters %s", cfg.ProjectName)
+	}
+
+	if cfg.Logger == nil {
+		cfg.Logger = slog.Default()
 	}
 
 	return nil
@@ -48,6 +53,7 @@ func (cfg *NewChainConfig) AnnounceSuccessfulBuild() {
 	projName := cfg.ProjectName
 	bin := cfg.BinDaemon
 
+	// no logger here, straight to stdout
 	fmt.Printf("\n\n🎉 New blockchain '%s' generated!\n", projName)
 	fmt.Println("🏅Getting started:")
 	fmt.Println("  - $ cd " + projName)
@@ -64,20 +70,21 @@ func (cfg *NewChainConfig) GithubPath() string {
 func (cfg *NewChainConfig) NewChain() {
 	NewDirName := cfg.ProjectName
 	disabled := cfg.DisabledModules
+	logger := cfg.Logger
 
-	fmt.Println("Spawning new app:", NewDirName)
-	fmt.Println("Disabled features:", disabled)
+	logger.Info("Spawning new app", "app", NewDirName)
+	logger.Info("Disabled features", "features", disabled)
 
 	if err := os.MkdirAll(NewDirName, 0755); err != nil {
 		panic(err)
 	}
 
 	if err := cfg.SetupMainChainApp(); err != nil {
-		fmt.Println(fmt.Errorf("error setting up main chain app: %s", err))
+		logger.Error("Error setting up main chain app", "err", err)
 	}
 
 	if err := cfg.SetupInterchainTest(); err != nil {
-		fmt.Println(fmt.Errorf("error setting up interchain test: %s", err))
+		logger.Error("Error setting up interchain test", "err", err)
 	}
 
 	if !cfg.IgnoreGitInit {
@@ -117,13 +124,12 @@ func (cfg *NewChainConfig) SetupMainChainApp() error {
 		// *All Files
 		fc.ReplaceEverywhere(cfg)
 
-		return fc.Save(cfg.Debug)
+		return fc.Save()
 	})
 }
 
 func (cfg *NewChainConfig) SetupInterchainTest() error {
 	newDirName := cfg.ProjectName
-	debug := cfg.Debug
 
 	// Interchaintest e2e is a nested submodule. go.mod is renamed to go.mod_ to avoid conflicts
 	// It will be unwound during unpacking to properly nest it.
@@ -153,14 +159,14 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 			fc.ReplaceAll(`Binary  = "wasmd"`, fmt.Sprintf(`Binary  = "%s"`, cfg.BinDaemon)) // else it would replace the Cosmwasm/wasmd import path
 			fc.ReplaceAll(`Bech32 = "wasm"`, fmt.Sprintf(`Bech32 = "%s"`, cfg.Bech32Prefix))
 
-			fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix, debug)
+			fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix)
 
 		}
 
 		// Removes any modules references after we modify interchaintest values
 		fc.RemoveDisabledFeatures(cfg)
 
-		return fc.Save(cfg.Debug)
+		return fc.Save()
 	})
 }
 
@@ -173,17 +179,11 @@ func (cfg *NewChainConfig) getFileContent(newFilePath string, fs embed.FS, relPa
 		return nil, nil
 	}
 
-	fc := NewFileContent(relPath, newFilePath)
+	fc := NewFileContent(cfg.Logger, relPath, newFilePath)
 
 	if fc.HasIgnoreFile() {
-		if cfg.Debug {
-			fmt.Println("[!] Ignoring File: ", fc.NewPath)
-		}
+		cfg.Logger.Debug("Ignoring file", "file", fc.NewPath)
 		return nil, nil
-	}
-
-	if cfg.Debug {
-		fmt.Println(fc)
 	}
 
 	// Read the file contents from the embedded FS

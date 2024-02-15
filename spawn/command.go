@@ -1,7 +1,6 @@
 package spawn
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 )
@@ -15,15 +14,15 @@ func ExecCommand(command string, args ...string) error {
 
 func (cfg *NewChainConfig) GitInitNewProjectRepo() {
 	if err := ExecCommand("git", "init", cfg.ProjectName, "--quiet"); err != nil {
-		fmt.Println("Error initializing git:", err)
+		cfg.Logger.Error("Error initializing git", "err", err)
 	}
 	if err := os.Chdir(cfg.ProjectName); err != nil {
-		fmt.Println("Error changing to project directory:", err)
+		cfg.Logger.Error("Error changing to project directory", "err", err)
 	}
 	if err := ExecCommand("git", "add", "."); err != nil {
-		fmt.Println("Error adding files to git:", err)
+		cfg.Logger.Error("Error adding files to git", "err", err)
 	}
 	if err := ExecCommand("git", "commit", "-m", "initial commit", "--quiet"); err != nil {
-		fmt.Println("Error committing initial files:", err)
+		cfg.Logger.Error("Error committing initial files", "err", err)
 	}
 }
