@@ -20,6 +20,8 @@ https://github.com/rollchains/spawn/assets/10821110/0de7bf37-c82a-4826-a3e3-13de
 - Docker - [official site](https://docs.docker.com/get-docker/)
 
 ## Getting Started
+In this tutorial, we'll create a new Cosmos-SDK blockchain called "rollchain". This chain has tokenfactory, POA, and globalfee modules enabled, but we'll disable cosmwasm.
+
 1. Clone this repo and install
 
 ```shell
@@ -31,17 +33,12 @@ make install
 2. Create your chain using the `spawn` command and customize it to your needs!
 
 ```shell
-spawn new rollchain \ 
-    # the prefix for addresses
-    --bech32=roll \
-    # the coin denomination to create
-    --denom=uroll \ 
-    # the name of the binary
-    --bin=rolld \ 
-    # modules to disable
-    --disable=cosmwasm \
-    # the github username or organization to use for the module imports 
-    --org={your_github_username}
+spawn new rollchain \
+--bech32=roll `# the prefix for addresses` \
+--denom=uroll `# the coin denomination to create` \
+--bin=rolld `# the name of the binary` \
+--disabled=cosmwasm `# modules to disable. By default all modules are enabled [tokenfactory, PoA, globalfee, cosmwasm]` \
+--org={your_github_username} `# the github username or organization to use for the module imports`
 ```
 
 > *NOTE:* `spawn` creates a ready to use repository complete with `git` and GitHub CI. It can be quickly pushed to a new repository getting you and your team up and running quickly.
@@ -53,16 +50,17 @@ cd rollchain
 make testnet
 ```
 
-4. Send a transaction on your new chain
+4. Open a new terminal window and send a transaction on your new chain
 
 ```shell
 # list the keys that have been provisioned with funds in genesis
 rolld keys list
 
 # send a transaction from one account to another
-rolld tx bank send acc0 $(rolld keys show acc1 -a) 1uroll --chain-id=chainid-1
+rolld tx bank send acc0 $(rolld keys show acc1 -a) 1337uroll --chain-id=chainid-1
 
-# copy the tx hash and replace the "..." in the next line
+# enter "y" to confirm the transaction
+# then query your balances tfor proof the transaction executed successfully
 rolld q bank balances $(rolld keys show acc1 -a)
 ```
 
@@ -71,8 +69,7 @@ rolld q bank balances $(rolld keys show acc1 -a)
 > [Create a new repository on GitHub](https://github.com/new)
 
 ```shell
-git add .
-git commit -m "My world changing world "
+# git init, add, and commit are all handled by default unless you add the `--no-git` flag on create
 git remote add origin https://github.com/{your_github_username}/rollchain.git
 git push -u origin master
 ```
