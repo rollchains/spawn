@@ -8,7 +8,7 @@ import (
 
 // TODO: x/ and proto/ in the future
 //
-//go:embed .github/* app/* chains/* cmd/* configs/* contrib/* scripts/* Makefile Dockerfile *.*
+//go:embed .github/* app/* chains/* cmd/* contrib/* scripts/* Makefile Dockerfile *.*
 var SimAppFS embed.FS
 
 //go:embed interchaintest/*
