@@ -679,11 +679,11 @@ func NewChainApp(
 
 	wasmDir := filepath.Join(homePath, "wasm")
 	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
-	// !spawntag:wasm
+	// <spawntag:wasm
 	if err != nil {
 		panic(fmt.Sprintf("error while reading wasm config: %s", err))
 	}
-	// !spawntag:wasm
+	// spawntag:wasm>
 
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
@@ -1014,7 +1014,7 @@ func NewChainApp(
 	return app
 }
 
-// !spawntag:globalfee
+// <spawntag:globalfee
 func GetDefaultBypassFeeMessages() []string {
 	return []string{
 		sdk.MsgTypeURL(&ibcchanneltypes.MsgRecvPacket{}),
@@ -1031,7 +1031,7 @@ func GetDefaultBypassFeeMessages() []string {
 	}
 }
 
-//!spawntag:globalfee
+// spawntag:globalfee>
 
 func (app *ChainApp) FinalizeBlock(req *abci.RequestFinalizeBlock) (*abci.ResponseFinalizeBlock, error) {
 	// when skipping sdk 47 for sdk 50, the upgrade handler is called too late in BaseApp
