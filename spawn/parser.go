@@ -80,7 +80,7 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 			}
 
 			startMultiLineDelete = true
-			fmt.Printf("startIdx %s: %d, %s\n", name, idx, line)
+			fc.Logger.Debug("startIdx", "idx", idx, "line", line)
 			continue
 		}
 
@@ -127,7 +127,7 @@ func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...str
 		// if line contains //spawntag:ignore then we use that line.
 		// useful if some text is 'wasm' as a bech32 prefix, not a variable / type we need to remove.
 		if strings.Contains(line, fmt.Sprintf(StdFormat, "ignore")) {
-			fmt.Printf("Ignoring removal: %s: %d, %s\n", removeText, idx, line)
+			fc.Logger.Debug("ignoring removal", "idx", idx, "line", line)
 			newContent = append(newContent, line)
 			continue
 		}
@@ -135,7 +135,7 @@ func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...str
 		// if we are in a batch delete, then we need to continue until we find the close parenthesis or bracket
 		// (i.e. NewKeeper in app.go is a good example fo this)
 		if startBatchDelete {
-			fmt.Printf("rm %s startIdx: %d, %s\n", removeText, idx, line)
+			fc.Logger.Debug("rm", "idx", idx, "line", line)
 
 			if strings.TrimSpace(line) == ")" || strings.TrimSpace(line) == "}" {
 				fc.Logger.Debug("endIdx", "idx", idx, "line", line)
@@ -151,11 +151,11 @@ func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...str
 			// if the line ends with an opening symbol, we start a batch delete process
 			if DoesLineEndWithOpenSymbol(line) {
 				startBatchDelete = true
-				fmt.Printf("startIdx %s: %d, %s\n", removeText, idx, line)
+				fc.Logger.Debug("startIdx", "idx", idx, "line", line)
 				continue
 			}
 
-			fmt.Printf("rm %s: %d, %s\n", removeText, idx, line)
+			fc.Logger.Debug("rm", "idx", idx, "line", line)
 			continue
 		}
 
