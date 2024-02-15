@@ -1,0 +1,22 @@
+syntax = "proto3";
+package packetforward.v1;
+
+import "gogoproto/gogo.proto";
+import "amino/amino.proto";
+
+option go_package = "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types";
+
+// GenesisState defines the packetforward genesis state
+message GenesisState {
+  // Params defines all the paramaters of the module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// Params defines the set of packetforward parameters.
+message Params {
+  option (amino.name) = "poa/params";
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_stringer) = false;
+
+  bool example_bool = 2;
+}
