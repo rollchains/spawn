@@ -50,7 +50,7 @@ get-localic:
 	cd interchaintest/local-interchain && make install
 	@echo ✅ local-interchain installed to $(shell which local-ic)
 
-.PHONY: get-heighliner
+.PHONY: get-heighliner get-localic
 
 help: Makefile
 	@echo
