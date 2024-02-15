@@ -69,7 +69,7 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 
 			// the line which has the closing multiline end tag, we then continue to add lines as normal
 			startMultiLineDelete = false
-			fmt.Println("endIdx:", idx, line)
+			fc.Logger.Debug("endIdx", "idx", idx, "line", line)
 			continue
 		}
 
@@ -138,7 +138,7 @@ func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...str
 			fmt.Printf("rm %s startIdx: %d, %s\n", removeText, idx, line)
 
 			if strings.TrimSpace(line) == ")" || strings.TrimSpace(line) == "}" {
-				fmt.Println("endIdx:", idx, line)
+				fc.Logger.Debug("endIdx", "idx", idx, "line", line)
 				startBatchDelete = false
 				continue
 			}

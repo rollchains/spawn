@@ -1,7 +1,6 @@
 package spawn
 
 import (
-	"fmt"
 	"path"
 	"strings"
 	"testing"
@@ -33,7 +32,6 @@ func TestRemoveLineWithTag(t *testing.T) {
 
 	deleteLine := true
 	fc.RemoveTaggedLines("test", deleteLine)
-	// fmt.Println(fc.Contents)
 	require.Equal(t, 2, contentLen(fc))
 }
 
@@ -88,8 +86,6 @@ final line`
 
 	deleteLine := true
 	fc.RemoveTaggedLines("test", deleteLine)
-
-	fmt.Println(fc.Contents)
 
 	require.Equal(t, 2, contentLen(fc))
 }

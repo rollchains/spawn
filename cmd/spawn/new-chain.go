@@ -53,6 +53,8 @@ var newChain = &cobra.Command{
 	Args:    cobra.ExactArgs(1),
 	Aliases: []string{"new", "init", "create"},
 	Run: func(cmd *cobra.Command, args []string) {
+		logger := GetLogger()
+
 		projName := strings.ToLower(args[0])
 		homeDir := "." + projName
 
@@ -60,7 +62,6 @@ var newChain = &cobra.Command{
 		walletPrefix, _ := cmd.Flags().GetString(FlagWalletPrefix)
 		binName, _ := cmd.Flags().GetString(FlagBinDaemon)
 		denom, _ := cmd.Flags().GetString(FlagTokenDenom)
-		debug, _ := cmd.Flags().GetBool(FlagDebugging)
 		ignoreGitInit, _ := cmd.Flags().GetBool(FlagNoGit)
 		githubOrg, _ := cmd.Flags().GetString(FlagGithubOrg)
 
@@ -68,7 +69,7 @@ var newChain = &cobra.Command{
 		if len(disabled) == 0 && !bypassPrompt {
 			items, err := selectItems(0, SupportedFeatures, true)
 			if err != nil {
-				fmt.Println("Error selecting disabled:", err)
+				logger.Error("Error selecting disabled", "err", err)
 				return
 			}
 			disabled = items.NOTSlice()
@@ -80,13 +81,13 @@ var newChain = &cobra.Command{
 			HomeDir:         homeDir,
 			BinDaemon:       binName,
 			Denom:           denom,
-			Debug:           debug,
 			GithubOrg:       githubOrg,
 			IgnoreGitInit:   ignoreGitInit,
 			DisabledModules: disabled,
+			Logger:          logger,
 		}
 		if err := cfg.Validate(); err != nil {
-			fmt.Println("Error validating config:", err)
+			logger.Error("Error validating config", "err", err)
 			return
 		}
 
