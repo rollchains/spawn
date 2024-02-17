@@ -16,3 +16,6 @@ var ICTestFS embed.FS
 
 //go:embed proto/*
 var ProtoModuleFS embed.FS
+
+//go:embed x/*
+var ExtensionFS embed.FS
