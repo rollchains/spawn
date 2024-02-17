@@ -21,7 +21,7 @@ buf generate --template buf.gen.pulsar.yaml
 
 cd ..
 
-mv github.com/strangelove-ventures/simapp/* ./
+cp -r github.com/strangelove-ventures/simapp/* ./
 rm -rf github.com
 
 # Copy files over for dep injection
