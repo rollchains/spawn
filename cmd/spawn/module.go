@@ -11,6 +11,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/strangelove-ventures/simapp"
 	"gitub.com/strangelove-ventures/spawn/spawn"
+
+	textcases "golang.org/x/text/cases"
+	lang "golang.org/x/text/language"
 )
 
 var moduleCmd = &cobra.Command{
@@ -70,9 +73,100 @@ var moduleCmd = &cobra.Command{
 	},
 }
 
-// AddModuleToAppGo adds the new module to the app.go file to be registered with the chain binary.
+// SetupModuleProtoBase iterates through the proto embedded fs and replaces the paths and goMod names to match
+// the new desired module.
+func SetupModuleProtoBase(logger *slog.Logger, extName string) error {
+	protoFS := simapp.ProtoModuleFS
+
+	if err := os.MkdirAll("proto", 0755); err != nil {
+		panic(err)
+	}
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Error getting current working directory", err)
+		return err
+	}
+
+	goModName := spawn.ReadCurrentGoModuleName(path.Join(cwd, "go.mod"))
+	protoNamespace := convertGoModuleNameToProtoNamespace(goModName)
+
+	return fs.WalkDir(protoFS, ".", func(relPath string, d fs.DirEntry, e error) error {
+		newPath := path.Join(cwd, relPath)
+		fc, err := spawn.GetFileContent(logger, newPath, protoFS, relPath, d)
+		if err != nil {
+			return err
+		} else if fc == nil {
+			return nil
+		}
+
+		// rename proto path for the new module
+		exampleProtoPath := path.Join("proto", "example")
+		if fc.ContainsPath(exampleProtoPath) {
+			newBinPath := path.Join("proto", extName)
+			fc.NewPath = strings.ReplaceAll(fc.NewPath, exampleProtoPath, newBinPath)
+		}
+
+		fc.ReplaceAll("github.com/strangelove-ventures/simapp", goModName)
+		fc.ReplaceAll("strangelove_ventures.simapp", protoNamespace)
+
+		// replace example -> the new x/ name
+		fc.ReplaceAll("example", extName)
+
+		// TODO: set the values in the keepers / msg server automatically
+
+		return fc.Save()
+	})
+}
+
+// SetupModuleExtensionFiles iterates through the x/example embedded fs and replaces the paths and goMod names to match
+// the new desired module.
+func SetupModuleExtensionFiles(logger *slog.Logger, extName string) error {
+	extFS := simapp.ExtensionFS
+
+	if err := os.MkdirAll(path.Join("x", extName), 0755); err != nil {
+		panic(err)
+	}
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Error getting current working directory", err)
+		return err
+	}
+
+	goModName := spawn.ReadCurrentGoModuleName(path.Join(cwd, "go.mod"))
+
+	// copy x/example to x/extName
+	return fs.WalkDir(extFS, ".", func(relPath string, d fs.DirEntry, e error) error {
+		newPath := path.Join(cwd, relPath)
+		fc, err := spawn.GetFileContent(logger, newPath, extFS, relPath, d)
+		if err != nil {
+			return err
+		} else if fc == nil {
+			return nil
+		}
+
+		logger.Debug("file content", "path", fc.NewPath, "content", fc.Contents)
+
+		// rename x/example path for the new module
+		examplePath := path.Join("x", "example")
+		if fc.ContainsPath(examplePath) {
+			newBinPath := path.Join("x", extName)
+			fc.NewPath = strings.ReplaceAll(fc.NewPath, examplePath, newBinPath)
+		}
+
+		fc.ReplaceAll("github.com/strangelove-ventures/simapp", goModName)
+		fc.ReplaceAll("x/example", fmt.Sprintf("x/%s", extName))
+		fc.ReplaceAll("package example", fmt.Sprintf("package %s", extName))
+		fc.ReplaceAll("example", extName)
+
+		return fc.Save()
+	})
+}
+
+// AddModuleToAppGo adds the new module to the app.go file.
 func AddModuleToAppGo(logger *slog.Logger, extName string) error {
-	extNameTitle := strings.Title(extName)
+	extNameTitle := textcases.Title(lang.AmericanEnglish).String(extName)
 
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -154,95 +248,7 @@ func AddModuleToAppGo(logger *slog.Logger, extName string) error {
 	logger.Debug("initParamsKeeper register", "extName", extName, "start", start, "end", end)
 	appGoLines = append(appGoLines[:end-3], append([]string{fmt.Sprintf(`	paramsKeeper.Subspace(%stypes.ModuleName)`, extName)}, appGoLines[end-3:]...)...)
 
-	// save the new app.go
 	return os.WriteFile(appGoPath, []byte(strings.Join(appGoLines, "\n")), 0644)
-}
-
-func SetupModuleProtoBase(logger *slog.Logger, extName string) error {
-	protoFS := simapp.ProtoModuleFS
-
-	if err := os.MkdirAll("proto", 0755); err != nil {
-		panic(err)
-	}
-
-	cwd, err := os.Getwd()
-	if err != nil {
-		fmt.Println("Error getting current working directory", err)
-		return err
-	}
-
-	goModName := spawn.ReadCurrentGoModuleName(path.Join(cwd, "go.mod"))
-	protoNamespace := convertGoModuleNameToProtoNamespace(goModName)
-
-	return fs.WalkDir(protoFS, ".", func(relPath string, d fs.DirEntry, e error) error {
-		newPath := path.Join(cwd, relPath)
-		fc, err := spawn.GetFileContent(logger, newPath, protoFS, relPath, d)
-		if err != nil {
-			return err
-		} else if fc == nil {
-			return nil
-		}
-
-		// rename proto path for the new module
-		exampleProtoPath := path.Join("proto", "example")
-		if fc.ContainsPath(exampleProtoPath) {
-			newBinPath := path.Join("proto", extName)
-			fc.NewPath = strings.ReplaceAll(fc.NewPath, exampleProtoPath, newBinPath)
-		}
-
-		fc.ReplaceAll("github.com/strangelove-ventures/simapp", goModName)
-		fc.ReplaceAll("strangelove_ventures.simapp", protoNamespace)
-
-		// replace example -> the new x/ name
-		fc.ReplaceAll("example", extName)
-
-		// TODO: set the values in the keepers / msg server automatically
-
-		return fc.Save()
-	})
-}
-
-func SetupModuleExtensionFiles(logger *slog.Logger, extName string) error {
-	extFS := simapp.ExtensionFS
-
-	if err := os.MkdirAll(path.Join("x", extName), 0755); err != nil {
-		panic(err)
-	}
-
-	cwd, err := os.Getwd()
-	if err != nil {
-		fmt.Println("Error getting current working directory", err)
-		return err
-	}
-
-	goModName := spawn.ReadCurrentGoModuleName(path.Join(cwd, "go.mod"))
-
-	// copy x/example to x/extName
-	return fs.WalkDir(extFS, ".", func(relPath string, d fs.DirEntry, e error) error {
-		newPath := path.Join(cwd, relPath)
-		fc, err := spawn.GetFileContent(logger, newPath, extFS, relPath, d)
-		if err != nil {
-			return err
-		} else if fc == nil {
-			return nil
-		}
-
-		logger.Debug("file content", "path", fc.NewPath, "content", fc.Contents)
-
-		// rename x/example path for the new module
-		examplePath := path.Join("x", "example")
-		if fc.ContainsPath(examplePath) {
-			newBinPath := path.Join("x", extName)
-			fc.NewPath = strings.ReplaceAll(fc.NewPath, examplePath, newBinPath)
-		}
-
-		fc.ReplaceAll("github.com/strangelove-ventures/simapp", goModName)
-		fc.ReplaceAll("x/example", fmt.Sprintf("x/%s", extName))
-		fc.ReplaceAll("package example", fmt.Sprintf("package %s", extName))
-		fc.ReplaceAll("example", extName)
-
-		return fc.Save()
-	})
 }
 
 // appendNewImportsToSource appends new imports to the source file at the end of the import block (before the closing `)` ).
@@ -263,7 +269,6 @@ func appendNewImportsToSource(filePath string, oldSource, newImports []string) [
 // convertGoModuleNameToProtoNamespace converts the github.com/*/* module name to a proto module compatible name.
 // i.e. github.com/rollchains/myproject -> rollchains.myproject
 func convertGoModuleNameToProtoNamespace(moduleName string) string {
-	// github.com/rollchains/myproject -> rollchains.myproject
 	text := strings.Replace(moduleName, "github.com/", "", 1)
 	return strings.Replace(text, "/", ".", -1)
 }
