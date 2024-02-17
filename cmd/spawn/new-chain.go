@@ -104,6 +104,8 @@ func normalizeWhitelistVarRun(f *pflag.FlagSet, name string) pflag.NormalizedNam
 		name = FlagDisabled
 	case "bypass", "skip", "force", "prompt-bypass", "bypass-ui", "no-ui":
 		name = FlagBypassPrompt
+	case "token", "denomination", "coin":
+		name = FlagTokenDenom
 	}
 
 	return pflag.NormalizedName(name)
