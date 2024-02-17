@@ -46,16 +46,16 @@ var moduleCmd = &cobra.Command{
 		// 	return
 		// }
 
-		// if err := SetupModuleProtoBase(GetLogger(), extName); err != nil {
-		// 	logger.Error("Error setting up module", err)
-		// 	return
-		// }
+		if err := SetupModuleProtoBase(GetLogger(), extName); err != nil {
+			logger.Error("Error setting up module", err)
+			return
+		}
 
-		// // sets up the files in x/
-		// if err := SetupModuleExtensionFiles(GetLogger(), extName); err != nil {
-		// 	logger.Error("Error setting up module", err)
-		// 	return
-		// }
+		// sets up the files in x/
+		if err := SetupModuleExtensionFiles(GetLogger(), extName); err != nil {
+			logger.Error("Error setting up module", err)
+			return
+		}
 
 		if err := AddModuleToAppGo(GetLogger(), extName); err != nil {
 			logger.Error("Error adding module to app.go", err)
@@ -103,7 +103,7 @@ func AddModuleToAppGo(logger *slog.Logger, extName string) error {
 
 	// import paths
 	newImports := []string{
-		fmt.Sprintf(`"%s/x/%s"`, moduleName, extName),
+		fmt.Sprintf(`%s "%s/x/%s"`, extName, moduleName, extName),
 		fmt.Sprintf(`%skeeper "%s/x/%s/keeper"`, extName, moduleName, extName),
 		fmt.Sprintf(`%stypes "%s/x/%s/types"`, extName, moduleName, extName),
 	}
@@ -118,7 +118,7 @@ func AddModuleToAppGo(logger *slog.Logger, extName string) error {
 	// find line storetypes.NewKVStoreKeys, and get the final line which ends with just )
 	start, end := findLinesWithText(appGoLines, "storetypes.NewKVStoreKeys")
 	fmt.Println("start", start, "end", end)
-	appGoLines = append(appGoLines[:end-1], append([]string{fmt.Sprintf(`		%s.StoreKey,`, extName)}, appGoLines[end-1:]...)...)
+	appGoLines = append(appGoLines[:end-1], append([]string{fmt.Sprintf(`		%stypes.StoreKey,`, extName)}, appGoLines[end-1:]...)...)
 	// fmt.Println("lines", strings.Join(appGoLines[start:end+1], "\n"))
 
 	// find text for app.EvidenceKeeper = *evidenceKeeper
@@ -155,7 +155,7 @@ func AddModuleToAppGo(logger *slog.Logger, extName string) error {
 	// module params (being removed in SDK v51.)
 	start, end = findLinesWithText(appGoLines, "initParamsKeeper(appCodec")
 	fmt.Println("start", start, "end", end)
-	appGoLines = append(appGoLines[:end-3], append([]string{fmt.Sprintf(`	paramsKeeper.Subspace(%s.ModuleName)`, extName)}, appGoLines[end-3:]...)...)
+	appGoLines = append(appGoLines[:end-3], append([]string{fmt.Sprintf(`	paramsKeeper.Subspace(%stypes.ModuleName)`, extName)}, appGoLines[end-3:]...)...)
 
 	// print appGoLines
 	// fmt.Println("appGoLines", strings.Join(appGoLines, "\n"))
@@ -288,8 +288,11 @@ func SetupModuleExtensionFiles(logger *slog.Logger, extName string) error {
 			fc.NewPath = strings.ReplaceAll(fc.NewPath, examplePath, newBinPath)
 		}
 
+		// TODO: Just replace all example -> the new x/ name ?
 		fc.ReplaceAll("github.com/strangelove-ventures/simapp", moduleName)
 		fc.ReplaceAll("x/example", fmt.Sprintf("x/%s", extName))
+		fc.ReplaceAll("package example", fmt.Sprintf("package %s", extName))
+		fc.ReplaceAll("example", extName) // doing here, will see if it works as expected.
 
 		return fc.Save()
 	})

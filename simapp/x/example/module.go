@@ -1,4 +1,4 @@
-package example
+package module
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
+	"cosmossdk.io/client/v2/autocli"
 	errorsmod "cosmossdk.io/errors"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -21,6 +22,9 @@ import (
 	"github.com/strangelove-ventures/simapp/x/example/client/cli"
 	"github.com/strangelove-ventures/simapp/x/example/keeper"
 	"github.com/strangelove-ventures/simapp/x/example/types"
+
+	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
+	examplev1 "github.com/strangelove-ventures/simapp/api/example/v1"
 )
 
 const (
@@ -32,11 +36,32 @@ var (
 	_ module.AppModuleBasic   = AppModuleBasic{}
 	_ module.AppModuleGenesis = AppModule{}
 	_ module.AppModule        = AppModule{}
+
+	_ autocli.HasAutoCLIConfig      = AppModule{}
+	_ autocli.HasCustomQueryCommand = AppModule{}
+	_ autocli.HasCustomTxCommand    = AppModule{}
 )
 
 // AppModuleBasic defines the basic application module used by the wasm module.
 type AppModuleBasic struct {
 	cdc codec.Codec
+}
+
+type AppModule struct {
+	AppModuleBasic
+
+	keeper keeper.Keeper
+}
+
+// NewAppModule constructor
+func NewAppModule(
+	cdc codec.Codec,
+	keeper keeper.Keeper,
+) *AppModule {
+	return &AppModule{
+		AppModuleBasic: AppModuleBasic{cdc: cdc},
+		keeper:         keeper,
+	}
 }
 
 func (a AppModuleBasic) Name() string {
@@ -72,6 +97,19 @@ func (a AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux 
 	}
 }
 
+// AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.
+func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
+	return &autocliv1.ModuleOptions{
+		Query: &autocliv1.ServiceCommandDescriptor{
+			Service: examplev1.Query_ServiceDesc.ServiceName,
+		},
+		Tx: &autocliv1.ServiceCommandDescriptor{
+			Service:           examplev1.Msg_ServiceDesc.ServiceName,
+			RpcCommandOptions: []*autocliv1.RpcCommandOptions{},
+		},
+	}
+}
+
 func (a AppModuleBasic) GetTxCmd() *cobra.Command {
 	return cli.NewTxCmd()
 }
@@ -86,33 +124,6 @@ func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 
 func (a AppModuleBasic) RegisterInterfaces(r codectypes.InterfaceRegistry) {
 	types.RegisterInterfaces(r)
-}
-
-type AppModule struct {
-	AppModuleBasic
-
-	keeper keeper.Keeper
-}
-
-// IsAppModule implements module.AppModule.
-func (AppModule) IsAppModule() {
-	panic("unimplemented")
-}
-
-// IsOnePerModuleType implements module.AppModule.
-func (AppModule) IsOnePerModuleType() {
-	panic("unimplemented")
-}
-
-// NewAppModule constructor
-func NewAppModule(
-	cdc codec.Codec,
-	keeper keeper.Keeper,
-) *AppModule {
-	return &AppModule{
-		AppModuleBasic: AppModuleBasic{cdc: cdc},
-		keeper:         keeper,
-	}
 }
 
 func (a AppModule) InitGenesis(ctx sdk.Context, marshaler codec.JSONCodec, message json.RawMessage) []abci.ValidatorUpdate {
