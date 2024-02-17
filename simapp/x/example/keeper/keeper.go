@@ -6,7 +6,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 
 	"cosmossdk.io/collections"
-	addresscodec "cosmossdk.io/core/address"
 	storetypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 
@@ -14,8 +13,7 @@ import (
 )
 
 type Keeper struct {
-	cdc                   codec.BinaryCodec
-	validatorAddressCodec addresscodec.Codec
+	cdc codec.BinaryCodec
 
 	logger log.Logger
 
@@ -28,7 +26,6 @@ type Keeper struct {
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeService storetypes.KVStoreService,
-	validatorAddressCodec addresscodec.Codec,
 	logger log.Logger,
 ) Keeper {
 	logger = logger.With(log.ModuleKey, "x/"+types.ModuleName)
@@ -36,9 +33,8 @@ func NewKeeper(
 	sb := collections.NewSchemaBuilder(storeService)
 
 	k := Keeper{
-		cdc:                   cdc,
-		validatorAddressCodec: validatorAddressCodec,
-		logger:                logger,
+		cdc:    cdc,
+		logger: logger,
 
 		// Stores
 		Params: collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),

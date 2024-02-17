@@ -73,6 +73,8 @@ var moduleCmd = &cobra.Command{
 
 // last thing: add the module to app.go base.
 func AddModuleToAppGo(logger *slog.Logger, extName string) error {
+	extNameTitle := strings.Title(extName)
+
 	cwd, err := os.Getwd()
 	if err != nil {
 		fmt.Println("Error getting current working directory", err)
@@ -99,94 +101,156 @@ func AddModuleToAppGo(logger *slog.Logger, extName string) error {
 
 	appGoLines := strings.Split(appGoContent, "\n")
 
-	// iterate line by line with appGoContent
-	// newAppGo := make([]string, len(appGoLines))
+	// import paths
+	newImports := []string{
+		fmt.Sprintf(`"%s/x/%s"`, moduleName, extName),
+		fmt.Sprintf(`%skeeper "%s/x/%s/keeper"`, extName, moduleName, extName),
+		fmt.Sprintf(`%stypes "%s/x/%s/types"`, extName, moduleName, extName),
+	}
+	appGoLines = appendNewImportsToSource(appGoPath, newImports, appGoLines)
 
-	// stopImport := false
+	// find the ModuleManager  within the ChainApp struct to add the new keeper
+	// insert the new keeper type here at appModuleManagerLine -2
+	appModuleManagerLine := findLineWithText(appGoLines, "*module.Manager")
+	fmt.Println("appModuleManager", appModuleManagerLine)
+	appGoLines = append(appGoLines[:appModuleManagerLine-2], append([]string{fmt.Sprintf(`	%sKeeper          %skeeper.Keeper`, extNameTitle, extName)}, appGoLines[appModuleManagerLine-2:]...)...)
 
-	// get the line index of "import ("
+	// find line storetypes.NewKVStoreKeys, and get the final line which ends with just )
+	start, end := findLinesWithText(appGoLines, "storetypes.NewKVStoreKeys")
+	fmt.Println("start", start, "end", end)
+	appGoLines = append(appGoLines[:end-1], append([]string{fmt.Sprintf(`		%s.StoreKey,`, extName)}, appGoLines[end-1:]...)...)
+	// fmt.Println("lines", strings.Join(appGoLines[start:end+1], "\n"))
 
-	// split appGoContent vby new lines
+	// find text for app.EvidenceKeeper = *evidenceKeeper
+	evidenceTextLine := findLineWithText(appGoLines, "app.EvidenceKeeper = *evidenceKeeper")
+	keeperText := fmt.Sprintf(`	// Create the %s Keeper
+	app.%sKeeper = %skeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[%stypes.StoreKey]),
+		logger,
+	)`+"\n", extName, extNameTitle, extName, extName)
+	appGoLines = append(appGoLines[:evidenceTextLine+2], append([]string{keeperText}, appGoLines[evidenceTextLine+2:]...)...)
 
-	imports := make([]string, 0)
-	importLinesIndex := [2]int{}
-	searchingForImport := false
-	for idx, line := range appGoLines {
-		// get the line with import (
-		if strings.Contains(line, "import (") {
-			fmt.Println("found import ( at line", idx)
-			importLinesIndex[0] = idx + 1
-			searchingForImport = true
-			continue
+	// find app.ModuleManager = module.NewManager( lines
+	start, end = findLinesWithText(appGoLines, "app.ModuleManager = module.NewManager")
+	fmt.Println("start", start, "end", end)
+	newAppModuleText := fmt.Sprintf(`		%s.NewAppModule(appCodec, app.%sKeeper),`+"\n", extName, extNameTitle)
+	appGoLines = append(appGoLines[:end-1], append([]string{newAppModuleText}, appGoLines[end-1:]...)...)
+
+	// begin Blockers
+	start, end = findLinesWithText(appGoLines, "SetOrderBeginBlockers(")
+	fmt.Println("start", start, "end", end)
+	appGoLines = append(appGoLines[:end-1], append([]string{fmt.Sprintf(`		%stypes.ModuleName,`, extName)}, appGoLines[end-1:]...)...)
+
+	// end blockers
+	start, end = findLinesWithText(appGoLines, "SetOrderEndBlockers(")
+	fmt.Println("start", start, "end", end)
+	appGoLines = append(appGoLines[:end-1], append([]string{fmt.Sprintf(`		%stypes.ModuleName,`, extName)}, appGoLines[end-1:]...)...)
+
+	// genesis module order
+	start, end = findLinesWithText(appGoLines, "genesisModuleOrder := []string")
+	fmt.Println("start", start, "end", end)
+	appGoLines = append(appGoLines[:end-1], append([]string{fmt.Sprintf(`		%stypes.ModuleName,`, extName)}, appGoLines[end-1:]...)...)
+
+	// module params (being removed in SDK v51.)
+	start, end = findLinesWithText(appGoLines, "initParamsKeeper(appCodec")
+	fmt.Println("start", start, "end", end)
+	appGoLines = append(appGoLines[:end-3], append([]string{fmt.Sprintf(`	paramsKeeper.Subspace(%s.ModuleName)`, extName)}, appGoLines[end-3:]...)...)
+
+	// print appGoLines
+	// fmt.Println("appGoLines", strings.Join(appGoLines, "\n"))
+
+	// save the new app.go
+	return os.WriteFile(appGoPath, []byte(strings.Join(appGoLines, "\n")), 0644)
+}
+
+// --- source ---
+
+// finds the line with text, until the closing line which has a ) or }.
+// TODO Very similar to RemoveModuleFromText / RemoveTaggedLines.
+func findLinesWithText(source []string, text string) (startIdx, endIdx int) {
+	startMultiLineFind := false
+	for idx, line := range source {
+		if startMultiLineFind {
+			if strings.TrimSpace(line) == ")" || strings.TrimSpace(line) == "}" {
+				return startIdx, idx + 1
+			}
 		}
 
-		if searchingForImport {
-			if strings.Contains(line, ")") {
-				fmt.Println("found ) at line", idx)
-				searchingForImport = false
-				importLinesIndex[1] = idx + 1
-				break
-			}
-			imports = append(imports, line) // \t"my_import_path"
+		if strings.Contains(line, text) {
+			startMultiLineFind = true
+			startIdx = idx
+			continue
 		}
 	}
 
-	// append new imports to this import list in the format: `moduleName/x/extName`, moduleName/x/extName/keeper, moduleName/x/extName/types
-	imports = append(imports, fmt.Sprintf("\t\"%s/x/%s\"", moduleName, extName))
-	imports = append(imports, fmt.Sprintf("\t\"%s/x/%s/keeper\"", moduleName, extName))
-	imports = append(imports, fmt.Sprintf("\t\"%s/x/%s/types\"", moduleName, extName))
+	return 0, 0
+}
 
-	// print importLinesIndex
-	fmt.Println("importLinesIndex", importLinesIndex)
-
-	// iterate over the lines in appGoContent
-	newAppGo := make([]string, len(appGoLines))
-	for idx, line := range appGoLines {
-		// if we hit either of importLinesIndex, skip those and then append the new imports
-		if idx >= importLinesIndex[0] && idx <= importLinesIndex[1] {
-			continue
+func findLineWithText(source []string, text string) (lineNum int) {
+	for i, line := range source {
+		if strings.Contains(line, text) {
+			return i
 		}
+	}
 
-		// append the line to newAppGo
-		newAppGo = append(newAppGo, line)
+	return 0
+}
 
-	// print imports
-	fmt.Println("imports", imports)
+// --- import source ---
+func appendNewImportsToSource(filePath string, newImports, oldSource []string) []string {
+	imports, start, end, err := parseImports(filePath)
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
 
-	// for idx, line := range appGoLines {
-	// 	// fmt.Println("line", line)
+	fmt.Println(imports)
+	fmt.Println(start, end)
 
-	// 	if len(importSection) > 0 && !stopImport {
-	// 		// wait until we get to the end
-	// 		if strings.Contains(line, ")") {
-	// 			// append the new module import data here.
-	// 			importSection = append(importSection, fmt.Sprintf("\t\"%s/x/%s\"\n", moduleName, extName))
-	// 			// newAppGo = append(newAppGo, importSection...)
-	// 			stopImport = true
-	// 		}
-	// 		// else {
-	// 		// 	importSection = append(importSection, line)
-	// 		// }
-	// 	}
+	for _, newImport := range newImports {
+		imports = append(imports, "\t"+newImport)
+	}
 
-	// 	// if line contains import (, start capturing lines
-	// 	if strings.Contains(line, "import (") {
-	// 		// capture all lines until the end )
-	// 		importSection = append(importSection, line)
-	// 	}
-	// }
+	return append(oldSource[:start], append(imports, oldSource[end-1:]...)...)
+}
 
-	// print importSection
-	// fmt.Println("importSection", importSection)
+func parseImports(filePath string) ([]string, int, int, error) {
+	// Read the content of the file
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, 0, 0, err
+	}
 
-	// TODO: find import (, and capture all lines until the end ). Then prepend the new module import data here.
-	// Same for mac perms? (add input to signal if you want it to become a module acc in the maccPerms { bracket).
-	// Find '// Custom' or ModuleManager in the next struct section (type ChainApp struct {)
-	// Find app.EvidenceKeeper = *evidenceKeeper and append the NewKeeper lines after it
-	// find app.ModuleManager = module.NewManager and append the NewAppModule with the basic setup at the end
-	// SetOrderBeginBlockers, SetOrderEndBlockers, genesisModuleOrder & paramsKeeper.Subspace
+	// Split the content into lines
+	lines := strings.Split(string(content), "\n")
 
-	return nil
+	// Find the import block and its boundaries
+	importStartLine := -1
+	importEndLine := -1
+	for i, line := range lines {
+		if strings.Contains(line, "import (") {
+			importStartLine = i + 1 // Line numbers start from 1
+		} else if importStartLine != -1 && strings.Contains(line, ")") {
+			importEndLine = i + 1 // Line numbers start from 1
+			break
+		}
+	}
+
+	// If no import block found, return empty slice and line numbers as 0
+	if importStartLine == -1 || importEndLine == -1 {
+		return []string{}, 0, 0, nil
+	}
+
+	// Extract import strings within the import block
+	var imports []string
+	for _, line := range lines[importStartLine:importEndLine] {
+		if strings.Contains(line, "\"") {
+			imports = append(imports, line)
+		}
+	}
+
+	return imports, importStartLine, importEndLine, nil
 }
 
 func SetupModuleExtensionFiles(logger *slog.Logger, extName string) error {
