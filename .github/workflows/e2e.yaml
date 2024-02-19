@@ -40,6 +40,11 @@ jobs:
     name: Chain E2E
 
     steps:
+      - id: go-cache-paths
+        run: |
+          echo "::set-output name=go-build::$(go env GOCACHE)"
+          echo "::set-output name=go-mod::$(go env GOMODCACHE)"
+
       - name: 'Setup jq'
         uses: dcarbone/install-jq-action@v2
         with:
@@ -62,17 +67,31 @@ jobs:
       - name: Build Chain
         run: ./spawn new chain1 --bypass-prompt --bech32=roll --bin=${{env.BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug
 
+      - name: Set Workspace to Chain1
+        run: cd chain1
+
+      # Cache go build cache, used to speedup go test
+      - name: Go Build Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.go-cache-paths.outputs.go-build }}
+          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
+
+      - name: Mod Tidy
+        run: go mod tidy
+
+      # Cache go mod cache, used to speedup builds
+      - name: Go Mod Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.go-cache-paths.outputs.go-mod }}
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+
       - name: Unit Test Chain
-        run: |
-          cd chain1
-          go mod tidy
-          go test ./...
+        run: go test ./...
 
       - name: Install Chain
-        run: |
-          cd chain1
-          make install
-          echo "Installed ${{env.BIN_NAME}}"
+        run: make install && echo "Installed ${{env.BIN_NAME}}"
 
       - name: Run Chain
         run: cd chain1 && HOME_DIR="~/.simapp" CHAIN_ID="local-1" BLOCK_TIME="2000ms" CLEAN=true sh scripts/test_node.sh &
