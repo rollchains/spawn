@@ -81,9 +81,6 @@ jobs:
           path: ${{ steps.go-cache-paths.outputs.go-mod }}
           key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
 
-      - name: Mod Tidy
-        run: cd chain1 && go mod tidy
-
       - name: Unit Test Chain
         run: |
           cd chain1
@@ -102,11 +99,12 @@ jobs:
       - name: Validate Running
         run: |
           sleep 20
-          res=`${{env.BIN_NAME}} status --output=json | jq -r 'has("sync_info")'`
+          cmd=`${{env.BIN_NAME}} status --output=json`
+          res=`$cmd | jq -r 'has("sync_info")'`
 
           if [ "$res" == "true" ]; then
-            echo "Chain is running"
+            echo "Chain is running. Status: $cmd"
           else
-            echo "Chain is not running"
+            echo "Chain is not running. Status: $cmd"
             exit 1
           fi
