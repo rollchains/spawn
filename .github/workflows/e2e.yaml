@@ -48,4 +48,13 @@ jobs:
         run: cd chain1 && HOME_DIR="~/.simapp" CHAIN_ID="local-1" BLOCK_TIME="2000ms" CLEAN=true sh scripts/test_node.sh &
 
       - name: Validate Running
-        run: sleep 20 && ${{env.BIN_NAME}} status --output=json | jq -r 'has("sync_info")' | grep true
+        run: |
+          sleep 20
+          res=`${{env.BIN_NAME}} status --output=json | jq -r 'has("sync_info")'`
+
+          if [ "$res" == "true" ]; then
+            echo "Chain is running"
+          else
+            echo "Chain is not running"
+            exit 1
+          fi
