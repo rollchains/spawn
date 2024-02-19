@@ -203,7 +203,7 @@ func AddModuleToAppGo(logger *slog.Logger, extName string) error {
 
 	// Add keeper to the ChainApp struct.
 	appModuleManagerLine := spawn.FindLineWithText(appGoLines, "*module.Manager")
-	fmt.Println("appModuleManager", appModuleManagerLine)
+	logger.Debug("module manager", "extName", extName, "line", appModuleManagerLine)
 	appGoLines = append(appGoLines[:appModuleManagerLine-2], append([]string{fmt.Sprintf(`	%sKeeper %skeeper.Keeper`, extNameTitle, extName)}, appGoLines[appModuleManagerLine-2:]...)...)
 
 	// Setup the new module store key.

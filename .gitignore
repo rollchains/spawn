@@ -5,6 +5,7 @@ heighliner/
 /interchaintest/
 **/configs/logs.json
 
+bin/spawn
 dist/
 
 myproject/

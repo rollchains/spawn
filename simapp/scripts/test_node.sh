@@ -57,9 +57,9 @@ from_scratch () {
     echo $mnemonic | BINARY keys add $key --keyring-backend $KEYRING --algo $KEYALGO --recover
   }
 
-  # cosmos1efd63aw40lxf3n4mhf7dzhjkr453axur6cpk92
+  # wasm1efd63aw40lxf3n4mhf7dzhjkr453axursysrvp
   add_key $KEY "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry"
-  # cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr
+  # wasm1hj5fveer5cjtn4wd6wstzugjfdxzl0xpvsr89g
   add_key $KEY2 "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise"
 
   # chain initial setup
@@ -96,7 +96,7 @@ from_scratch () {
   update_test_genesis '.app_state["tokenfactory"]["params"]["denom_creation_fee"]=[]'
   update_test_genesis '.app_state["tokenfactory"]["params"]["denom_creation_gas_consume"]=100000'
   # poa
-  update_test_genesis '.app_state["poa"]["params"]["admins"]=["cosmos10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn"]'
+  update_test_genesis '.app_state["poa"]["params"]["admins"]=["wasm10d07y265gmmuvt4z0w9aw880jnsr700js7zslc"]'
 
   # Allocate genesis accounts
   BINARY genesis add-genesis-account $KEY 10000000$DENOM,900test --keyring-backend $KEYRING

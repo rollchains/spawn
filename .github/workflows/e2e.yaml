@@ -1,0 +1,110 @@
+# E2E builds spawn, then uses it and performs validations against it.
+name: "E2E"
+
+on:
+  push:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GO_VERSION: 1.21.0
+  JQ_VERSION: '1.7'
+  JQ_FORCE: false
+  BIN_NAME: appd
+
+jobs:
+  build-spawn:
+    runs-on: ubuntu-latest
+    name: Build Spawn
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Build Spawn
+        run: make build
+
+      - uses: actions/upload-artifact@master
+        with:
+          name: spawn
+          path: ./bin/spawn
+
+  e2e-tests:
+    needs: build-spawn
+    runs-on: ubuntu-latest
+    name: Chain E2E
+
+    steps:
+      - id: go-cache-paths
+        run: |
+          echo "::set-output name=go-build::$(go env GOCACHE)"
+          echo "::set-output name=go-mod::$(go env GOMODCACHE)"
+
+      - name: 'Setup jq'
+        uses: dcarbone/install-jq-action@v2
+        with:
+          version: '${{ env.JQ_VERSION }}'
+          force: '${{ env.JQ_FORCE }}'
+
+      - name: Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+
+      # Cache go build cache, used to speedup go test
+      - name: Go Build Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.go-cache-paths.outputs.go-build }}
+          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
+
+      # Cache go mod cache, used to speedup builds
+      - name: Go Mod Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.go-cache-paths.outputs.go-mod }}
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+
+      - name: Download Spawn Binary
+        uses: actions/download-artifact@master
+        with:
+          name: spawn
+
+      - name: Binary Permission
+        run: chmod +x ./spawn && ls -l
+
+      - name: Build Chain
+        run: ./spawn new chain1 --bypass-prompt --bech32=roll --bin=${{env.BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug
+
+      - name: Unit Test Chain
+        run: |
+          cd chain1
+          go test ./...
+
+      - name: Install Chain
+        run: |
+          cd chain1
+          make install && echo "Installed ${{env.BIN_NAME}}"
+
+      - name: Run Chain
+        run: |
+            cd chain1
+            HOME_DIR="~/.simapp" CHAIN_ID="local-1" BLOCK_TIME="2000ms" CLEAN=true sh scripts/test_node.sh &
+
+      - name: Validate Running
+        run: |
+          sleep 20
+          res=`${{env.BIN_NAME}} status --output=json | jq -r 'has("sync_info")'`
+
+          if [ "$res" == "true" ]; then
+            echo "Chain is running"
+          else
+            echo "Chain is not running"
+            exit 1
+          fi

@@ -80,6 +80,8 @@ func (fc *FileContent) ReplaceTestNodeScript(cfg *NewChainConfig) {
 	if fc.IsPath(path.Join("scripts", "test_node.sh")) {
 		fc.ReplaceAll("export BINARY=${BINARY:-wasmd}", fmt.Sprintf("export BINARY=${BINARY:-%s}", cfg.BinDaemon))
 		fc.ReplaceAll("export DENOM=${DENOM:-token}", fmt.Sprintf("export DENOM=${DENOM:-%s}", cfg.Denom))
+
+		fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix)
 	}
 }
 
