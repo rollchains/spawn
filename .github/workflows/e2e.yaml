@@ -56,16 +56,6 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: Download Spawn Binary
-        uses: actions/download-artifact@master
-        with:
-          name: spawn
-
-      - name: Binary Permission
-        run: chmod +x ./spawn && ls -l
-
-      - name: Build Chain
-        run: ./spawn new chain1 --bypass-prompt --bech32=roll --bin=${{env.BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug
 
       # Cache go build cache, used to speedup go test
       - name: Go Build Cache
@@ -80,6 +70,17 @@ jobs:
         with:
           path: ${{ steps.go-cache-paths.outputs.go-mod }}
           key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+
+      - name: Download Spawn Binary
+        uses: actions/download-artifact@master
+        with:
+          name: spawn
+
+      - name: Binary Permission
+        run: chmod +x ./spawn && ls -l
+
+      - name: Build Chain
+        run: ./spawn new chain1 --bypass-prompt --bech32=roll --bin=${{env.BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug
 
       - name: Unit Test Chain
         run: |
