@@ -99,12 +99,11 @@ jobs:
       - name: Validate Running
         run: |
           sleep 20
-          cmd=`${{env.BIN_NAME}} status --output=json`
-          res=`$cmd | jq -r 'has("sync_info")'`
+          res=`${{env.BIN_NAME}} status --output=json | jq -r 'has("sync_info")'`
 
           if [ "$res" == "true" ]; then
-            echo "Chain is running. Status: $cmd"
+            echo "Chain is running"
           else
-            echo "Chain is not running. Status: $cmd"
+            echo "Chain is not running"
             exit 1
           fi
