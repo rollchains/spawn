@@ -16,6 +16,7 @@ var (
 		{ID: "poa", IsSelected: true, Details: "Proof-of-Authority consensus algorithm (permissioned network)"},
 		{ID: "globalfee", IsSelected: true, Details: "Static minimum fee(s) for all transactions, controlled by governance"},
 		{ID: "cosmwasm", IsSelected: true, Details: "Cosmos smart contracts"},
+		{ID: "packetforward", IsSelected: true, Details: "Packet forwarding (for IBC)"},
 	}
 )
 
