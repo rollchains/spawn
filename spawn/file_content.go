@@ -125,7 +125,8 @@ func (fc *FileContent) ReplaceMakeFile(cfg *NewChainConfig) {
 	fc.ReplaceAll("version.AppName=wasmd", fmt.Sprintf("version.AppName=%s", bin))
 	fc.ReplaceAll("cmd/wasmd", fmt.Sprintf("cmd/%s", bin))
 	fc.ReplaceAll("build/wasmd", fmt.Sprintf("build/%s", bin))
-	fc.ReplaceAll("wasmd keys", fmt.Sprintf("%s keys", bin)) // for testnet
+	fc.ReplaceAll("wasmd keys", fmt.Sprintf("%s keys", bin))     // for testnet
+	fc.ReplaceAll("wasmd config", fmt.Sprintf("%s config", bin)) // for local config
 
 	fc.ReplaceAll("docker build . -t wasmd:local", fmt.Sprintf(`docker build . -t %s:local`, strings.ToLower(cfg.ProjectName)))
 

@@ -239,10 +239,17 @@ ictest-basic:
 ###                                    testnet                              ###
 ###############################################################################
 
-setup-testnet: is-localic-installed install local-image setup-testnet-keys
+setup-testnet: is-localic-installed install local-image set-testnet-configs setup-testnet-keys
 
-setup-testnet-keys:
+# Run this before testnet keys are added
+# chainid-1 is used in the testnet.json
+set-testnet-configs:
+	wasmd config set client chain-id chainid-1
+	wasmd config set client keyring-backend test
+	wasmd config set client output text
+
 # import keys from testnet.json into test keyring
+setup-testnet-keys:
 	-`echo "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry" | wasmd keys add acc0 --recover`
 	-`echo "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise" | wasmd keys add acc1 --recover`
 
