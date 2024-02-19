@@ -12,28 +12,19 @@ env:
   GO_VERSION: 1.21.0
 
 jobs:
-  build:
+  chain1:
     runs-on: ubuntu-latest
-    name: build spawn
+    name: Test Spawn Chain
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup go
         uses: actions/setup-go@v4
         with:
           go-version: ${{ env.GO_VERSION }}
-      - run: make install
 
-  fresh-simapp-test:
-    runs-on: ubuntu-latest
-    name: base simapp unit test
-    needs: build
-    steps:
-      - name: Install Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ env.GO_VERSION }}
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Build Spawn
+        run: make install
 
       - name: Build Chain
         run: |
