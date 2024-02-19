@@ -26,6 +26,7 @@ jobs:
   fresh-simapp-test:
     runs-on: ubuntu-latest
     name: base simapp unit test
+    needs: build
     steps:
       - name: Install Go
         uses: actions/setup-go@v4
