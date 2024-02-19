@@ -33,10 +33,11 @@ jobs:
             go mod tidy
             go test ./...
             make install
+            echo "Installed Appd"
 
       - name: Run Chain
         run: cd chain1 && HOME_DIR="~/.simapp" CHAIN_ID="local-1" BLOCK_TIME="2000ms" CLEAN=true sh scripts/test_node.sh &
 
         # setup JQ?
       - name: Validate Running
-        run: curl http://127.0.0.1:26657/abci_info?
+        run: sleep 20 && curl http://127.0.0.1:26657/abci_info?
