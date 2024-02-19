@@ -110,7 +110,6 @@ func (fc *FileContent) RemovePacketForward() {
 	text := "packetforward"
 	fc.RemoveGoModImport("github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward")
 
-	fc.RemoveModuleFromText(text,
-		path.Join("app", "app.go"),
-	)
+	fc.RemoveModuleFromText(text, path.Join("app", "app.go"))
+	fc.RemoveModuleFromText("PacketForward", path.Join("app", "app.go"))
 }
