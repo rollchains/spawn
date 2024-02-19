@@ -55,7 +55,6 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: spawn
-          path: ./bin/spawn
 
       - name: Build Chain
         run: spawn new chain1 --bypass-prompt --bech32=roll --bin=${{env.BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug
