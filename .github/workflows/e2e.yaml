@@ -67,9 +67,6 @@ jobs:
       - name: Build Chain
         run: ./spawn new chain1 --bypass-prompt --bech32=roll --bin=${{env.BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug
 
-      - name: Set Workspace to Chain1
-        run: cd chain1
-
       # Cache go build cache, used to speedup go test
       - name: Go Build Cache
         uses: actions/cache@v2
@@ -78,7 +75,7 @@ jobs:
           key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
 
       - name: Mod Tidy
-        run: go mod tidy
+        run: cd chain1 && go mod tidy
 
       # Cache go mod cache, used to speedup builds
       - name: Go Mod Cache
@@ -88,10 +85,10 @@ jobs:
           key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
 
       - name: Unit Test Chain
-        run: go test ./...
+        run: cd chain1 && go test ./...
 
       - name: Install Chain
-        run: make install && echo "Installed ${{env.BIN_NAME}}"
+        run: cd chain1 && make install && echo "Installed ${{env.BIN_NAME}}"
 
       - name: Run Chain
         run: cd chain1 && HOME_DIR="~/.simapp" CHAIN_ID="local-1" BLOCK_TIME="2000ms" CLEAN=true sh scripts/test_node.sh &
