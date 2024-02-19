@@ -1,0 +1,50 @@
+# E2E builds spawn, then uses it and performs validations against it.
+name: "E2E"
+
+on:
+  push:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GO_VERSION: 1.21.0
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: build spawn
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - run: make install
+
+  fresh-simapp-test:
+    runs-on: ubuntu-latest
+    name: base simapp unit test
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Chain
+        run: |
+            spawn new chain1 --bypass-prompt --bech32=roll --bin=appd --no-git --org=rollchains --denom=uroll --debug
+            cd chain1
+            go mod tidy
+            go test ./...
+            make install
+
+      - name: Run Chain
+        run: cd chain1 && HOME_DIR="~/.simapp" CHAIN_ID="local-1" BLOCK_TIME="2000ms" CLEAN=true sh scripts/test_node.sh &
+
+        # setup JQ?
+      - name: Validate Running
+        run: curl http://127.0.0.1:26657/abci_info?
