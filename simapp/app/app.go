@@ -150,6 +150,10 @@ import (
 	globalfee "github.com/reecepbcups/globalfee/x/globalfee"
 	globalfeekeeper "github.com/reecepbcups/globalfee/x/globalfee/keeper"
 	globalfeetypes "github.com/reecepbcups/globalfee/x/globalfee/types"
+
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
+	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
+	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 )
 
 const appName = "CosmWasmApp"
@@ -242,10 +246,11 @@ type ChainApp struct {
 	TransferKeeper      ibctransferkeeper.Keeper
 
 	// Custom
-	WasmKeeper         wasmkeeper.Keeper
-	TokenFactoryKeeper tokenfactorykeeper.Keeper
-	POAKeeper          poakeeper.Keeper
-	GlobalFeeKeeper    globalfeekeeper.Keeper
+	WasmKeeper          wasmkeeper.Keeper
+	TokenFactoryKeeper  tokenfactorykeeper.Keeper
+	POAKeeper           poakeeper.Keeper
+	GlobalFeeKeeper     globalfeekeeper.Keeper
+	PacketForwardKeeper *packetforwardkeeper.Keeper
 
 	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
 	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
@@ -334,6 +339,7 @@ func NewChainApp(
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
+
 	bApp.SetTxEncoder(txConfig.TxEncoder())
 
 	keys := storetypes.NewKVStoreKeys(
@@ -355,6 +361,7 @@ func NewChainApp(
 		tokenfactorytypes.StoreKey,
 		poa.StoreKey,
 		globalfeetypes.StoreKey,
+		packetforwardtypes.StoreKey,
 	)
 
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -598,6 +605,18 @@ func NewChainApp(
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
 
+	// Create the packetfoward keeper
+	app.PacketForwardKeeper = packetforwardkeeper.NewKeeper(
+		appCodec,
+		keys[packetforwardtypes.StoreKey],
+		nil, // will be zero-value here, reference is set later on with SetTransferKeeper.
+		app.IBCKeeper.ChannelKeeper,
+		app.DistrKeeper,
+		app.BankKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+
 	// Create the globalfee keeper
 	app.GlobalFeeKeeper = globalfeekeeper.NewKeeper(
 		appCodec,
@@ -644,7 +663,7 @@ func NewChainApp(
 		appCodec,
 		keys[ibctransfertypes.StoreKey],
 		app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCFeeKeeper, // ISC4 Wrapper: fee IBC middleware
+		app.IBCFeeKeeper, // use ics29 fee as ics4Wrapper in middleware stack
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
@@ -652,6 +671,8 @@ func NewChainApp(
 		scopedTransferKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
+
+	app.PacketForwardKeeper.SetTransferKeeper(app.TransferKeeper)
 
 	app.ICAHostKeeper = icahostkeeper.NewKeeper(
 		appCodec,
@@ -712,6 +733,13 @@ func NewChainApp(
 	var transferStack porttypes.IBCModule
 	transferStack = transfer.NewIBCModule(app.TransferKeeper)
 	transferStack = ibcfee.NewIBCMiddleware(transferStack, app.IBCFeeKeeper)
+	transferStack = packetforward.NewIBCMiddleware(
+		transferStack,
+		app.PacketForwardKeeper,
+		0, // retries on timeout
+		packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp, // forward timeout
+		packetforwardkeeper.DefaultRefundTransferPacketTimeoutTimestamp,  // refund timeout
+	)
 
 	// Create Interchain Accounts Stack
 	// SendPacket, since it is originating from the application to core IBC:
@@ -786,6 +814,7 @@ func NewChainApp(
 		tokenfactory.NewAppModule(app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(tokenfactorytypes.ModuleName)),
 		poamodule.NewAppModule(appCodec, app.POAKeeper),
 		globalfee.NewAppModule(appCodec, app.GlobalFeeKeeper),
+		packetforward.NewAppModule(app.PacketForwardKeeper, app.GetSubspace(packetforwardtypes.ModuleName)),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -831,6 +860,7 @@ func NewChainApp(
 		ibcfeetypes.ModuleName,
 		wasmtypes.ModuleName,
 		tokenfactorytypes.ModuleName,
+		packetforwardtypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -849,6 +879,7 @@ func NewChainApp(
 		ibcfeetypes.ModuleName,
 		wasmtypes.ModuleName,
 		tokenfactorytypes.ModuleName,
+		packetforwardtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -876,6 +907,7 @@ func NewChainApp(
 		poa.ModuleName,
 		tokenfactorytypes.ModuleName,
 		globalfeetypes.ModuleName,
+		packetforwardtypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
@@ -1298,6 +1330,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(tokenfactorytypes.ModuleName)
 	paramsKeeper.Subspace(poa.ModuleName)
 	paramsKeeper.Subspace(globalfee.ModuleName)
+	paramsKeeper.Subspace(packetforwardtypes.ModuleName).WithKeyTable(packetforwardtypes.ParamKeyTable())
 
 	return paramsKeeper
 }
