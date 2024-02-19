@@ -56,8 +56,12 @@ jobs:
         with:
           name: spawn
 
+      # run the ls command
+      - name: List files
+        run: ls -l
+
       - name: Build Chain
-        run: spawn new chain1 --bypass-prompt --bech32=roll --bin=${{env.BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug
+        run: ./bin/spawn new chain1 --bypass-prompt --bech32=roll --bin=${{env.BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug
 
       - name: Unit Test Chain
         run: |
