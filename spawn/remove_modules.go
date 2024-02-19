@@ -17,6 +17,8 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 			fc.RemoveGlobalFee()
 		case "wasm", "cosmwasm", "cw":
 			fc.RemoveCosmWasm()
+		case "packetforward", "pfm":
+			fc.RemovePacketForward()
 		default:
 			// is this acceptable? or should we just print and continue?
 			panic("unknown feature to remove " + name)
@@ -102,4 +104,12 @@ func (fc *FileContent) RemoveCosmWasm() {
 		path.Join("app", "app_test.go"),
 		path.Join("cmd", "wasmd", "root.go"),
 	)
+}
+
+func (fc *FileContent) RemovePacketForward() {
+	text := "packetforward"
+	fc.RemoveGoModImport("github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward")
+
+	fc.RemoveModuleFromText(text, path.Join("app", "app.go"))
+	fc.RemoveModuleFromText("PacketForward", path.Join("app", "app.go"))
 }
