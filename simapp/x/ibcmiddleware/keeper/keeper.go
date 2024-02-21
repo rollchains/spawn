@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/strangelove-ventures/simapp/x/ibc-middleware/types"
+	"github.com/strangelove-ventures/simapp/x/ibcmiddleware/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"

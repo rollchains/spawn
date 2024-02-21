@@ -5,8 +5,8 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
-	"github.com/strangelove-ventures/simapp/x/ibc-middleware/keeper"
-	"github.com/strangelove-ventures/simapp/x/ibc-middleware/types"
+	"github.com/strangelove-ventures/simapp/x/ibcmiddleware/keeper"
+	"github.com/strangelove-ventures/simapp/x/ibcmiddleware/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"

@@ -1,7 +1,7 @@
 package ibcswap
 
 import (
-	"github.com/strangelove-ventures/simapp/x/ibc-middleware/keeper"
+	"github.com/strangelove-ventures/simapp/x/ibcmiddleware/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
