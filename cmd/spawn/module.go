@@ -31,20 +31,21 @@ func ModuleCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		AddCmd(),
+		NewCmd(),
 		RemoveCmd(),
+		// TODO: import/add from upstream -> app.go
 	)
 
 	return cmd
 }
 
-func AddCmd() *cobra.Command {
+func NewCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "add [name]",
+		Use:     "new [name]",
 		Short:   "Create a new module scaffolding",
-		Example: `spawn module add mymodule [--ibc-middleware]`,
+		Example: `spawn module new mymodule [--ibc-middleware]`,
 		Args:    cobra.ExactArgs(1),
-		Aliases: []string{"a"},
+		Aliases: []string{"c", "create"},
 		Run: func(cmd *cobra.Command, args []string) {
 			logger := GetLogger()
 
