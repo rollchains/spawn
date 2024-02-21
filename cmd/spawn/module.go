@@ -207,7 +207,7 @@ func AddModuleToAppGo(logger *slog.Logger, extName string) error {
 	appGoLines = append(appGoLines[:appModuleManagerLine-2], append([]string{fmt.Sprintf(`	%sKeeper %skeeper.Keeper`, extNameTitle, extName)}, appGoLines[appModuleManagerLine-2:]...)...)
 
 	// Setup the new module store key.
-	start, end := spawn.FindLinesWithText(appGoLines, "storetypes.NewKVStoreKeys")
+	start, end := spawn.FindLinesWithText(appGoLines, "NewKVStoreKeys(")
 	logger.Debug("store key", "extName", extName, "start", start, "end", end)
 	appGoLines = append(appGoLines[:end-1], append([]string{fmt.Sprintf(`		%stypes.StoreKey,`, extName)}, appGoLines[end-1:]...)...)
 
@@ -223,7 +223,7 @@ func AddModuleToAppGo(logger *slog.Logger, extName string) error {
 	appGoLines = append(appGoLines[:evidenceTextLine+2], append([]string{keeperText}, appGoLines[evidenceTextLine+2:]...)...)
 
 	// Register the app module.
-	start, end = spawn.FindLinesWithText(appGoLines, "app.ModuleManager = module.NewManager")
+	start, end = spawn.FindLinesWithText(appGoLines, "NewManager(")
 	logger.Debug("module manager", "extName", extName, "start", start, "end", end)
 	newAppModuleText := fmt.Sprintf(`		%s.NewAppModule(appCodec, app.%sKeeper),`+"\n", extName, extNameTitle)
 	appGoLines = append(appGoLines[:end-1], append([]string{newAppModuleText}, appGoLines[end-1:]...)...)
@@ -244,7 +244,7 @@ func AddModuleToAppGo(logger *slog.Logger, extName string) error {
 	appGoLines = append(appGoLines[:end-1], append([]string{fmt.Sprintf(`		%stypes.ModuleName,`, extName)}, appGoLines[end-1:]...)...)
 
 	// Register the params to x/params module. (Removed in SDK v51)
-	start, end = spawn.FindLinesWithText(appGoLines, "initParamsKeeper(appCodec")
+	start, end = spawn.FindLinesWithText(appGoLines, "func initParamsKeeper(")
 	logger.Debug("initParamsKeeper register", "extName", extName, "start", start, "end", end)
 	appGoLines = append(appGoLines[:end-3], append([]string{fmt.Sprintf(`	paramsKeeper.Subspace(%stypes.ModuleName)`, extName)}, appGoLines[end-3:]...)...)
 
