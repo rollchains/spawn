@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/strangelove-ventures/simapp"
 	"gitub.com/strangelove-ventures/spawn/spawn"
 
@@ -18,11 +19,15 @@ import (
 
 const FlagIsIBCMiddleware = "ibc-middleware"
 
-func init() {
+func normalizeModuleFlags(f *pflag.FlagSet, name string) pflag.NormalizedName {
+	switch name {
+	case "ibc", "ibcmiddleware", "middleware":
+		name = FlagIsIBCMiddleware
+	}
 
+	return pflag.NormalizedName(name)
 }
 
-// Cmd creates a main CLI command
 func ModuleCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "module",
@@ -102,6 +107,7 @@ func NewCmd() *cobra.Command {
 	}
 
 	cmd.Flags().Bool(FlagIsIBCMiddleware, false, "Set the module as an IBC Middleware module")
+	cmd.Flags().SetNormalizeFunc(normalizeModuleFlags)
 
 	return cmd
 }
@@ -114,19 +120,9 @@ func RemoveCmd() *cobra.Command {
 		Args:    cobra.ExactArgs(1),
 		Aliases: []string{"rm"},
 		Run: func(cmd *cobra.Command, args []string) {
-			logger := GetLogger()
-
+			// logger := GetLogger()
 			// ext name is the x/ cosmos module name.
-			extName := strings.ToLower(args[0])
-
-			specialChars := "!@#$%^&*()_+{}|-:<>?`=[]\\;',./~"
-			for _, char := range specialChars {
-				if strings.Contains(extName, string(char)) {
-					logger.Error("Special characters are not allowed in module names")
-					return
-				}
-			}
-
+			// extName := strings.ToLower(args[0])
 			fmt.Println("TODO: Not implemented yet.")
 		},
 	}
