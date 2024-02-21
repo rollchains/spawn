@@ -19,70 +19,118 @@ import (
 const FlagIsIBCMiddleware = "ibc-middleware"
 
 func init() {
-	moduleCmd.Flags().Bool(FlagIsIBCMiddleware, false, "Set the module as an IBC Middleware module")
+
 }
 
-var moduleCmd = &cobra.Command{
-	Use:     "module [name]",
-	Short:   "Create a new module scaffolding",
-	Example: `spawn module mymodule`,
-	Args:    cobra.ExactArgs(1),
-	Aliases: []string{"m", "mod", "proto", "ext", "extension"},
-	Run: func(cmd *cobra.Command, args []string) {
-		logger := GetLogger()
+// Cmd creates a main CLI command
+func ModuleCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "module",
+		Short:   "Add, Remove, and Manage modules",
+		Aliases: []string{"m", "mod", "proto", "ext", "extension"},
+	}
 
-		// ext name is the x/ cosmos module name.
-		extName := strings.ToLower(args[0])
+	cmd.AddCommand(
+		AddCmd(),
+		RemoveCmd(),
+	)
 
-		specialChars := "!@#$%^&*()_+{}|-:<>?`=[]\\;',./~"
-		for _, char := range specialChars {
-			if strings.Contains(extName, string(char)) {
-				logger.Error("Special characters are not allowed in module names")
+	return cmd
+}
+
+func AddCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "add [name]",
+		Short:   "Create a new module scaffolding",
+		Example: `spawn module add mymodule [--ibc-middleware]`,
+		Args:    cobra.ExactArgs(1),
+		Aliases: []string{"a"},
+		Run: func(cmd *cobra.Command, args []string) {
+			logger := GetLogger()
+
+			// ext name is the x/ cosmos module name.
+			extName := strings.ToLower(args[0])
+
+			specialChars := "!@#$%^&*()_+{}|-:<>?`=[]\\;',./~"
+			for _, char := range specialChars {
+				if strings.Contains(extName, string(char)) {
+					logger.Error("Special characters are not allowed in module names")
+					return
+				}
+			}
+
+			cwd, err := os.Getwd()
+			if err != nil {
+				logger.Error("Error getting current working directory", err)
 				return
 			}
-		}
+			if _, err := os.Stat(path.Join(cwd, "x", extName)); err == nil {
+				logger.Error("TODO: Module already exists in x/.", "module", extName)
+				return
+			}
 
-		// TODO: don't err here and instead Prompt UI to perform actions?
-		// TODO: protoc-gen, generate msg_server from proto files, etc?
-		cwd, err := os.Getwd()
-		if err != nil {
-			logger.Error("Error getting current working directory", err)
-			return
-		}
-		if _, err := os.Stat(path.Join(cwd, "x", extName)); err == nil {
-			logger.Error("TODO: Module already exists in x/.", "module", extName)
-			return
-		}
+			isIBCMiddleware, err := cmd.Flags().GetBool(FlagIsIBCMiddleware)
+			if err != nil {
+				logger.Error("Error getting IBC Middleware flag", err)
+				return
+			}
 
-		isIBCMiddleware, err := cmd.Flags().GetBool(FlagIsIBCMiddleware)
-		if err != nil {
-			logger.Error("Error getting IBC Middleware flag", err)
-			return
-		}
+			// Setup Proto files to match the new x/ cosmos module name & go.mod module namespace (i.e. github org).
+			if err := SetupModuleProtoBase(GetLogger(), extName, isIBCMiddleware); err != nil {
+				logger.Error("Error setting up proto for module", err)
+				return
+			}
 
-		// Setup Proto files to match the new x/ cosmos module name & go.mod module namespace (i.e. github org).
-		if err := SetupModuleProtoBase(GetLogger(), extName, isIBCMiddleware); err != nil {
-			logger.Error("Error setting up proto for module", err)
-			return
-		}
+			// sets up the files in x/
+			if err := SetupModuleExtensionFiles(GetLogger(), extName, isIBCMiddleware); err != nil {
+				logger.Error("Error setting up x/ module files", err)
+				return
+			}
 
-		// sets up the files in x/
-		if err := SetupModuleExtensionFiles(GetLogger(), extName, isIBCMiddleware); err != nil {
-			logger.Error("Error setting up x/ module files", err)
-			return
-		}
+			// Import the files to app.go
+			if err := AddModuleToAppGo(GetLogger(), extName, isIBCMiddleware); err != nil {
+				logger.Error("Error adding new x/ module to app.go", err)
+				return
+			}
 
-		// Import the files to app.go
-		if err := AddModuleToAppGo(GetLogger(), extName, isIBCMiddleware); err != nil {
-			logger.Error("Error adding new x/ module to app.go", err)
-			return
-		}
+			// Announce the new module & how to code gen the proto files.
+			fmt.Printf("\n🎉 New Module '%s' generated!\n", extName)
+			fmt.Println("🏅Generate Go Code:")
+			fmt.Println("  - $ make proto-gen       # convert proto -> code + generate depinject api")
+		},
+	}
 
-		// Announce the new module & how to code gen the proto files.
-		fmt.Printf("\n🎉 New Module '%s' generated!\n", extName)
-		fmt.Println("🏅Generate Go Code:")
-		fmt.Println("  - $ make proto-gen       # convert proto -> code + generate depinject api")
-	},
+	cmd.Flags().Bool(FlagIsIBCMiddleware, false, "Set the module as an IBC Middleware module")
+
+	return cmd
+}
+
+func RemoveCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "remove [name]",
+		Short:   "Remove a module from the app.",
+		Example: `spawn module remove mymodule`,
+		Args:    cobra.ExactArgs(1),
+		Aliases: []string{"rm"},
+		Run: func(cmd *cobra.Command, args []string) {
+			logger := GetLogger()
+
+			// ext name is the x/ cosmos module name.
+			extName := strings.ToLower(args[0])
+
+			specialChars := "!@#$%^&*()_+{}|-:<>?`=[]\\;',./~"
+			for _, char := range specialChars {
+				if strings.Contains(extName, string(char)) {
+					logger.Error("Special characters are not allowed in module names")
+					return
+				}
+			}
+
+			fmt.Println("TODO: Not implemented yet.")
+		},
+	}
+
+	return cmd
 }
 
 // SetupModuleProtoBase iterates through the proto embedded fs and replaces the paths and goMod names to match
