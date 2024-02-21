@@ -2,7 +2,7 @@ package types
 
 const (
 	// ModuleName defines the name of the middleware.
-	ModuleName = "ibc-middleware"
+	ModuleName = "ibcmiddleware"
 
 	// StoreKey is the store key string for the middleware.
 	StoreKey = ModuleName
