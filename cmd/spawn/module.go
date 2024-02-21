@@ -73,7 +73,7 @@ var moduleCmd = &cobra.Command{
 		}
 
 		// Import the files to app.go
-		if err := AddModuleToAppGo(GetLogger(), extName); err != nil {
+		if err := AddModuleToAppGo(GetLogger(), extName, isIBCMiddleware); err != nil {
 			logger.Error("Error adding new x/ module to app.go", err)
 			return
 		}
@@ -213,7 +213,7 @@ func SetupModuleExtensionFiles(logger *slog.Logger, extName string, ibcMiddlewar
 }
 
 // AddModuleToAppGo adds the new module to the app.go file.
-func AddModuleToAppGo(logger *slog.Logger, extName string) error {
+func AddModuleToAppGo(logger *slog.Logger, extName string, ibcMiddleware bool) error {
 	extNameTitle := textcases.Title(lang.AmericanEnglish).String(extName)
 
 	cwd, err := os.Getwd()
@@ -262,18 +262,37 @@ func AddModuleToAppGo(logger *slog.Logger, extName string) error {
 	// Initialize the new module keeper.
 	evidenceTextLine := spawn.FindLineWithText(appGoLines, "app.EvidenceKeeper = *evidenceKeeper")
 	logger.Debug("evidence keeper", "extName", extName, "line", evidenceTextLine)
-	keeperText := fmt.Sprintf(`	// Create the %s Keeper
+
+	var keeperText string
+	if ibcMiddleware {
+		keeperText = fmt.Sprintf(`	// Create the %s Middleware Keeper
+	app.%sKeeper = %skeeper.NewKeeper(
+		appCodec,
+		app.MsgServiceRouter(),
+		app.IBCKeeper.ChannelKeeper,
+	)`+"\n", extName, extNameTitle, extName)
+	} else {
+		keeperText = fmt.Sprintf(`	// Create the %s Keeper
 	app.%sKeeper = %skeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[%stypes.StoreKey]),
 		logger,
 	)`+"\n", extName, extNameTitle, extName, extName)
+	}
+
 	appGoLines = append(appGoLines[:evidenceTextLine+2], append([]string{keeperText}, appGoLines[evidenceTextLine+2:]...)...)
 
 	// Register the app module.
 	start, end = spawn.FindLinesWithText(appGoLines, "NewManager(")
 	logger.Debug("module manager", "extName", extName, "start", start, "end", end)
-	newAppModuleText := fmt.Sprintf(`		%s.NewAppModule(appCodec, app.%sKeeper),`+"\n", extName, extNameTitle)
+
+	var newAppModuleText string
+	if ibcMiddleware {
+		newAppModuleText = fmt.Sprintf(`		%s.NewAppModule(app.%sKeeper),`+"\n", extName, extNameTitle)
+	} else {
+		newAppModuleText = fmt.Sprintf(`		%s.NewAppModule(appCodec, app.%sKeeper),`+"\n", extName, extNameTitle)
+	}
+
 	appGoLines = append(appGoLines[:end-1], append([]string{newAppModuleText}, appGoLines[end-1:]...)...)
 
 	// Set the begin block order of the new module.
