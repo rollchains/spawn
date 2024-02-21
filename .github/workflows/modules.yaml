@@ -86,7 +86,7 @@ jobs:
       - name: Module Generation
         run: |
           cd chain2
-          ./spawn module new mytestmodule && make proto-gen
+          ../spawn module new mytestmodule && make proto-gen
 
       - name: Unit Test Initial Module
         run: |
@@ -96,7 +96,7 @@ jobs:
       - name: IBC Middleware Generation
         run: |
           cd chain2
-          ./spawn module new mytestmiddleware --ibc-middleware && make proto-gen
+          ../spawn module new mytestmiddleware --ibc-middleware && make proto-gen
 
       - name: Unit Test IBC Middleware
         run: |
