@@ -1,4 +1,4 @@
-package ibcswap
+package ibcmiddleware
 
 import (
 	"encoding/json"

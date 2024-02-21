@@ -1,4 +1,4 @@
-package ibcswap
+package ibcmiddleware
 
 import (
 	"github.com/strangelove-ventures/simapp/x/ibcmiddleware/keeper"
