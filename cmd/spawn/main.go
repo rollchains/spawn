@@ -22,7 +22,7 @@ func main() {
 	rootCmd.AddCommand(newChain)
 	rootCmd.AddCommand(LocalICCmd)
 	rootCmd.AddCommand(versionCmd)
-	rootCmd.AddCommand(moduleCmd)
+	rootCmd.AddCommand(ModuleCmd())
 
 	rootCmd.PersistentFlags().String(LogLevelFlag, "info", "log level (debug, info, warn, error)")
 
