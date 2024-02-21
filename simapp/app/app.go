@@ -1302,7 +1302,6 @@ func BlockedAddresses() map[string]bool {
 	return modAccAddrs
 }
 
-// !IMPORTANT: New apps should not need this (since no SDK v47 -> 50 conversion)
 func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey storetypes.StoreKey) paramskeeper.Keeper {
 	paramsKeeper := paramskeeper.NewKeeper(appCodec, legacyAmino, key, tkey)
 
