@@ -16,6 +16,12 @@ import (
 	lang "golang.org/x/text/language"
 )
 
+const FlagIsIBCMiddleware = "ibc-middleware"
+
+func init() {
+	moduleCmd.Flags().Bool(FlagIsIBCMiddleware, false, "Set the module as an IBC Middleware module")
+}
+
 var moduleCmd = &cobra.Command{
 	Use:     "module [name]",
 	Short:   "Create a new module scaffolding",
@@ -48,14 +54,20 @@ var moduleCmd = &cobra.Command{
 			return
 		}
 
+		isIBCMiddleware, err := cmd.Flags().GetBool(FlagIsIBCMiddleware)
+		if err != nil {
+			logger.Error("Error getting IBC Middleware flag", err)
+			return
+		}
+
 		// Setup Proto files to match the new x/ cosmos module name & go.mod module namespace (i.e. github org).
-		if err := SetupModuleProtoBase(GetLogger(), extName); err != nil {
+		if err := SetupModuleProtoBase(GetLogger(), extName, isIBCMiddleware); err != nil {
 			logger.Error("Error setting up proto for module", err)
 			return
 		}
 
 		// sets up the files in x/
-		if err := SetupModuleExtensionFiles(GetLogger(), extName); err != nil {
+		if err := SetupModuleExtensionFiles(GetLogger(), extName, isIBCMiddleware); err != nil {
 			logger.Error("Error setting up x/ module files", err)
 			return
 		}
@@ -75,7 +87,7 @@ var moduleCmd = &cobra.Command{
 
 // SetupModuleProtoBase iterates through the proto embedded fs and replaces the paths and goMod names to match
 // the new desired module.
-func SetupModuleProtoBase(logger *slog.Logger, extName string) error {
+func SetupModuleProtoBase(logger *slog.Logger, extName string, ibcMiddleware bool) error {
 	protoFS := simapp.ProtoModuleFS
 
 	if err := os.MkdirAll("proto", 0755); err != nil {
@@ -91,6 +103,13 @@ func SetupModuleProtoBase(logger *slog.Logger, extName string) error {
 	goModName := spawn.ReadCurrentGoModuleName(path.Join(cwd, "go.mod"))
 	protoNamespace := convertGoModuleNameToProtoNamespace(goModName)
 
+	moduleName := "example"
+	if ibcMiddleware {
+		moduleName = "ibcmiddleware"
+	}
+
+	logger.Debug("proto namespace", "goModName", goModName, "protoNamespace", protoNamespace, "moduleName", moduleName)
+
 	return fs.WalkDir(protoFS, ".", func(relPath string, d fs.DirEntry, e error) error {
 		newPath := path.Join(cwd, relPath)
 		fc, err := spawn.GetFileContent(logger, newPath, protoFS, relPath, d)
@@ -100,8 +119,20 @@ func SetupModuleProtoBase(logger *slog.Logger, extName string) error {
 			return nil
 		}
 
+		// ignore emebeded files for modules we are not working with
+		switch moduleName {
+		case "example":
+			if strings.Contains(fc.NewPath, "ibcmiddleware") {
+				return nil
+			}
+		case "ibcmiddleware":
+			if strings.Contains(fc.NewPath, "example") {
+				return nil
+			}
+		}
+
 		// rename proto path for the new module
-		exampleProtoPath := path.Join("proto", "example")
+		exampleProtoPath := path.Join("proto", moduleName)
 		if fc.ContainsPath(exampleProtoPath) {
 			newBinPath := path.Join("proto", extName)
 			fc.NewPath = strings.ReplaceAll(fc.NewPath, exampleProtoPath, newBinPath)
@@ -111,7 +142,7 @@ func SetupModuleProtoBase(logger *slog.Logger, extName string) error {
 		fc.ReplaceAll("strangelove_ventures.simapp", protoNamespace)
 
 		// replace example -> the new x/ name
-		fc.ReplaceAll("example", extName)
+		fc.ReplaceAll(moduleName, extName)
 
 		// TODO: set the values in the keepers / msg server automatically
 
@@ -121,7 +152,7 @@ func SetupModuleProtoBase(logger *slog.Logger, extName string) error {
 
 // SetupModuleExtensionFiles iterates through the x/example embedded fs and replaces the paths and goMod names to match
 // the new desired module.
-func SetupModuleExtensionFiles(logger *slog.Logger, extName string) error {
+func SetupModuleExtensionFiles(logger *slog.Logger, extName string, ibcMiddleware bool) error {
 	extFS := simapp.ExtensionFS
 
 	if err := os.MkdirAll(path.Join("x", extName), 0755); err != nil {
@@ -132,6 +163,11 @@ func SetupModuleExtensionFiles(logger *slog.Logger, extName string) error {
 	if err != nil {
 		fmt.Println("Error getting current working directory", err)
 		return err
+	}
+
+	moduleName := "example"
+	if ibcMiddleware {
+		moduleName = "ibcmiddleware"
 	}
 
 	goModName := spawn.ReadCurrentGoModuleName(path.Join(cwd, "go.mod"))
@@ -146,19 +182,31 @@ func SetupModuleExtensionFiles(logger *slog.Logger, extName string) error {
 			return nil
 		}
 
+		// ignore emebeded files for modules we are not working with
+		switch moduleName {
+		case "example":
+			if strings.Contains(fc.NewPath, "ibcmiddleware") {
+				return nil
+			}
+		case "ibcmiddleware":
+			if strings.Contains(fc.NewPath, "example") {
+				return nil
+			}
+		}
+
 		logger.Debug("file content", "path", fc.NewPath, "content", fc.Contents)
 
-		// rename x/example path for the new module
-		examplePath := path.Join("x", "example")
+		// rename x/<module> path for the new module
+		examplePath := path.Join("x", moduleName)
 		if fc.ContainsPath(examplePath) {
 			newBinPath := path.Join("x", extName)
 			fc.NewPath = strings.ReplaceAll(fc.NewPath, examplePath, newBinPath)
 		}
 
 		fc.ReplaceAll("github.com/strangelove-ventures/simapp", goModName)
-		fc.ReplaceAll("x/example", fmt.Sprintf("x/%s", extName))
-		fc.ReplaceAll("package example", fmt.Sprintf("package %s", extName))
-		fc.ReplaceAll("example", extName)
+		fc.ReplaceAll(fmt.Sprintf("x/%s", moduleName), fmt.Sprintf("x/%s", extName))
+		fc.ReplaceAll(fmt.Sprintf("package %s", moduleName), fmt.Sprintf("package %s", extName))
+		fc.ReplaceAll(moduleName, extName)
 
 		return fc.Save()
 	})
