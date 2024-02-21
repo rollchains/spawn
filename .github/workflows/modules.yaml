@@ -38,7 +38,7 @@ jobs:
   e2e-tests:
     needs: build-spawn
     runs-on: ubuntu-latest
-    name: Chain E2E
+    name: Module Generation
 
     steps:
       - id: go-cache-paths
@@ -84,7 +84,9 @@ jobs:
         run: ./spawn new chain2 --bypass-prompt --bech32=roll --bin=${{env.BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug
 
       - name: Module Generation
-        run: ./spawn module new mytestmodule && make proto-gen
+        run: |
+          cd chain2
+          ./spawn module new mytestmodule && make proto-gen
 
       - name: Unit Test Initial Module
         run: |
@@ -92,7 +94,9 @@ jobs:
           go test ./...
 
       - name: IBC Middleware Generation
-        run: ./spawn module new mytestmiddleware --ibc-middleware && make proto-gen
+        run: |
+          cd chain2
+          ./spawn module new mytestmiddleware --ibc-middleware && make proto-gen
 
       - name: Unit Test IBC Middleware
         run: |
