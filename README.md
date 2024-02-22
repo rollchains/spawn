@@ -34,11 +34,11 @@ make install
 
 ```shell
 spawn new rollchain \
---bech32=roll `# the prefix for addresses` \
---denom=uroll `# the coin denomination to create` \
---bin=rolld `# the name of the binary` \
---disabled=cosmwasm `# modules to disable. By default all modules are enabled [tokenfactory, PoA, globalfee, cosmwasm]` \
---org={your_github_username} `# the github username or organization to use for the module imports`
+--bech32=roll # the prefix for addresses \
+--denom=uroll # the coin denomination to create \
+--bin=rolld # the name of the binary \
+--disabled=cosmwasm # modules to disable. By default all modules are enabled [tokenfactory, PoA, globalfee, cosmwasm] \
+--org={your_github_username} # the github username or organization to use for the module imports
 ```
 
 > *NOTE:* `spawn` creates a ready to use repository complete with `git` and GitHub CI. It can be quickly pushed to a new repository getting you and your team up and running quickly.
