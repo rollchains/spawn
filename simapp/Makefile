@@ -221,8 +221,7 @@ local-image:
 ifeq (,$(shell which heighliner))
 	echo 'heighliner' binary not found. Consider running `make get-heighliner`
 else
-# heighliner build -c wasmd --dockerfile=cosmos --binaries--local -f chains.yaml
-	docker build . -t wasmd:local
+	heighliner build -c wasmd --local -f chains.yaml
 endif
 
 .PHONY: get-heighliner local-image is-localic-installed
