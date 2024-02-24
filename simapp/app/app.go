@@ -605,18 +605,6 @@ func NewChainApp(
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
 
-	// Create the packetfoward keeper
-	app.PacketForwardKeeper = packetforwardkeeper.NewKeeper(
-		appCodec,
-		keys[packetforwardtypes.StoreKey],
-		nil, // will be zero-value here, reference is set later on with SetTransferKeeper.
-		app.IBCKeeper.ChannelKeeper,
-		app.DistrKeeper,
-		app.BankKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-	)
-
 	// Create the globalfee keeper
 	app.GlobalFeeKeeper = globalfeekeeper.NewKeeper(
 		appCodec,
@@ -675,6 +663,17 @@ func NewChainApp(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
+	// Create the packetfoward keeper
+	app.PacketForwardKeeper = packetforwardkeeper.NewKeeper(
+		appCodec,
+		keys[packetforwardtypes.StoreKey],
+		app.TransferKeeper, // will be zero-value here, reference is set later on with SetTransferKeeper.
+		app.IBCKeeper.ChannelKeeper,
+		app.DistrKeeper,
+		app.BankKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
 	app.PacketForwardKeeper.SetTransferKeeper(app.TransferKeeper)
 
 	app.ICAHostKeeper = icahostkeeper.NewKeeper(
@@ -739,9 +738,9 @@ func NewChainApp(
 	transferStack = packetforward.NewIBCMiddleware(
 		transferStack,
 		app.PacketForwardKeeper,
-		0, // retries on timeout
-		packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp, // forward timeout
-		packetforwardkeeper.DefaultRefundTransferPacketTimeoutTimestamp,  // refund timeout
+		0,
+		packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
+		packetforwardkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
 	)
 
 	// Create Interchain Accounts Stack
