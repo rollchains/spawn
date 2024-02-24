@@ -140,6 +140,8 @@ func testPending(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, a
 	res, _ := POACreatePendingValidator(t, ctx, chain, acc0, "pl3Q8OQwtC7G2dSqRqsUrO5VZul7l40I+MKUcejqRsg=", "testval", "0.10", "0.25", "0.05")
 	require.EqualValues(t, 0, res.Code)
 
+	require.NoError(t, testutil.WaitForBlocks(ctx, 2, chain))
+
 	pv := GetPOAPending(t, ctx, chain)
 	require.Equal(t, 1, len(pv))
 	require.Equal(t, "0", pv[0].Tokens.String())
