@@ -37,8 +37,6 @@ var (
 
 	ChainImage = ibc.NewDockerImage("wasmd", "local", "1025:1025")
 
-	GasCoin = sdk.NewDecCoinFromDec(Denom, sdkmath.LegacyMustNewDecFromStr("0.0")) // spawntag:globalfee
-
 	DefaultGenesis = []cosmos.GenesisKV{
 		// default
 		cosmos.NewGenesisKV("app_state.gov.params.voting_period", VotingPeriod),
@@ -48,7 +46,7 @@ var (
 		// poa: gov & testing account
 		cosmos.NewGenesisKV("app_state.poa.params.admins", []string{"wasm10d07y265gmmuvt4z0w9aw880jnsr700js7zslc", "wasm1hj5fveer5cjtn4wd6wstzugjfdxzl0xpvsr89g"}),
 		// globalfee: set minimum fee requirements
-		cosmos.NewGenesisKV("app_state.globalfee.params.minimum_gas_prices", sdk.DecCoins{GasCoin}),
+		cosmos.NewGenesisKV("app_state.globalfee.params.minimum_gas_prices", sdk.DecCoins{sdk.NewDecCoinFromDec(Denom, sdkmath.LegacyMustNewDecFromStr("0.0"))}),
 		// tokenfactory: set create cost in set denom or in gas usage.
 		cosmos.NewGenesisKV("app_state.tokenfactory.params.denom_creation_fee", nil),
 		cosmos.NewGenesisKV("app_state.tokenfactory.params.denom_creation_gas_consume", 1), // cost 1 gas to create a new denom
@@ -92,6 +90,9 @@ var (
 	// cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr - test_node.sh
 	AccMnemonic  = "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry"
 	Acc1Mnemonic = "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise"
+
+	RelayerRepo    = "ghcr.io/cosmos/relayer"
+	RelayerVersion = "main"
 )
 
 // TODO: move these into interchaintest?

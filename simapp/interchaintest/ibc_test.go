@@ -17,9 +17,7 @@ import (
 )
 
 const (
-	ibcPath        = "ibc-path"
-	RelayerRepo    = "ghcr.io/cosmos/relayer"
-	RelayerVersion = "main"
+	ibcPath = "ibc-path"
 )
 
 func TestIBC(t *testing.T) {
