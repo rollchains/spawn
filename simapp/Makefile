@@ -231,8 +231,22 @@ endif
 ###############################################################################
 
 ictest-basic:
-	@echo "Running basic integration tests"
 	@cd interchaintest && go test -race -v -run TestBasicChain .
+
+ictest-cosmwasm:
+	@cd interchaintest && go test -race -v -run TestCosmWasmIntegration .
+
+ictest-ibc:
+	@cd interchaintest && go test -race -v -run TestIBC .
+
+ictest-pfm:
+	@cd interchaintest && go test -race -v -run TestPacketForwardMiddleware .
+
+ictest-poa:
+	@cd interchaintest && go test -race -v -run TestPOA .
+
+ictest-tokenfactory:
+	@cd interchaintest && go test -race -v -run TestTokenFactory .
 
 ###############################################################################
 ###                                    testnet                              ###
