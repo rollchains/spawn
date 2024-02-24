@@ -1,6 +1,7 @@
 package spawn
 
 import (
+	"fmt"
 	"path"
 	"strings"
 )
@@ -20,8 +21,7 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		case "packetforward", "pfm":
 			fc.RemovePacketForward()
 		default:
-			// is this acceptable? or should we just print and continue?
-			panic("unknown feature to remove " + name)
+			panic(fmt.Sprintf("unknown feature to remove %s", name))
 		}
 	}
 
@@ -36,6 +36,8 @@ func (fc *FileContent) RemoveTokenFactory() {
 	fc.RemoveModuleFromText(text, path.Join("app", "app.go"))
 	fc.RemoveModuleFromText(text, path.Join("scripts", "test_node.sh"))
 	fc.RemoveModuleFromText(text, path.Join("interchaintest", "setup.go"))
+
+	fc.DeleteContents(path.Join("interchaintest", "tokenfactory_test.go"))
 }
 
 func (fc *FileContent) RemovePOA() {
@@ -48,6 +50,9 @@ func (fc *FileContent) RemovePOA() {
 		path.Join("scripts", "test_node.sh"),
 		path.Join("interchaintest", "setup.go"),
 	)
+
+	fc.DeleteContents(path.Join("interchaintest", "poa_test.go"))
+	fc.DeleteContents(path.Join("interchaintest", "poa.go")) // helpers
 }
 
 func (fc *FileContent) RemoveGlobalFee() {
@@ -104,6 +109,9 @@ func (fc *FileContent) RemoveCosmWasm() {
 		path.Join("app", "app_test.go"),
 		path.Join("cmd", "wasmd", "root.go"),
 	)
+
+	fc.DeleteContents(path.Join("interchaintest", "cosmwasm_test.go"))
+	fc.DeleteDirectoryContents(path.Join("interchaintest", "contracts"))
 }
 
 func (fc *FileContent) RemovePacketForward() {
@@ -112,4 +120,6 @@ func (fc *FileContent) RemovePacketForward() {
 
 	fc.RemoveModuleFromText(text, path.Join("app", "app.go"))
 	fc.RemoveModuleFromText("PacketForward", path.Join("app", "app.go"))
+
+	fc.DeleteContents(path.Join("interchaintest", "packetforward_test.go"))
 }

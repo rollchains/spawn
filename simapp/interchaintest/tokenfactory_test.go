@@ -16,7 +16,6 @@ func TestTokenFactory(t *testing.T) {
 	// setup base chain
 	chains := interchaintest.CreateChainWithConfig(t, NumberVals, NumberFullNodes, Name, ChainImage.Version, DefaultChainConfig)
 	chain := chains[0].(*cosmos.CosmosChain)
-	node := chain.GetNode()
 	ctx, ic, _, _ := interchaintest.BuildInitialChain(t, chains, false)
 
 	users := interchaintest.GetAndFundTestUsers(t, ctx, "default", GenesisFundsAmount, chain, chain)
@@ -25,6 +24,8 @@ func TestTokenFactory(t *testing.T) {
 
 	uaddr := user.FormattedAddress()
 	uaddr2 := user2.FormattedAddress()
+
+	node := chain.GetNode()
 
 	tfDenom, _, err := node.TokenFactoryCreateDenom(ctx, user, "ictestdenom", 2_500_00)
 	t.Log("TF Denom: ", tfDenom)

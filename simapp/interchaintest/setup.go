@@ -18,6 +18,7 @@ import (
 	wasm "github.com/CosmWasm/wasmd/x/wasm/types"
 	globalfee "github.com/reecepbcups/globalfee/x/globalfee/types"
 	tokenfactory "github.com/reecepbcups/tokenfactory/x/tokenfactory/types"
+	poa "github.com/strangelove-ventures/poa"
 )
 
 var (
@@ -65,6 +66,7 @@ var (
 			wasm.RegisterInterfaces(cfg.InterfaceRegistry)
 			tokenfactory.RegisterInterfaces(cfg.InterfaceRegistry)
 			globalfee.RegisterInterfaces(cfg.InterfaceRegistry)
+			poa.RegisterInterfaces(cfg.InterfaceRegistry)
 			return &cfg
 		}(),
 		Type:           "cosmos",
