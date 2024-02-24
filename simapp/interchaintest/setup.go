@@ -140,7 +140,7 @@ func ExecuteTransaction(ctx context.Context, chain *cosmos.CosmosChain, cmd []st
 
 	var res sdk.TxResponse
 	if err := json.Unmarshal(stdout, &res); err != nil {
-		return sdk.TxResponse{}, err
+		return res, err
 	}
 
 	return res, err

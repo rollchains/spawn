@@ -635,7 +635,9 @@ func NewChainApp(
 			tokenfactorytypes.EnableBurnFrom,
 			tokenfactorytypes.EnableForceTransfer,
 			tokenfactorytypes.EnableSetMetadata,
+			// tokenfactorytypes.EnableSudoMint,
 		},
+		tokenfactorykeeper.DefaultIsSudoAdminFunc,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	wasmOpts = append(wasmOpts, tokenfactorybindings.RegisterCustomPlugins(app.BankKeeper, &app.TokenFactoryKeeper)...)
@@ -646,6 +648,7 @@ func NewChainApp(
 		runtime.NewKVStoreService(keys[poa.StoreKey]),
 		app.StakingKeeper,
 		app.SlashingKeeper,
+		app.BankKeeper,
 		authcodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
 		logger,
 	)
