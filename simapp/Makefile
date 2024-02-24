@@ -231,8 +231,28 @@ endif
 ###############################################################################
 
 ictest-basic:
-	@echo "Running basic integration tests"
+	@echo "Running basic interchain tests"
 	@cd interchaintest && go test -race -v -run TestBasicChain .
+
+ictest-cosmwasm:
+	@echo "Running cosmwasm interchain tests"
+	@cd interchaintest && go test -race -v -run TestCosmWasmIntegration .
+
+ictest-ibc:
+	@echo "Running IBC interchain tests"
+	@cd interchaintest && go test -race -v -run TestIBC .
+
+ictest-pfm:
+	@echo "Running packet forward middleware interchain tests"
+	@cd interchaintest && go test -race -v -run TestPacketForwardMiddleware .
+
+ictest-poa:
+	@echo "Running proof of authority interchain tests"
+	@cd interchaintest && go test -race -v -run TestPOA .
+
+ictest-tokenfactory:
+	@echo "Running token factory interchain tests"
+	@cd interchaintest && go test -race -v -run TestTokenFactory .
 
 ###############################################################################
 ###                                    testnet                              ###
@@ -252,10 +272,11 @@ setup-testnet-keys:
 	-`echo "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry" | wasmd keys add acc0 --recover`
 	-`echo "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise" | wasmd keys add acc1 --recover`
 
+# default testnet is with IBC
 testnet: setup-testnet
-	spawn local-ic start testnet
-
-testnet-ibc: setup-testnet
 	spawn local-ic start ibc-testnet
 
-.PHONY: testnet testnet-ibc
+testnet-basic: setup-testnet
+	spawn local-ic start testnet
+
+.PHONY: testnet testnet-basic

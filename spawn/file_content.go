@@ -76,6 +76,13 @@ func (fc *FileContent) DeleteContents(path string) {
 	}
 }
 
+func (fc *FileContent) DeleteDirectoryContents(path string) {
+	if fc.ContainsPath(path) {
+		fc.Logger.Debug("Deleting contents for", "path", path)
+		fc.Contents = ""
+	}
+}
+
 func (fc *FileContent) ReplaceTestNodeScript(cfg *NewChainConfig) {
 	if fc.IsPath(path.Join("scripts", "test_node.sh")) {
 		fc.ReplaceAll("export BINARY=${BINARY:-wasmd}", fmt.Sprintf("export BINARY=${BINARY:-%s}", cfg.BinDaemon))
