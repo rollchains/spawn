@@ -54,11 +54,10 @@ func (cfg *NewChainConfig) AnnounceSuccessfulBuild() {
 	bin := cfg.BinDaemon
 
 	// no logger here, straight to stdout
-	fmt.Printf("\n\n🎉 New blockchain '%s' generated!\n", projName)
+	fmt.Printf("🎉 New blockchain '%s' generated!\n", projName)
 	fmt.Println("🏅Getting started:")
 	fmt.Println("  - $ cd " + projName)
-	fmt.Println("  - $ make testnet             # build & start a testnet")
-	fmt.Println("  - $ make testnet-ibc         # build & start an ibc testnet")
+	fmt.Println("  - $ make testnet             # build & start a testnet with IBC")
 	fmt.Println("  - $ make install             # build the " + bin + " binary")
 	fmt.Println("  - $ make local-image         # build docker image")
 	fmt.Println("  - $ spawn module new <name>  # generate a new module scaffolding")

@@ -272,10 +272,11 @@ setup-testnet-keys:
 	-`echo "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry" | wasmd keys add acc0 --recover`
 	-`echo "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise" | wasmd keys add acc1 --recover`
 
+# default testnet is with IBC
 testnet: setup-testnet
-	spawn local-ic start testnet
-
-testnet-ibc: setup-testnet
 	spawn local-ic start ibc-testnet
 
-.PHONY: testnet testnet-ibc
+testnet-basic: setup-testnet
+	spawn local-ic start testnet
+
+.PHONY: testnet testnet-basic
