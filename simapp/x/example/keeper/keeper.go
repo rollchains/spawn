@@ -46,7 +46,6 @@ func NewKeeper(
 		cdc:    cdc,
 		logger: logger,
 
-		// Stores
 		Params: collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 
 		authority: authority,
@@ -64,6 +63,15 @@ func NewKeeper(
 
 func (k Keeper) Logger() log.Logger {
 	return k.logger
+}
+
+// InitGenesis initializes the module's state from a genesis state.
+func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) error {
+	if err := data.Params.Validate(); err != nil {
+		return err
+	}
+
+	return k.Params.Set(ctx, data.Params)
 }
 
 // ExportGenesis exports the module's state to a genesis state.

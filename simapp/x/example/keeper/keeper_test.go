@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	"cosmossdk.io/log"
@@ -13,13 +14,17 @@ import (
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
+	"cosmossdk.io/core/store"
 
 	"github.com/strangelove-ventures/poa"
 	module "github.com/strangelove-ventures/simapp/x/example"
@@ -46,6 +51,7 @@ type testFixture struct {
 
 	accountkeeper authkeeper.AccountKeeper
 	bankkeeper    bankkeeper.BaseKeeper
+	stakingKeeper *stakingkeeper.Keeper
 	mintkeeper    mintkeeper.Keeper
 
 	addrs      []sdk.AccAddress
@@ -55,7 +61,7 @@ type testFixture struct {
 func SetupTest(t *testing.T, baseValShares int64) *testFixture {
 	t.Helper()
 	f := new(testFixture)
-	// require := require.New(t)
+	require := require.New(t)
 
 	// Base setup
 	logger := log.NewTestLogger(t)
@@ -71,23 +77,13 @@ func SetupTest(t *testing.T, baseValShares int64) *testFixture {
 	f.ctx = testCtx.Ctx
 
 	// Register SDK modules.
-	// registerBaseSDKModules(f, encCfg, storeService, logger, require)
+	registerBaseSDKModules(f, encCfg, storeService, logger, require)
 
 	// Setup POA Keeper.
 	f.k = keeper.NewKeeper(encCfg.Codec, storeService, logger, f.govModAddr)
 	f.msgServer = keeper.NewMsgServerImpl(f.k)
 	f.queryServer = keeper.NewQuerier(f.k)
 	f.appModule = module.NewAppModule(encCfg.Codec, f.k)
-
-	// register interfaces
-	registerModuleInterfaces(encCfg)
-
-	// Setup initial keeper states
-	// require.NoError(f.accountkeeper.AccountNumber.Set(f.ctx, 1))
-	// f.accountkeeper.SetModuleAccount(f.ctx, f.accountkeeper.GetModuleAccount(f.ctx, minttypes.ModuleName))
-	// f.mintkeeper.InitGenesis(f.ctx, f.accountkeeper, minttypes.DefaultGenesisState())
-
-	// f.createBaseStakingValidators(t, baseValShares)
 
 	return f
 }
@@ -97,4 +93,51 @@ func registerModuleInterfaces(encCfg moduletestutil.TestEncodingConfig) {
 	stakingtypes.RegisterInterfaces(encCfg.InterfaceRegistry)
 
 	types.RegisterInterfaces(encCfg.InterfaceRegistry)
+}
+
+func registerBaseSDKModules(
+	f *testFixture,
+	encCfg moduletestutil.TestEncodingConfig,
+	storeService store.KVStoreService,
+	logger log.Logger,
+	require *require.Assertions,
+) {
+	registerModuleInterfaces(encCfg)
+
+	// Auth Keeper.
+	f.accountkeeper = authkeeper.NewAccountKeeper(
+		encCfg.Codec, storeService,
+		authtypes.ProtoBaseAccount,
+		maccPerms,
+		authcodec.NewBech32Codec(sdk.Bech32MainPrefix), sdk.Bech32MainPrefix,
+		f.govModAddr,
+	)
+
+	// Bank Keeper.
+	f.bankkeeper = bankkeeper.NewBaseKeeper(
+		encCfg.Codec, storeService,
+		f.accountkeeper,
+		nil,
+		f.govModAddr, logger,
+	)
+
+	// Staking Keeper.
+	f.stakingKeeper = stakingkeeper.NewKeeper(
+		encCfg.Codec, storeService,
+		f.accountkeeper, f.bankkeeper, f.govModAddr,
+		authcodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
+		authcodec.NewBech32Codec(sdk.Bech32PrefixConsAddr),
+	)
+	require.NoError(f.stakingKeeper.SetParams(f.ctx, stakingtypes.DefaultParams()))
+	f.accountkeeper.SetModuleAccount(f.ctx, f.stakingKeeper.GetNotBondedPool(f.ctx))
+	f.accountkeeper.SetModuleAccount(f.ctx, f.stakingKeeper.GetBondedPool(f.ctx))
+
+	// Mint Keeper.
+	f.mintkeeper = mintkeeper.NewKeeper(
+		encCfg.Codec, storeService,
+		f.stakingKeeper, f.accountkeeper, f.bankkeeper,
+		authtypes.FeeCollectorName, f.govModAddr,
+	)
+	f.accountkeeper.SetModuleAccount(f.ctx, f.accountkeeper.GetModuleAccount(f.ctx, minttypes.ModuleName))
+	f.mintkeeper.InitGenesis(f.ctx, f.accountkeeper, minttypes.DefaultGenesisState())
 }
