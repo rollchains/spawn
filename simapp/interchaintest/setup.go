@@ -13,7 +13,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v8/testutil"
 
 	sdkmath "cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types" //spawntag:globalfee
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	wasm "github.com/CosmWasm/wasmd/x/wasm/types"
 	globalfee "github.com/reecepbcups/globalfee/x/globalfee/types"

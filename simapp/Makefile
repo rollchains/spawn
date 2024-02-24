@@ -231,21 +231,27 @@ endif
 ###############################################################################
 
 ictest-basic:
+	@echo "Running basic interchain tests"
 	@cd interchaintest && go test -race -v -run TestBasicChain .
 
 ictest-cosmwasm:
+	@echo "Running cosmwasm interchain tests"
 	@cd interchaintest && go test -race -v -run TestCosmWasmIntegration .
 
 ictest-ibc:
+	@echo "Running IBC interchain tests"
 	@cd interchaintest && go test -race -v -run TestIBC .
 
 ictest-pfm:
+	@echo "Running packet forward middleware interchain tests"
 	@cd interchaintest && go test -race -v -run TestPacketForwardMiddleware .
 
 ictest-poa:
+	@echo "Running proof of authority interchain tests"
 	@cd interchaintest && go test -race -v -run TestPOA .
 
 ictest-tokenfactory:
+	@echo "Running token factory interchain tests"
 	@cd interchaintest && go test -race -v -run TestTokenFactory .
 
 ###############################################################################
