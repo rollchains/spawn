@@ -322,6 +322,7 @@ func AddModuleToAppGo(logger *slog.Logger, extName string, ibcMiddleware bool) e
 		appCodec,
 		runtime.NewKVStoreService(keys[%stypes.StoreKey]),
 		logger,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)`+"\n", extName, extNameTitle, extName, extName)
 	}
 

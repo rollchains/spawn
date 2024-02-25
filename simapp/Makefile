@@ -234,15 +234,15 @@ ictest-basic:
 	@echo "Running basic interchain tests"
 	@cd interchaintest && go test -race -v -run TestBasicChain .
 
-ictest-cosmwasm:
-	@echo "Running cosmwasm interchain tests"
-	@cd interchaintest && go test -race -v -run TestCosmWasmIntegration .
-
 ictest-ibc:
 	@echo "Running IBC interchain tests"
 	@cd interchaintest && go test -race -v -run TestIBC .
 
-ictest-pfm:
+ictest-wasm:
+	@echo "Running cosmwasm interchain tests"
+	@cd interchaintest && go test -race -v -run TestCosmWasmIntegration .
+
+ictest-packetforward:
 	@echo "Running packet forward middleware interchain tests"
 	@cd interchaintest && go test -race -v -run TestPacketForwardMiddleware .
 

@@ -33,9 +33,12 @@ func (fc *FileContent) RemoveTokenFactory() {
 	text := "tokenfactory"
 	fc.RemoveGoModImport("github.com/reecepbcups/tokenfactory")
 
-	fc.RemoveModuleFromText(text, path.Join("app", "app.go"))
-	fc.RemoveModuleFromText(text, path.Join("scripts", "test_node.sh"))
-	fc.RemoveModuleFromText(text, path.Join("interchaintest", "setup.go"))
+	fc.RemoveModuleFromText(text,
+		path.Join("app", "app.go"),
+		path.Join("scripts", "test_node.sh"),
+		path.Join("interchaintest", "setup.go"),
+		path.Join("workflows", "interchaintest-e2e.yml"),
+	)
 
 	fc.DeleteContents(path.Join("interchaintest", "tokenfactory_test.go"))
 }
@@ -49,6 +52,7 @@ func (fc *FileContent) RemovePOA() {
 		path.Join("app", "ante.go"),
 		path.Join("scripts", "test_node.sh"),
 		path.Join("interchaintest", "setup.go"),
+		path.Join("workflows", "interchaintest-e2e.yml"),
 	)
 
 	fc.DeleteContents(path.Join("interchaintest", "poa_test.go"))
@@ -108,6 +112,7 @@ func (fc *FileContent) RemoveCosmWasm() {
 		path.Join("cmd", "wasmd", "commands.go"),
 		path.Join("app", "app_test.go"),
 		path.Join("cmd", "wasmd", "root.go"),
+		path.Join("workflows", "interchaintest-e2e.yml"),
 	)
 
 	fc.DeleteContents(path.Join("interchaintest", "cosmwasm_test.go"))
@@ -118,7 +123,10 @@ func (fc *FileContent) RemovePacketForward() {
 	text := "packetforward"
 	fc.RemoveGoModImport("github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward")
 
-	fc.RemoveModuleFromText(text, path.Join("app", "app.go"))
+	fc.RemoveModuleFromText(text,
+		path.Join("app", "app.go"),
+		path.Join("workflows", "interchaintest-e2e.yml"),
+	)
 	fc.RemoveModuleFromText("PacketForward", path.Join("app", "app.go"))
 
 	fc.DeleteContents(path.Join("interchaintest", "packetforward_test.go"))
