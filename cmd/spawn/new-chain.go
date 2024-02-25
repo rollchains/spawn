@@ -27,7 +27,7 @@ const (
 	FlagTokenDenom   = "denom"
 	FlagGithubOrg    = "org"
 	FlagDisabled     = "disable"
-	FlagNoGit        = "no-git"
+	FlagNoGit        = "skip-git"
 	FlagBypassPrompt = "bypass-prompt"
 )
 
@@ -107,6 +107,8 @@ func normalizeWhitelistVarRun(f *pflag.FlagSet, name string) pflag.NormalizedNam
 		name = FlagBypassPrompt
 	case "token", "denomination", "coin":
 		name = FlagTokenDenom
+	case "no-git", "ignore-git":
+		name = FlagNoGit
 	}
 
 	return pflag.NormalizedName(name)
