@@ -9,7 +9,7 @@ import (
 )
 
 func TestParams(t *testing.T) {
-	f := SetupTest(t, 1_000_000)
+	f := SetupTest(t)
 	require := require.New(t)
 
 	testCases := []struct {
