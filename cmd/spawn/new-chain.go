@@ -17,18 +17,20 @@ var (
 		{ID: "globalfee", IsSelected: true, Details: "Static minimum fee(s) for all transactions, controlled by governance"},
 		{ID: "cosmwasm", IsSelected: true, Details: "Cosmos smart contracts"},
 		{ID: "packetforward", IsSelected: true, Details: "Packet forwarding (for IBC)"},
+		{ID: "ignite-cli", IsSelected: false, Details: "Ignite CLI Support"},
 	}
 )
 
 const (
-	FlagWalletPrefix = "bech32"
-	FlagBinDaemon    = "bin"
-	FlagDebugging    = "debug"
-	FlagTokenDenom   = "denom"
-	FlagGithubOrg    = "org"
-	FlagDisabled     = "disable"
-	FlagNoGit        = "no-git"
-	FlagBypassPrompt = "bypass-prompt"
+	FlagWalletPrefix   = "bech32"
+	FlagBinDaemon      = "bin"
+	FlagDebugging      = "debug"
+	FlagTokenDenom     = "denom"
+	FlagGithubOrg      = "org"
+	FlagDisabled       = "disable"
+	FlagNoGit          = "skip-git"
+	FlagBypassPrompt   = "bypass-prompt"
+	FlagIgniteCLIOptIn = "ignite-cli"
 )
 
 func init() {
@@ -38,8 +40,9 @@ func init() {
 	newChain.Flags().String(FlagTokenDenom, "token", "bank token denomination")
 	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features: "+SupportedFeatures.String())
 	newChain.Flags().Bool(FlagDebugging, false, "enable debugging")
-	newChain.Flags().Bool(FlagNoGit, false, "git init base")
+	newChain.Flags().Bool(FlagNoGit, false, "ignore git init")
 	newChain.Flags().Bool(FlagBypassPrompt, false, "bypass UI prompt")
+	newChain.Flags().Bool(FlagIgniteCLIOptIn, false, "opt-in to Ignite CLI support")
 
 	newChain.Flags().SetNormalizeFunc(normalizeWhitelistVarRun)
 }
@@ -65,6 +68,15 @@ var newChain = &cobra.Command{
 		denom, _ := cmd.Flags().GetString(FlagTokenDenom)
 		ignoreGitInit, _ := cmd.Flags().GetBool(FlagNoGit)
 		githubOrg, _ := cmd.Flags().GetString(FlagGithubOrg)
+		useIgnite, _ := cmd.Flags().GetBool(FlagIgniteCLIOptIn)
+
+		if useIgnite {
+			for _, feat := range SupportedFeatures {
+				if strings.Contains(feat.ID, "ignite") {
+					feat.IsSelected = true
+				}
+			}
+		}
 
 		bypassPrompt, _ := cmd.Flags().GetBool(FlagBypassPrompt)
 		if len(disabled) == 0 && !bypassPrompt {
@@ -107,6 +119,8 @@ func normalizeWhitelistVarRun(f *pflag.FlagSet, name string) pflag.NormalizedNam
 		name = FlagBypassPrompt
 	case "token", "denomination", "coin":
 		name = FlagTokenDenom
+	case "no-git", "ignore-git":
+		name = FlagNoGit
 	}
 
 	return pflag.NormalizedName(name)

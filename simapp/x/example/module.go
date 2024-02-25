@@ -23,6 +23,8 @@ import (
 	"github.com/strangelove-ventures/simapp/x/example/keeper"
 	"github.com/strangelove-ventures/simapp/x/example/types"
 
+	// this line is used by starport scaffolding # 1
+
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	examplev1 "github.com/strangelove-ventures/simapp/api/example/v1"
 )
@@ -30,6 +32,8 @@ import (
 const (
 	// ConsensusVersion defines the current x/example module consensus version.
 	ConsensusVersion = 1
+
+// this line is used by starport scaffolding # simapp/module/const
 )
 
 var (

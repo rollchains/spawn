@@ -165,6 +165,23 @@ func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...str
 	fc.Contents = strings.Join(newContent, "\n")
 }
 
+// RemoveLineWithAnyMatch removes a line if it contains any text.
+func (fc *FileContent) RemoveLineWithAnyMatch(text string) {
+	splitContent := strings.Split(fc.Contents, "\n")
+	newContent := make([]string, 0, len(splitContent))
+
+	for _, line := range splitContent {
+		if strings.Contains(line, text) {
+			fmt.Println("removing line", line)
+			continue
+		}
+
+		newContent = append(newContent, line)
+	}
+
+	fc.Contents = strings.Join(newContent, "\n")
+}
+
 // doesLineEndWithOpenSymbol returns true if the end of a line opens a statement such as a multi-line function.
 func DoesLineEndWithOpenSymbol(line string) bool {
 	// remove comment if there is one

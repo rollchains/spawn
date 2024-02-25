@@ -58,7 +58,7 @@ type testFixture struct {
 	govModAddr string
 }
 
-func SetupTest(t *testing.T, baseValShares int64) *testFixture {
+func SetupTest(t *testing.T) *testFixture {
 	t.Helper()
 	f := new(testFixture)
 	require := require.New(t)
