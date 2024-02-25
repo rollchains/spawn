@@ -20,6 +20,8 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 			fc.RemoveCosmWasm()
 		case "packetforward", "pfm":
 			fc.RemovePacketForward()
+		case "ignite", "ignite-cli":
+			fc.RemoveIgniteCLI()
 		default:
 			panic(fmt.Sprintf("unknown feature to remove %s", name))
 		}
