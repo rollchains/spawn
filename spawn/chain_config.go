@@ -3,6 +3,7 @@ package spawn
 import (
 	"embed"
 	"fmt"
+	"go/format"
 	"io/fs"
 	"log/slog"
 	"os"
@@ -125,7 +126,7 @@ func (cfg *NewChainConfig) SetupMainChainApp() error {
 		// *All Files
 		fc.ReplaceEverywhere(cfg)
 
-		// Removes unused imports
+		// Removes unused imports & tidies up the files
 		if strings.HasSuffix(fc.NewPath, ".go") && len(fc.Contents) > 0 {
 			newSrc, err := imports.Process(fc.NewPath, []byte(fc.Contents), nil)
 			if err != nil {
@@ -133,7 +134,13 @@ func (cfg *NewChainConfig) SetupMainChainApp() error {
 				return fc.Save()
 			}
 
-			fc.Contents = string(newSrc)
+			bz, err := format.Source(newSrc)
+			if err != nil {
+				cfg.Logger.Error("error formatting go file", "err", err, "file", fc.NewPath)
+				return fc.Save()
+			}
+
+			fc.Contents = string(bz)
 		}
 
 		return fc.Save()
