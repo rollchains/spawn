@@ -172,7 +172,7 @@ func (fc *FileContent) RemoveLineWithAnyMatch(text string) {
 
 	for _, line := range splitContent {
 		if strings.Contains(line, text) {
-			fmt.Println("removing line", line)
+			fc.Logger.Debug("rm", "line", line)
 			continue
 		}
 
