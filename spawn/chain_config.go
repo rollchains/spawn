@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/strangelove-ventures/simapp"
+	"golang.org/x/tools/imports"
 )
 
 var (
@@ -123,6 +124,17 @@ func (cfg *NewChainConfig) SetupMainChainApp() error {
 
 		// *All Files
 		fc.ReplaceEverywhere(cfg)
+
+		// Removes unused imports
+		if strings.HasSuffix(fc.NewPath, ".go") && len(fc.Contents) > 0 {
+			newSrc, err := imports.Process(fc.NewPath, []byte(fc.Contents), nil)
+			if err != nil {
+				cfg.Logger.Error("error processing imports", "err", err, "file", fc.NewPath)
+				return fc.Save()
+			}
+
+			fc.Contents = string(newSrc)
+		}
 
 		return fc.Save()
 	})
