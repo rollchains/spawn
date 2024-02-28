@@ -29,9 +29,7 @@ func main() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(ModuleCmd())
 
-	for _, plugin := range loadPlugins() {
-		rootCmd.AddCommand(plugin.Command())
-	}
+	applyPluginCmds()
 
 	rootCmd.PersistentFlags().String(LogLevelFlag, "info", "log level (debug, info, warn, error)")
 
@@ -59,11 +57,46 @@ func GetLogger() *slog.Logger {
 	return slog.Default()
 }
 
+func applyPluginCmds() {
+	plugins := &cobra.Command{
+		Use:   "plugins",
+		Short: "Manage plugins",
+		Run: func(cmd *cobra.Command, args []string) {
+			if err := cmd.Help(); err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
+
+	for _, plugin := range loadPlugins() {
+		plugins.AddCommand(plugin.Command())
+	}
+
+	rootCmd.AddCommand(plugins)
+}
+
 func loadPlugins() map[string]*plugins.SpawnPluginBase {
 	p := make(map[string]*plugins.SpawnPluginBase)
 
-	err := fs.WalkDir(plugins.PluginsFS, ".", func(relPath string, d fs.DirEntry, e error) error {
-		// TODO: iterate internal and have them as sub commands
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+
+	pluginsDir := path.Join(homeDir, ".spawn", "plugins")
+	// get the directory, create it if it doesn't exist
+	d := os.DirFS(pluginsDir)
+	if _, err := d.Open("."); err != nil {
+		if os.IsNotExist(err) {
+			if err := os.MkdirAll(pluginsDir, 0755); err != nil {
+				panic(err)
+			}
+		} else {
+			panic(err)
+		}
+	}
+
+	err = fs.WalkDir(d, ".", func(relPath string, d fs.DirEntry, e error) error {
 		if d.IsDir() {
 			return nil
 		}
@@ -72,9 +105,12 @@ func loadPlugins() map[string]*plugins.SpawnPluginBase {
 			return nil
 		}
 
-		plug, err := plugin.Open(path.Join("plugins", relPath))
+		absPath := path.Join(pluginsDir, relPath)
+
+		// read the absolute path
+		plug, err := plugin.Open(absPath)
 		if err != nil {
-			return fmt.Errorf("error opening plugin %s: %w", relPath, err)
+			return fmt.Errorf("error opening plugin %s: %w", absPath, err)
 		}
 
 		base, err := plug.Lookup("Plugin")
@@ -88,7 +124,8 @@ func loadPlugins() map[string]*plugins.SpawnPluginBase {
 		}
 
 		p[relPath] = &plugins.SpawnPluginBase{
-			Command: pluginInstance.Cmd(),
+			Command:    pluginInstance.Cmd(),
+			PluginName: pluginInstance.Name(),
 		}
 
 		return nil
