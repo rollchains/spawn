@@ -2,15 +2,19 @@ package main
 
 import (
 	"fmt"
+	"io/fs"
 	"log"
 	"log/slog"
 	"os"
+	"path"
+	"plugin"
 	"strings"
 	"time"
 
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
+	"gitub.com/strangelove-ventures/spawn/plugins"
 )
 
 // Set in the makefile ld_flags on compile
@@ -19,10 +23,15 @@ var SpawnVersion = ""
 var LogLevelFlag = "log-level"
 
 func main() {
+
 	rootCmd.AddCommand(newChain)
 	rootCmd.AddCommand(LocalICCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(ModuleCmd())
+
+	for _, plugin := range loadPlugins() {
+		rootCmd.AddCommand(plugin.Command())
+	}
 
 	rootCmd.PersistentFlags().String(LogLevelFlag, "info", "log level (debug, info, warn, error)")
 
@@ -48,6 +57,47 @@ func GetLogger() *slog.Logger {
 	))
 
 	return slog.Default()
+}
+
+func loadPlugins() map[string]*plugins.SpawnPluginBase {
+	p := make(map[string]*plugins.SpawnPluginBase)
+
+	err := fs.WalkDir(plugins.PluginsFS, ".", func(relPath string, d fs.DirEntry, e error) error {
+		// TODO: iterate internal and have them as sub commands
+		if d.IsDir() {
+			return nil
+		}
+
+		if !strings.Contains(relPath, ".so") {
+			return nil
+		}
+
+		plug, err := plugin.Open(path.Join("plugins", relPath))
+		if err != nil {
+			return fmt.Errorf("error opening plugin %s: %w", relPath, err)
+		}
+
+		base, err := plug.Lookup("Plugin")
+		if err != nil {
+			return fmt.Errorf("error looking up symbol: %w", err)
+		}
+
+		pluginInstance, ok := base.(plugins.SpawnPlugin)
+		if !ok {
+			log.Fatal("Symbol 'Plugin' does not implement the SpawnPlugin interface")
+		}
+
+		p[relPath] = &plugins.SpawnPluginBase{
+			Command: pluginInstance.Cmd(),
+		}
+
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	return p
 }
 
 var rootCmd = &cobra.Command{
