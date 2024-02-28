@@ -33,12 +33,14 @@ make install
 2. Create your chain using the `spawn` command and customize it to your needs!
 
 ```shell
+GITHUB_USERNAME=rollchains
+
 spawn new rollchain \
---bech32=roll # the prefix for addresses \
---denom=uroll # the coin denomination to create \
---bin=rolld # the name of the binary \
---disabled=cosmwasm # modules to disable. By default all modules are enabled [tokenfactory, PoA, globalfee, cosmwasm] \
---org={your_github_username} # the github username or organization to use for the module imports
+--bech32=roll `# the prefix for addresses` \
+--denom=uroll `# the coin denomination to create` \
+--bin=rolld `# the name of the binary` \
+--disabled=cosmwasm `# modules to disable. By default all modules are enabled [tokenfactory, PoA, globalfee, cosmwasm]` \
+--org=${GITHUB_USERNAME} `# the github username or organization to use for the module imports`
 ```
 
 > *NOTE:* `spawn` creates a ready to use repository complete with `git` and GitHub CI. It can be quickly pushed to a new repository getting you and your team up and running quickly.
@@ -64,7 +66,23 @@ rolld tx bank send acc0 $(rolld keys show acc1 -a) 1337uroll --chain-id=chainid-
 rolld q bank balances $(rolld keys show acc1 -a)
 ```
 
-5. Push your new chain to a new repository
+5. (optional) Send an IBC transaction
+
+```shell
+# submit a cross chain transfer from acc0 to the other address
+rolld tx ibc-transfer transfer transfer channel-0 cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr 7uroll --from=acc0 --chain-id=chainid-1 --yes
+
+# Query the other side to confirm it went through
+sleep 10
+
+curl -X POST -H "Content-Type: application/json" -d '{
+  "chain_id": "localcosmos-1",
+  "action": "query",
+  "cmd": "bank balances cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr"
+}' http://127.0.0.1:8080/
+```
+
+6. Push your new chain to a new repository
 
 > [Create a new repository on GitHub](https://github.com/new)
 
