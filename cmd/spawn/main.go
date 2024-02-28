@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-plugin"
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
@@ -23,11 +24,21 @@ var SpawnVersion = ""
 
 var LogLevelFlag = "log-level"
 
+var appPlugins map[string]spawn.Greeter
+
 func main() {
+	appPlugins = loadPlugins()
+	fmt.Println("ssss", appPlugins)
+
 	rootCmd.AddCommand(newChain)
 	rootCmd.AddCommand(LocalICCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(ModuleCmd())
+
+	for name := range appPlugins {
+		fmt.Println("name", name)
+		rootCmd.AddCommand(PluginCmd(name))
+	}
 
 	rootCmd.PersistentFlags().String(LogLevelFlag, "info", "log level (debug, info, warn, error)")
 
@@ -53,6 +64,17 @@ func GetLogger() *slog.Logger {
 	))
 
 	return slog.Default()
+}
+
+func PluginCmd(name string) *cobra.Command {
+	return &cobra.Command{
+		Use:   name,
+		Short: "Plugin " + name,
+		Run: func(cmd *cobra.Command, args []string) {
+			// This should be in the plugin interface for interaction
+			fmt.Println("Plugin", name)
+		},
+	}
 }
 
 var rootCmd = &cobra.Command{
@@ -106,9 +128,6 @@ var rootCmd = &cobra.Command{
 		// greeter := raw.(plugins.Greeter)
 		// fmt.Println(greeter.Greet())
 
-		s := loadPlugins()
-		fmt.Println("ssss", s)
-
 		if err := cmd.Help(); err != nil {
 			log.Fatal(err)
 		}
@@ -149,18 +168,18 @@ func loadPlugins() map[string]spawn.Greeter { // or plugin.Plugin ?
 			relPath: &spawn.GreeterPlugin{},
 		}
 
-		// logger := hclog.New(&hclog.LoggerOptions{
-		// 	Name: "plugin",
-		// 	// Output: os.Stdout,
-		// 	Level: hclog.Error,
-		// })
+		logger := hclog.New(&hclog.LoggerOptions{
+			Name: "plugin",
+			// Output: os.Stdout,
+			Level: hclog.Error,
+		})
 
 		// We're a host! Start by launching the plugin process.
 		client := plugin.NewClient(&plugin.ClientConfig{
 			HandshakeConfig: handshakeConfig,
 			Plugins:         pluginMap,
 			Cmd:             exec.Command("./plugins/" + relPath),
-			// Logger:          logger,
+			Logger:          logger,
 		})
 		defer client.Kill()
 
@@ -176,15 +195,12 @@ func loadPlugins() map[string]spawn.Greeter { // or plugin.Plugin ?
 			log.Fatal(err)
 		}
 
-		// print raw
-		fmt.Println("raw", raw)
-
-		// // We should have a Greeter now! This feels like a normal interface
-		// // implementation but is in fact over an RPC connection.
+		// We should have a Greeter now! This feels like a normal interface
+		// implementation but is in fact over an RPC connection.
 		sp := raw.(spawn.Greeter)
 		fmt.Println("interaction", sp.Greet())
 
-		// pairings[name] = sp
+		pairings[relPath] = sp
 
 		return nil
 	})

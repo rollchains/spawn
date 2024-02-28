@@ -9,11 +9,11 @@ import (
 )
 
 // Here is a real implementation of Greeter
-type GreeterHello struct {
+type ExamplePlugin struct {
 	logger hclog.Logger
 }
 
-func (g *GreeterHello) Greet() string {
+func (g *ExamplePlugin) Greet() string {
 	g.logger.Debug("message from GreeterHello.Greet")
 	return "Hello!"
 }
@@ -30,12 +30,12 @@ var handshakeConfig = plugin.HandshakeConfig{
 
 func main() {
 	logger := hclog.New(&hclog.LoggerOptions{
-		Level:      hclog.Trace,
+		Level:      hclog.Error,
 		Output:     os.Stderr,
 		JSONFormat: true,
 	})
 
-	greeter := &GreeterHello{
+	greeter := &ExamplePlugin{
 		logger: logger,
 	}
 	// pluginMap is the map of plugins we can dispense.
