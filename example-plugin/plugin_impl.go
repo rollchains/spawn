@@ -1,39 +1,22 @@
 package main
 
 import (
-	"fmt"
+	"os"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-plugin"
-	spawn "gitub.com/strangelove-ventures/spawn/spawn"
+	"gitub.com/strangelove-ventures/spawn/spawn"
 )
 
-var _ spawn.Greeter = (*BasePlugin)(nil)
-
-type BasePlugin struct{}
-
-// Greet implements spawn.Greeter.
-func (b *BasePlugin) Greet() string {
-	panic("unimplemented")
+// Here is a real implementation of Greeter
+type GreeterHello struct {
+	logger hclog.Logger
 }
 
-// func (g *BasePlugin) Interact() string {
-// 	fmt.Println("message from GreeterHello.Greet")
-
-// 	cwd, err := os.Getwd()
-// 	if err != nil {
-// 		fmt.Println(err)
-// 		return "Error getting current working directory"
-// 	}
-
-// 	f, err := os.Create(path.Join(cwd, "example.txt"))
-// 	if err != nil {
-// 		fmt.Println(err)
-// 		return "Error creating file"
-// 	}
-// 	defer f.Close()
-
-// 	return fmt.Sprintf("File created: %s", f.Name())
-// }
+func (g *GreeterHello) Greet() string {
+	g.logger.Debug("message from GreeterHello.Greet")
+	return "Hello!"
+}
 
 // handshakeConfigs are used to just do a basic handshake between
 // a plugin and host. If the handshake fails, a user friendly error is shown.
@@ -46,22 +29,21 @@ var handshakeConfig = plugin.HandshakeConfig{
 }
 
 func main() {
-	// logger := hclog.New(&hclog.LoggerOptions{
-	// 	Level:      hclog.Trace,
-	// 	Output:     os.Stderr,
-	// 	JSONFormat: true,
-	// })
+	logger := hclog.New(&hclog.LoggerOptions{
+		Level:      hclog.Trace,
+		Output:     os.Stderr,
+		JSONFormat: true,
+	})
 
-	ep := &BasePlugin{
-		// logger: logger,
+	greeter := &GreeterHello{
+		logger: logger,
 	}
 	// pluginMap is the map of plugins we can dispense.
 	var pluginMap = map[string]plugin.Plugin{
-		"example": &spawn.GreeterPlugin{Impl: ep},
+		"greeter": &spawn.GreeterPlugin{Impl: greeter},
 	}
 
-	// logger.Debug("message from plugin", "foo", "bar")
-	fmt.Println("message from plugin")
+	logger.Debug("message from plugin", "foo", "bar")
 
 	plugin.Serve(&plugin.ServeConfig{
 		HandshakeConfig: handshakeConfig,
