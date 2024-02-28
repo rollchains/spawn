@@ -84,7 +84,7 @@ func loadPlugins() map[string]*plugins.SpawnPluginBase {
 	}
 
 	pluginsDir := path.Join(homeDir, ".spawn", "plugins")
-	// get the directory, create it if it doesn't exist
+
 	d := os.DirFS(pluginsDir)
 	if _, err := d.Open("."); err != nil {
 		if os.IsNotExist(err) {

@@ -8,24 +8,24 @@ import (
 )
 
 // Make the plugin public
-var Plugin ExamplePlugin
+var Plugin SpawnMainExamplePlugin
 
-var _ plugins.SpawnPlugin = &ExamplePlugin{}
+var _ plugins.SpawnPlugin = &SpawnMainExamplePlugin{}
 
-type ExamplePlugin struct {
+type SpawnMainExamplePlugin struct {
 	Impl plugins.SpawnPluginBase
 }
 
 // Name implements plugins.SpawnPlugin.
-func (e *ExamplePlugin) Name() string {
+func (e *SpawnMainExamplePlugin) Name() string {
 	return "example"
 }
 
 // Cmd implements plugins.SpawnPlugin.
-func (e *ExamplePlugin) Cmd() func() *cobra.Command {
+func (e *SpawnMainExamplePlugin) Cmd() func() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:   "example",
-		Short: "An example plugin command",
+		Use:   e.Name(),
+		Short: e.Name() + " plugin command",
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := cmd.Help(); err != nil {
 				log.Fatal(err)
