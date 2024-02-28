@@ -84,7 +84,7 @@
             "docker_image": {
                 "version": "v2.3.4"
             },
-            "block_time": "6s",
+            "block_time": "1000ms",
             "encoding-options": ["wasm"],
             "gas_prices": "0uluna",
             "gas_adjustment": 2.0,
