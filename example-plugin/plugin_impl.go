@@ -1,16 +1,38 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-plugin"
+	"github.com/spf13/cobra"
 	"gitub.com/strangelove-ventures/spawn/spawn"
 )
+
+var _ spawn.SpawnPlugin = (*ExamplePlugin)(nil)
 
 // Here is a real implementation of Greeter
 type ExamplePlugin struct {
 	logger hclog.Logger
+}
+
+// Cmd implements spawn.SpawnPlugin.
+func (g *ExamplePlugin) Cmd() *cobra.Command {
+	g.logger.Debug("message from ExamplePlugin.Cmd")
+	rootCmd := cobra.Command{
+		Use:     "my-cmd",
+		Aliases: []string{"mc"},
+		Short:   "my-cmd short description",
+		Args:    cobra.NoArgs,
+		Example: "my-cmd",
+		Run: func(cmd *cobra.Command, args []string) {
+			// This should be in the plugin interface for interaction
+			fmt.Println("Plugin", "my-cmd from the plugin !!!")
+		},
+	}
+
+	return &rootCmd
 }
 
 func (g *ExamplePlugin) Greet() string {
@@ -40,7 +62,7 @@ func main() {
 	}
 	// pluginMap is the map of plugins we can dispense.
 	var pluginMap = map[string]plugin.Plugin{
-		"greeter": &spawn.GreeterPlugin{Impl: greeter},
+		"greeter": &spawn.SpawnPluginBase{Impl: greeter},
 	}
 
 	logger.Debug("message from plugin", "foo", "bar")

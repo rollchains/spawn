@@ -24,20 +24,20 @@ var SpawnVersion = ""
 
 var LogLevelFlag = "log-level"
 
-var appPlugins map[string]spawn.Greeter
+var appPlugins map[string]spawn.SpawnPlugin
 
 func main() {
 	appPlugins = loadPlugins()
-	fmt.Println("ssss", appPlugins)
+	fmt.Println("appPlugins: ", appPlugins)
 
 	rootCmd.AddCommand(newChain)
 	rootCmd.AddCommand(LocalICCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(ModuleCmd())
 
-	for name := range appPlugins {
-		fmt.Println("name", name)
-		rootCmd.AddCommand(PluginCmd(name))
+	for name, pl := range appPlugins {
+		fmt.Println("Loading plugin name: ", name)
+		rootCmd.AddCommand(PluginCmd(name, pl.Cmd))
 	}
 
 	rootCmd.PersistentFlags().String(LogLevelFlag, "info", "log level (debug, info, warn, error)")
@@ -66,7 +66,7 @@ func GetLogger() *slog.Logger {
 	return slog.Default()
 }
 
-func PluginCmd(name string) *cobra.Command {
+func PluginCmd(name string, cmd func() *cobra.Command) *cobra.Command {
 	return &cobra.Command{
 		Use:   name,
 		Short: "Plugin " + name,
@@ -84,61 +84,17 @@ var rootCmd = &cobra.Command{
 		HiddenDefaultCmd: false,
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-
-		// var handshakeConfig = plugin.HandshakeConfig{
-		// 	ProtocolVersion:  1,
-		// 	MagicCookieKey:   "BASIC_PLUGIN",
-		// 	MagicCookieValue: "hello",
-		// }
-
-		// // pluginMap is the map of plugins we can dispense.
-		// var pluginMap = map[string]plugin.Plugin{
-		// 	"greeter": &plugins.GreeterPlugin{},
-		// }
-
-		// logger := hclog.New(&hclog.LoggerOptions{
-		// 	Name: "plugin",
-		// 	// Output: os.Stdout,
-		// 	Level: hclog.Error,
-		// })
-
-		// // We're a host! Start by launching the plugin process.
-		// client := plugin.NewClient(&plugin.ClientConfig{
-		// 	HandshakeConfig: handshakeConfig,
-		// 	Plugins:         pluginMap,
-		// 	Cmd:             exec.Command("./plugins/greeter"), // go build -o ./plugin/greeter ./plugin/greeter_impl.go
-		// 	Logger:          logger,
-		// })
-		// defer client.Kill()
-
-		// // Connect via RPC
-		// rpcClient, err := client.Client()
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
-
-		// // Request the plugin
-		// raw, err := rpcClient.Dispense("greeter")
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
-
-		// // We should have a Greeter now! This feels like a normal interface
-		// // implementation but is in fact over an RPC connection.
-		// greeter := raw.(plugins.Greeter)
-		// fmt.Println(greeter.Greet())
-
 		if err := cmd.Help(); err != nil {
 			log.Fatal(err)
 		}
 	},
 }
 
-func loadPlugins() map[string]spawn.Greeter { // or plugin.Plugin ?
+func loadPlugins() map[string]spawn.SpawnPlugin { // or plugin.Plugin ?
 	// plugins.Plugins contains them all
 	f := plugins.PluginsFS
 
-	pairings := make(map[string]spawn.Greeter)
+	pairings := make(map[string]spawn.SpawnPlugin)
 
 	fs.WalkDir(f, ".", func(relPath string, d fs.DirEntry, e error) error {
 		if d.IsDir() {
@@ -165,7 +121,7 @@ func loadPlugins() map[string]spawn.Greeter { // or plugin.Plugin ?
 
 		// // pluginMap is the map of plugins we can dispense.
 		var pluginMap = map[string]plugin.Plugin{
-			relPath: &spawn.GreeterPlugin{},
+			relPath: &spawn.SpawnPluginBase{},
 		}
 
 		logger := hclog.New(&hclog.LoggerOptions{
@@ -197,7 +153,7 @@ func loadPlugins() map[string]spawn.Greeter { // or plugin.Plugin ?
 
 		// We should have a Greeter now! This feels like a normal interface
 		// implementation but is in fact over an RPC connection.
-		sp := raw.(spawn.Greeter)
+		sp := raw.(spawn.SpawnPlugin)
 		fmt.Println("interaction", sp.Greet())
 
 		pairings[relPath] = sp
