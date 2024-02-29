@@ -124,8 +124,7 @@ func loadPlugins() map[string]*plugins.SpawnPluginBase {
 		}
 
 		p[relPath] = &plugins.SpawnPluginBase{
-			Command:    pluginInstance.Cmd(),
-			PluginName: pluginInstance.Name(),
+			Command: pluginInstance.Cmd(),
 		}
 
 		return nil
