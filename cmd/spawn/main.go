@@ -28,6 +28,7 @@ func main() {
 	rootCmd.AddCommand(LocalICCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(ModuleCmd())
+	rootCmd.AddCommand(ProtoServiceGenerate())
 
 	applyPluginCmds()
 
