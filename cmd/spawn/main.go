@@ -69,7 +69,7 @@ func applyPluginCmds() {
 	}
 
 	for _, plugin := range loadPlugins() {
-		plugins.AddCommand(plugin.Command())
+		plugins.AddCommand(plugin.Cmd())
 	}
 
 	rootCmd.AddCommand(plugins)
@@ -123,9 +123,7 @@ func loadPlugins() map[string]*plugins.SpawnPluginBase {
 			log.Fatal("Symbol 'Plugin' does not implement the SpawnPlugin interface")
 		}
 
-		p[relPath] = &plugins.SpawnPluginBase{
-			Command: pluginInstance.Cmd(),
-		}
+		p[relPath] = plugins.NewSpawnPluginBase(pluginInstance.Cmd())
 
 		return nil
 	})

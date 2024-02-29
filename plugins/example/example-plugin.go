@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"os"
+	"path"
 
 	"github.com/spf13/cobra"
 	plugins "gitub.com/strangelove-ventures/spawn/plugins"
@@ -21,7 +23,7 @@ type SpawnMainExamplePlugin struct {
 }
 
 // Cmd implements plugins.SpawnPlugin.
-func (e *SpawnMainExamplePlugin) Cmd() func() *cobra.Command {
+func (e *SpawnMainExamplePlugin) Cmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   cmdName,
 		Short: cmdName + " plugin command",
@@ -32,16 +34,28 @@ func (e *SpawnMainExamplePlugin) Cmd() func() *cobra.Command {
 		},
 	}
 
-	// add a sub command to the root command
 	rootCmd.AddCommand(&cobra.Command{
-		Use:   "sub-cmd",
+		Use:   "touch-file [name]",
 		Short: "An example plugin sub command",
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			cmd.Println("Hello from the example plugin sub command!")
+			cwd, err := os.Getwd()
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fileName := args[0]
+
+			filePath := path.Join(cwd, fileName)
+			file, err := os.Create(filePath)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer file.Close()
+
+			cmd.Printf("Created file: %s\n", filePath)
 		},
 	})
 
-	return func() *cobra.Command {
-		return rootCmd
-	}
+	return rootCmd
 }
