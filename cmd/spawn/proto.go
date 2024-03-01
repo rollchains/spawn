@@ -139,6 +139,7 @@ func ProtoServiceGenerate() *cobra.Command {
 							// This limits so we only check if the service is a type and also the file is the same type
 							t := isFileQueryOrMsgServer(content)
 							service.FType = t // set the file type for future iteration to set missing methods
+							service.Module = name
 							services[idx] = service
 							module[fileType] = services
 							modules[name] = module
@@ -247,6 +248,53 @@ func ProtoServiceGenerate() *cobra.Command {
 
 				// print filePaths
 				fmt.Println("\nFile Paths: ", filePaths)
+
+				for _, missed := range missing {
+					for _, miss := range missed {
+						// get miss.FType from filePaths
+						p := filePaths[miss.Module][miss.FType]
+						fmt.Println("File: ", p)
+
+						content, err := os.ReadFile(p)
+						if err != nil {
+							fmt.Println("Error: ", err)
+						}
+						fmt.Println("Content: ", string(content))
+
+						// append to the file
+						fmt.Println("Append to file: ", miss.FType, miss.Name, miss.Req, miss.Res)
+
+						switch miss.FType {
+						case spawn.Tx:
+							fmt.Println("Append to Tx")
+						case spawn.Query:
+							fmt.Println("Append to Query")
+
+							// FeeShare implements types.QueryServer.
+							// func (k Querier) FeeShare(context.Context, *types.QueryFeeShareRequest) (*types.QueryFeeShareResponse, error) {
+							// 	panic("unimplemented")
+							// }
+							code := `// ` + miss.Name + ` implements types.QueryServer.
+func (k Querier) ` + miss.Name + `(c context.Context, req *types.` + miss.Req + `) (*types.` + miss.Res + `, error) {
+	panic("unimplemented")
+	// ctx := sdk.UnwrapSDKContext(c)
+	return &types.` + miss.Res + `{}, nil
+}`
+
+							// append to the file content after a new line at the end
+							content = append(content, []byte("\n"+code)...)
+
+							fmt.Println("New Content: ", string(content))
+
+							if err := os.WriteFile(p, content, 0644); err != nil {
+								fmt.Println("Error: ", err)
+							}
+
+						}
+
+					}
+
+				}
 
 			}
 
