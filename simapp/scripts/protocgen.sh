@@ -2,6 +2,7 @@
 
 set -e
 
+IGNORE_STUBS=${IGNORE_STUBS:-false}
 
 GO_MOD_PACKAGE="github.com/strangelove-ventures/simapp"
 
@@ -37,4 +38,3 @@ for module in $custom_modules; do
   mv $dirPath/* ./api/$dirPath/
   rm -rf $dirPath
 done
-

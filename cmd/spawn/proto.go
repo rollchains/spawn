@@ -10,7 +10,6 @@ import (
 
 func ProtoServiceGenerate() *cobra.Command {
 	cmd := &cobra.Command{
-		// TODO: Put this in the make file on proto-gen? (after)
 		Use:     "stub-gen [module (optional)]",
 		Short:   "Auto generate the MsgService & Querier from proto -> Cosmos-SDK methods",
 		Long:    `Auto generate the interface stubs for the types.QueryServer and types.MsgServer for your module. If no module is provided, it will do for all modules in your proto folder.`,
