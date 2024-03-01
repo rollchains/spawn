@@ -124,7 +124,7 @@ func GetProtoDirectories(protoAbsPath string, args ...string) []string {
 
 // Converts .proto files into a mapping depending on the type.
 // TODO: is the 2nd map of FileType required since ProtoRPC has it anyways?
-func GetModuleMapFromProto(absProtoPath string) map[string][]*ProtoRPC {
+func GetCurrentModuleRPCsFromProto(absProtoPath string) map[string][]*ProtoRPC {
 	modules := make(map[string][]*ProtoRPC)
 
 	fs.WalkDir(os.DirFS(absProtoPath), ".", func(relPath string, d fs.DirEntry, e error) error {
@@ -189,34 +189,21 @@ func GetFileTypeFromProtoContent(bz []byte) FileType {
 	return None
 }
 
-// type Modules struct {
-// 	Modules map[string][]*ProtoRPC
-// }
-
-type MissingModules struct {
-	// module name -> RPC methods
-	Missing map[string][]*ProtoRPC
-}
-
-func GetCurrentRPCMethodsFromModuleProto(cwd string) *MissingModules {
+func GetMissingRPCMethodsFromModuleProto(cwd string) map[string][]*ProtoRPC {
 	protoPath := path.Join(cwd, "proto")
-
-	modules := GetModuleMapFromProto(protoPath)
+	modules := GetCurrentModuleRPCsFromProto(protoPath)
 
 	missing := make(map[string][]*ProtoRPC, 0)
 
-	// TODO: currently if using multiple modules, it will run the code 2 times for generating missing methods
+	// TODO: currently if using multiple modules, it will run the code 2 times for generating missing methods.
+
 	for name, rpcMethods := range modules {
 		fmt.Println("\n------------- Module: ", name)
 
 		modulePath := path.Join(cwd, "x", name, "keeper") // hardcode for keeper is less than ideal, but will do for now
 
-		// currentMethods := make(map[FileType][]string, 0) // tx/query -> methods
 		txMethods := make([]string, 0)
 		queryMethods := make([]string, 0)
-
-		// msgServerFile := ""
-		// queryServerFile := ""
 
 		for _, rpc := range rpcMethods {
 			rpc := rpc
@@ -251,24 +238,12 @@ func GetCurrentRPCMethodsFromModuleProto(cwd string) *MissingModules {
 				// Set the file type tot his file
 				rpc.FileLoc = path.Join(modulePath, f.Name())
 
-				switch rpc.FType {
-				case Tx:
-					// msgServerFile = path.Join(modulePath, f.Name())
-				case Query:
-					// queryServerFile = path.Join(modulePath, f.Name())
-					rpc.FileLoc = path.Join(modulePath, f.Name())
-				default:
-					fmt.Println("Error: ", "Unknown FileType")
-					panic("RUT ROE RAGGY")
-				}
-
 				// find any line with `func ` in it
-
 				lines := strings.Split(string(content), "\n")
 				for _, line := range lines {
 					// receiver func
 					if strings.Contains(line, "func (") {
-						if strings.Contains(line, rpc.Name) {
+						if strings.Contains(line, rpc.Name+"(") {
 							switch rpc.FType {
 							case Tx:
 								txMethods = append(txMethods, parseReceiverMethodName(line))
@@ -282,11 +257,6 @@ func GetCurrentRPCMethodsFromModuleProto(cwd string) *MissingModules {
 					}
 				}
 			}
-
-			// filePaths[name] = map[FileType]string{
-			// 	Tx:    msgServerFile,
-			// 	Query: queryServerFile,
-			// }
 		}
 
 		// map[query:[Params] tx:[UpdateParams]]
@@ -345,9 +315,7 @@ func GetCurrentRPCMethodsFromModuleProto(cwd string) *MissingModules {
 		}
 	}
 
-	return &MissingModules{
-		Missing: missing,
-	}
+	return missing
 }
 
 func parseReceiverMethodName(f string) string {
@@ -375,4 +343,59 @@ func isFileQueryOrMsgServer(bz []byte) FileType {
 	}
 
 	return None
+}
+
+func ApplyMissingRPCMethodsToGoSourceFiles(missingRPCMethods map[string][]*ProtoRPC) error {
+	for _, missing := range missingRPCMethods {
+		for _, miss := range missing {
+			miss := miss
+			fmt.Println("Module: ", miss.Module, "FType: ", miss.FType)
+
+			fileLoc := miss.FileLoc
+			fmt.Println("File: ", fileLoc)
+
+			content, err := os.ReadFile(fileLoc)
+			if err != nil {
+				return fmt.Errorf("error: %s, file: %s", err.Error(), fileLoc)
+			}
+			// fmt.Println("Content: ", string(content))
+
+			// append to the file
+			fmt.Println("Append to file: ", miss.FType, miss.Name, miss.Req, miss.Res)
+
+			switch miss.FType {
+			case Tx:
+				fmt.Println("Append to Tx")
+				code := fmt.Sprintf(`// %s implements types.MsgServer.
+func (ms msgServer) %s(ctx context.Context, msg *types.%s) (*types.%s, error) {
+	// ctx := sdk.UnwrapSDKContext(goCtx)
+	panic("%s is unimplemented")
+	return &types.%s{}, nil
+}
+`, miss.Name, miss.Name, miss.Req, miss.Res, miss.Name, miss.Res)
+				// append to the file content after a new line at the end
+				content = append(content, []byte("\n"+code)...)
+			case Query:
+				fmt.Println("Append to Query")
+				code := fmt.Sprintf(`// %s implements types.QueryServer.
+func (k Querier) %s(goCtx context.Context, req *types.%s) (*types.%s, error) {
+	// ctx := sdk.UnwrapSDKContext(goCtx)
+	panic("%s is unimplemented")
+	return &types.%s{}, nil
+}
+`, miss.Name, miss.Name, miss.Req, miss.Res, miss.Name, miss.Res)
+
+				// append to the file content after a new line at the end
+				content = append(content, []byte("\n"+code)...)
+
+			}
+
+			if err := os.WriteFile(fileLoc, content, 0644); err != nil {
+				// fmt.Println("Error: ", err)
+				return err
+			}
+		}
+	}
+
+	return nil
 }
