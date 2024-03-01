@@ -8,25 +8,6 @@ import (
 	"strings"
 )
 
-// A Proto server RPC method.
-type ProtoRPC struct {
-	// The name of the proto RPC service (i.e. rpc Params would be Params for the name)
-	Name string
-	// The request object, such as QueryParamsRequest (queries) or MsgUpdateParams (txs)
-	Req string
-	// The response object, such as QueryParamsResponse (queries) or MsgUpdateParamsResponse (txs)
-	Res string
-
-	// The name of the module
-	Module string
-	// the relative directory location this proto file is location (x/mymodule/types)
-	Location string
-	// The type of file this proto service is
-	FType FileType
-	// Where there types.(Query/Msg)Server is located
-	FileLoc string
-}
-
 // BuildProtoInterfaceStub builds the stub for the proto interface depending on the ProtoRPC's file type.
 func (pr ProtoRPC) BuildProtoInterfaceStub() string {
 	if pr.FType == Tx {
@@ -82,15 +63,6 @@ func ProtoServiceParser(content []byte, pkgDir string, ft FileType) []*ProtoRPC 
 	return pRPCs
 }
 
-// FileType tells the application which type of proto file is it so we can sort Txs from Queries
-type FileType string
-
-const (
-	Tx    FileType = "tx"
-	Query FileType = "query"
-	None  FileType = "none"
-)
-
 // GetGoPackageLocationOfFiles parses the proto content pulling out the relative path
 // of the go package location.
 // option go_package = "github.com/rollchains/mychain/x/cnd/types"; -> x/cnd/types
@@ -116,77 +88,37 @@ func GetGoPackageLocationOfFiles(bz []byte) string {
 	return ""
 }
 
-// helpers
-
-/*
- TODO: is this used or needed? (was at the top of rthe proto service generator)
-func GetProtoDirectories(protoAbsPath string, args ...string) []string {
-	dirs, err := os.ReadDir(protoAbsPath)
-	if err != nil {
-		fmt.Println("Error: ", err)
-	}
-
-	absDirs := make([]string, 0)
-	for _, dir := range dirs {
-		if !dir.IsDir() {
-			continue
-		}
-
-		if len(args) > 0 && dir.Name() != args[0] {
-			continue
-		}
-
-		absDirs = append(absDirs, path.Join(protoAbsPath, dir.Name()))
-	}
-
-	fmt.Println("Found dirs: ", absDirs)
-
-	return absDirs
-}
-*/
-
 // Converts .proto files into a mapping depending on the type.
-// TODO: is the 2nd map of FileType required since ProtoRPC has it anyways?
-func GetCurrentModuleRPCsFromProto(absProtoPath string) map[string][]*ProtoRPC {
-	modules := make(map[string][]*ProtoRPC)
+func GetCurrentModuleRPCsFromProto(absProtoPath string) ModuleMapping {
+	modules := make(ModuleMapping)
 
 	fs.WalkDir(os.DirFS(absProtoPath), ".", func(relPath string, d fs.DirEntry, e error) error {
 		if !strings.HasSuffix(relPath, ".proto") {
 			return nil
 		}
 
-		// read file content
 		content, err := os.ReadFile(path.Join(absProtoPath, relPath))
 		if err != nil {
 			fmt.Println("Error: ", err)
 		}
 
 		fileType := GetFileTypeFromProtoContent(content)
-
-		parent := path.Dir(relPath)
-		parent = strings.Split(parent, "/")[0]
-
-		// add/append to modules
-		if _, ok := modules[parent]; !ok {
-			modules[parent] = make([]*ProtoRPC, 0)
+		if fileType == None {
+			return nil
 		}
 
 		goPkgDir := GetGoPackageLocationOfFiles(content)
 
-		switch fileType {
-		case Tx:
-			fmt.Println("File is a transaction")
-			tx := ProtoServiceParser(content, goPkgDir, Tx)
-			modules[parent] = append(modules[parent], tx...)
+		rpcs := ProtoServiceParser(content, goPkgDir, fileType)
 
-		case Query:
-			fmt.Println("File is a query")
-			query := ProtoServiceParser(content, goPkgDir, Query)
-			// modules[parent][Query] = append(modules[parent][Query], query...)
-			modules[parent] = append(modules[parent], query...)
-		case None:
-			fmt.Println("File is neither a transaction nor a query")
+		parent := path.Dir(relPath)
+		parent = strings.Split(parent, "/")[0]
+
+		if _, ok := modules[parent]; !ok {
+			modules[parent] = make([]*ProtoRPC, 0)
 		}
+
+		modules[parent] = append(modules[parent], rpcs...)
 
 		return nil
 	})
@@ -212,11 +144,11 @@ func GetFileTypeFromProtoContent(bz []byte) FileType {
 	return None
 }
 
-func GetMissingRPCMethodsFromModuleProto(cwd string) (map[string][]*ProtoRPC, error) {
+func GetMissingRPCMethodsFromModuleProto(cwd string) (ModuleMapping, error) {
 	protoPath := path.Join(cwd, "proto")
 	modules := GetCurrentModuleRPCsFromProto(protoPath)
 
-	missing := make(map[string][]*ProtoRPC, 0)
+	missing := make(ModuleMapping, 0)
 
 	// TODO: currently if using multiple modules, it will run the code 2 times for generating missing methods.
 
@@ -369,7 +301,7 @@ func isFileQueryOrMsgServer(bz []byte) FileType {
 	return None
 }
 
-func ApplyMissingRPCMethodsToGoSourceFiles(missingRPCMethods map[string][]*ProtoRPC) error {
+func ApplyMissingRPCMethodsToGoSourceFiles(missingRPCMethods ModuleMapping) error {
 	for _, missing := range missingRPCMethods {
 		for _, miss := range missing {
 			miss := miss
