@@ -111,7 +111,7 @@ func GetGoPackageLocationOfFiles(bz []byte) string {
 			line := strings.Split(line, fmt.Sprintf("%s/", modName))[1]
 
 			// x/cnd/types
-			line = strings.Split(line, "\";")[0]
+			line = strings.Split(line, "\"")[0]
 
 			return strings.Trim(line, " ")
 		}
@@ -193,9 +193,11 @@ func GetMissingRPCMethodsFromModuleProto(logger *slog.Logger, cwd string) (Modul
 	queryMethods := make(map[string][]string)
 
 	for name, rpcMethods := range modules {
-		logger.Debug("module", "module", name)
 
-		modulePath := path.Join(cwd, "x", name, "keeper") // hardcode for keeper is less than ideal, but will do for now
+		// hardcode for keeper is less than ideal, but will do for now
+		modulePath := path.Join(cwd, "x", name, "keeper")
+
+		logger.Debug("module", "module", name, "modulePath", modulePath)
 
 		for _, rpc := range rpcMethods {
 			rpc := rpc
@@ -203,7 +205,7 @@ func GetMissingRPCMethodsFromModuleProto(logger *slog.Logger, cwd string) (Modul
 
 			logger.Debug("rpc", "rpc", rpc)
 
-			// get files in service.Location
+			// get files in rpc.Location
 			files, err := os.ReadDir(modulePath)
 			if err != nil {
 				return nil, err
@@ -221,7 +223,7 @@ func GetMissingRPCMethodsFromModuleProto(logger *slog.Logger, cwd string) (Modul
 				}
 
 				// if the file type is not the expected, continue
-				// if the content of this file is not the same as the service we are tying to use, continue
+				// if the content of this file is not the same as the RPC type we are tying to use, continue
 				if rpc.FType != getFileType(content) {
 					continue
 				}
@@ -306,7 +308,6 @@ func GetMissingRPCMethodsFromModuleProto(logger *slog.Logger, cwd string) (Modul
 				continue
 			}
 
-			// MISSING METHOD
 			missing[name] = append(missing[name], rpc)
 			logger.Debug("  - Missing: ", "rpc", rpc.Name, "module", name)
 		}

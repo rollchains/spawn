@@ -2,8 +2,6 @@
 
 set -e
 
-IGNORE_STUBS=${IGNORE_STUBS:-false}
-
 GO_MOD_PACKAGE="github.com/strangelove-ventures/simapp"
 
 echo "Generating gogo proto code"
