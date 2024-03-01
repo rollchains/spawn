@@ -2,25 +2,32 @@ package spawn
 
 import (
 	"fmt"
+	"io/fs"
+	"os"
+	"path"
 	"strings"
 )
 
 // The Name, RequestMsg, and ResponseMsg fields of rpc services
-type ProtoService struct {
+type ProtoRPC struct {
+	// The name of the proto RPC service (i.e. rpc Params would be Params for the name)
 	Name string
-	Req  string
-	Res  string
+	// The request object, such as QueryParamsRequest (queries) or MsgUpdateParams (txs)
+	Req string
+	// The response object, such as QueryParamsResponse (queries) or MsgUpdateParamsResponse (txs)
+	Res string
 
-	// the relative location this proto file is location
-	// such as x/mymodule/types/
+	// the relative directory location this proto file is location (x/mymodule/types)
 	Location string
-	Module   string
-	FType    FileType
+	// The name of the module
+	Module string
+	// The type of file this proto service is
+	FType FileType
 }
 
 // ProtoServiceParser parses out a proto file and returns all the services within it.
-func ProtoServiceParser(content []byte, pkgDir string) []ProtoService {
-	qss := make([]ProtoService, 0)
+func ProtoServiceParser(content []byte, pkgDir string, ft FileType) []*ProtoRPC {
+	qss := make([]*ProtoRPC, 0)
 	c := strings.Split(string(content), "\n")
 
 	for idx, line := range c {
@@ -37,11 +44,12 @@ func ProtoServiceParser(content []byte, pkgDir string) []ProtoService {
 			line = strings.NewReplacer("rpc", "", "returns", "", "(", " ", ")", " ", "{", "", "}", "").Replace(line)
 
 			words := strings.Fields(line)
-			qss = append(qss, ProtoService{
+			qss = append(qss, &ProtoRPC{
 				Name:     words[0],
 				Req:      words[1],
 				Res:      words[2],
 				Location: pkgDir,
+				FType:    ft,
 			})
 		}
 	}
@@ -76,18 +84,105 @@ func SortContentToFileType(bz []byte) FileType {
 }
 
 // GetGoPackageLocationOfFiles parses the proto content pulling out the relative path
-// of the go package location. Such as x/mymodule/types/
+// of the go package location.
+// option go_package = "github.com/rollchains/mychain/x/cnd/types"; -> x/cnd/types
 func GetGoPackageLocationOfFiles(bz []byte) string {
 	modName := ReadCurrentGoModuleName("go.mod")
 
 	for _, line := range strings.Split(string(bz), "\n") {
-		// option go_package = "github.com/rollchains/mychain/x/cnd/types";
 		if strings.Contains(line, "option go_package") {
+			// option go_package = "github.com/rollchains/mychain/x/cnd/types";
 			line = strings.Trim(line, " ")
-			line = strings.NewReplacer("option go_package", "", "=", "", ";", "", fmt.Sprintf("%s/", modName), "", "\"", "").Replace(line)
+
+			// line = strings.NewReplacer("option go_package", "", "=", "", ";", "", , "", "\"", "").Replace(line)
+
+			// x/cnd/types";
+			line = strings.Split(line, fmt.Sprintf("%s/", modName))[1]
+			// x/cnd/types
+			line = strings.Split(line, "\";")[0]
+
 			return strings.Trim(line, " ")
 		}
 	}
 
 	return ""
+}
+
+// helpers
+
+/*
+ TODO: is this used or needed? (was at the top of rthe proto service generator)
+func GetProtoDirectories(protoAbsPath string, args ...string) []string {
+	dirs, err := os.ReadDir(protoAbsPath)
+	if err != nil {
+		fmt.Println("Error: ", err)
+	}
+
+	absDirs := make([]string, 0)
+	for _, dir := range dirs {
+		if !dir.IsDir() {
+			continue
+		}
+
+		if len(args) > 0 && dir.Name() != args[0] {
+			continue
+		}
+
+		absDirs = append(absDirs, path.Join(protoAbsPath, dir.Name()))
+	}
+
+	fmt.Println("Found dirs: ", absDirs)
+
+	return absDirs
+}
+*/
+
+// Converts .proto files into a mapping depending on the type.
+// TODO: is the 2nd map of FileType required since ProtoRPC has it anyways?
+func GetModuleMapFromProto(absProtoPath string) map[string][]*ProtoRPC {
+	modules := make(map[string][]*ProtoRPC)
+
+	fs.WalkDir(os.DirFS(absProtoPath), ".", func(relPath string, d fs.DirEntry, e error) error {
+		if !strings.HasSuffix(relPath, ".proto") {
+			return nil
+		}
+
+		// read file content
+		content, err := os.ReadFile(path.Join(absProtoPath, relPath))
+		if err != nil {
+			fmt.Println("Error: ", err)
+		}
+
+		fileType := SortContentToFileType(content)
+
+		parent := path.Dir(relPath)
+		parent = strings.Split(parent, "/")[0]
+
+		// add/append to modules
+		if _, ok := modules[parent]; !ok {
+			modules[parent] = make([]*ProtoRPC, 0)
+		}
+
+		goPkgDir := GetGoPackageLocationOfFiles(content)
+
+		switch fileType {
+		case Tx:
+			fmt.Println("File is a transaction")
+			tx := ProtoServiceParser(content, goPkgDir, Tx)
+			modules[parent] = append(modules[parent], tx...)
+
+		case Query:
+			fmt.Println("File is a query")
+			query := ProtoServiceParser(content, goPkgDir, Query)
+			// modules[parent][Query] = append(modules[parent][Query], query...)
+			modules[parent] = append(modules[parent], query...)
+		case None:
+			fmt.Println("File is neither a transaction nor a query")
+		}
+
+		return nil
+	})
+
+	fmt.Printf("Modules: %+v\n", modules)
+	return modules
 }

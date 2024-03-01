@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/fs"
 	"os"
 	"path"
 	"strings"
@@ -30,161 +29,95 @@ func ProtoServiceGenerate() *cobra.Command {
 
 			protoPath := path.Join(cwd, "proto")
 
-			dirs, err := os.ReadDir(protoPath)
-			if err != nil {
-				fmt.Println("Error: ", err)
-			}
+			modules := spawn.GetModuleMapFromProto(protoPath)
 
-			absDirs := make([]string, 0)
-			for _, dir := range dirs {
-				if !dir.IsDir() {
-					continue
-				}
+			// module name -> RPC methods
+			missing := make(map[string][]*spawn.ProtoRPC, 0)
 
-				if len(args) > 0 && dir.Name() != args[0] {
-					continue
-				}
-
-				absDirs = append(absDirs, path.Join(protoPath, dir.Name()))
-			}
-
-			fmt.Println("Found dirs: ", absDirs)
-
-			// walk it
-
-			modules := make(map[string]map[spawn.FileType][]spawn.ProtoService)
-
-			fs.WalkDir(os.DirFS(protoPath), ".", func(relPath string, d fs.DirEntry, e error) error {
-				if !strings.HasSuffix(relPath, ".proto") {
-					return nil
-				}
-
-				// read file content
-				content, err := os.ReadFile(path.Join(protoPath, relPath))
-				if err != nil {
-					fmt.Println("Error: ", err)
-				}
-
-				fileType := spawn.SortContentToFileType(content)
-
-				parent := path.Dir(relPath)
-				parent = strings.Split(parent, "/")[0]
-
-				// add/append to modules
-				if _, ok := modules[parent]; !ok {
-					modules[parent] = make(map[spawn.FileType][]spawn.ProtoService)
-				}
-
-				goPkgDir := spawn.GetGoPackageLocationOfFiles(content)
-
-				switch fileType {
-				case spawn.Tx:
-					fmt.Println("File is a transaction")
-					tx := spawn.ProtoServiceParser(content, goPkgDir)
-					modules[parent][spawn.Tx] = append(modules[parent][spawn.Tx], tx...)
-
-				case spawn.Query:
-					fmt.Println("File is a query")
-					query := spawn.ProtoServiceParser(content, goPkgDir)
-					modules[parent][spawn.Query] = append(modules[parent][spawn.Query], query...)
-				case spawn.None:
-					fmt.Println("File is neither a transaction nor a query")
-				}
-
-				return nil
-			})
-
-			fmt.Printf("Modules: %+v\n", modules)
-
-			// TODO:
-			// - Go find types.MsgServer in the module (may also need to parse this data from the proto file & save to the map)
-			// - Find the Name of the service, then overwrite the Req and Res types
-			// tx:[{Name:UpdateParams Req:MsgUpdateParams Res:MsgUpdateParamsResponse}]] -> `func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {`
-			// do for querier too.
-
-			// iterate overall, find files containing the proto messages, and then set new stubs automatically
-			// map[module][spawn.FileType]string
 			filePaths := make(map[string]map[spawn.FileType]string, 0)
 
-			for name, module := range modules {
+			// TODO: currently if using multiple modules, it will run the code 2 times for generating missing methods
+			for name, rpcMethods := range modules {
 				fmt.Println("\n------------- Module: ", name)
 
 				modulePath := path.Join(cwd, "x", name, "keeper") // hardcode for keeper is less than ideal, but will do for now
 
-				currentMethods := make(map[spawn.FileType][]string, 0) // tx/query -> methods
+				// currentMethods := make(map[spawn.FileType][]string, 0) // tx/query -> methods
+				txMethods := make([]string, 0)
+				queryMethods := make([]string, 0)
 
 				msgServerFile := ""
 				queryServerFile := ""
 
-				for fileType, services := range module {
-					for idx, service := range services {
-						fmt.Println("\nService: ", service)
+				for _, rpc := range rpcMethods {
+					rpc := rpc
+					fmt.Println("\nService: ", rpc)
 
-						// get files in service.Location
-						files, err := os.ReadDir(modulePath)
+					// get files in service.Location
+					files, err := os.ReadDir(modulePath)
+					if err != nil {
+						fmt.Println("Error: ", err)
+					}
+
+					for _, f := range files {
+						if strings.HasSuffix(f.Name(), "_test.go") {
+							continue
+						}
+
+						content, err := os.ReadFile(path.Join(modulePath, f.Name()))
 						if err != nil {
 							fmt.Println("Error: ", err)
 						}
 
-						for _, f := range files {
-							if strings.HasSuffix(f.Name(), "_test.go") {
-								continue
-							}
+						// if the file type is not the expected, continue
+						// if the content of this file is not the same as the service we are tying to use, continue
+						if rpc.FType != isFileQueryOrMsgServer(content) {
+							continue
+						}
 
-							content, err := os.ReadFile(path.Join(modulePath, f.Name()))
-							if err != nil {
-								fmt.Println("Error: ", err)
-							}
+						fmt.Println(" = File: ", f.Name())
 
-							// This limits so we only check if the service is a type and also the file is the same type
-							t := isFileQueryOrMsgServer(content)
-							service.FType = t // set the file type for future iteration to set missing methods
-							service.Module = name
-							services[idx] = service
-							module[fileType] = services
-							modules[name] = module
+						switch rpc.FType {
+						case spawn.Tx:
+							msgServerFile = path.Join(modulePath, f.Name())
+						case spawn.Query:
+							queryServerFile = path.Join(modulePath, f.Name())
+						default:
+							fmt.Println("Error: ", "Unknown FileType")
+							panic("RUT ROE RAGGY")
+						}
 
-							switch t {
-							case "tx":
-								msgServerFile = path.Join(modulePath, f.Name())
-								if fileType != spawn.Tx {
+						// find any line with `func ` in it
+
+						lines := strings.Split(string(content), "\n")
+						for _, line := range lines {
+							// receiver func
+							if strings.Contains(line, "func (") {
+								// fmt.Println("  func: ", line)
+								// currentMethods = append(currentMethods, line)
+
+								// if the method is already in the currentMethods, skip
+								// if not, add to missingMethods
+
+								// if _, ok := currentMethods[t]; !ok {
+								// 	currentMethods[t] = make([]string, 0)
+								// }
+
+								if !strings.Contains(line, rpc.Name) {
+									// TODO: put missing here?
 									continue
-								}
-							case "query":
-								queryServerFile = path.Join(modulePath, f.Name())
-								if fileType != spawn.Query {
-									continue
-								}
-							case "none":
-								continue
-							}
-
-							fmt.Println(" = File: ", f.Name(), t)
-
-							// find any line with `func ` in it
-
-							lines := strings.Split(string(content), "\n")
-							for _, line := range lines {
-								// receiver func
-								if strings.Contains(line, "func (") {
-									// fmt.Println("  func: ", line)
-									// currentMethods = append(currentMethods, line)
-
+								} else {
 									// if the method is already in the currentMethods, skip
-									// if not, add to missingMethods
-
-									if _, ok := currentMethods[t]; !ok {
-										currentMethods[t] = make([]string, 0)
-									}
-
-									if !strings.Contains(line, service.Name) {
-										continue
-									}
-
-									// if the method is already in the currentMethods, skip
-									if strings.Contains(line, service.Name) {
-										// fmt.Println("    method: ", line)
-										currentMethods[t] = append(currentMethods[t], parseReceiverMethodName(line))
+									// fmt.Println("    method: ", line)
+									// currentMethods[t] = append(currentMethods[t], parseReceiverMethodName(line))
+									switch rpc.FType {
+									case spawn.Tx:
+										txMethods = append(txMethods, parseReceiverMethodName(line))
+									case spawn.Query:
+										queryMethods = append(queryMethods, parseReceiverMethodName(line))
+									default:
+										fmt.Println("Error: ", "Unknown FileType")
+										panic("RUT ROE RAGGY")
 									}
 								}
 							}
@@ -198,89 +131,119 @@ func ProtoServiceGenerate() *cobra.Command {
 				}
 
 				// map[query:[Params] tx:[UpdateParams]]
-				fmt.Println("\n-------- Current Methods: ", currentMethods)
+				fmt.Println("\n-------- Current Tx Methods: ", txMethods)
+				fmt.Println("-------- Current Query Methods: ", queryMethods)
 
 				// print modules
 				// fmt.Println("\nModules: ", modules)
 
 				// iterate services again and apply any missing methods to the file
-				missing := make(map[spawn.FileType][]spawn.ProtoService, 0)
 
-				for _, module := range modules {
-					for fileType, services := range module {
-						fmt.Println("\nFile Type: ", fileType)
-						current := currentMethods[fileType]
-						fmt.Println("   Current: ", fileType, current)
+				for name, rpcs := range modules {
+					for _, rpc := range rpcs {
+						// current := currentMethods[fileType]
 
-						for _, service := range services {
-							service := service
-							fmt.Println(" - Service: ", service)
-							// ft := service.FType // tx or spawn, found in currentMethods
-							// if service.Name
+						var current []string
+						switch rpc.FType {
+						case spawn.Tx:
+							current = txMethods
+						case spawn.Query:
+							current = queryMethods
+						default:
+							fmt.Println("Error: ", "Unknown FileType")
+							panic("RUT ROE RAGGY")
+						}
 
-							found := false
-							for _, method := range current {
-								method := method
-								if method == service.Name {
-									found = true
-									break
-								}
-							}
+						fmt.Println("   Current: ", rpc.FType, current)
 
-							if !found {
-								// TODO: fix this hack, yuck, *spits*. phew
-								// it's the wrong type, fix
-								if fileType != service.FType {
-									service.FType = fileType
-									// fmt.Println("  - Skipping: ", fileType, service.FType, service)
-									// continue
-								}
+						// ft := service.FType // tx or spawn, found in currentMethods
+						// if service.Name
 
-								// MISSING METHOD
-								// fmt.Println("Missing method: ", service.Name, service.Req, service.Res, service.Location)
-								missing[fileType] = append(missing[fileType], service)
+						found := false
+						for _, method := range current {
+							method := method
+							if method == rpc.Name {
+								found = true
+								break
 							}
 						}
 
-						// print missing
-					}
+						// if !found {
+						// TODO: fix this hack, yuck, *spits*. phew
+						// it's the wrong type, fix
+						// if fileType != service.FType {
+						// 	service.FType = fileType
+						// 	// fmt.Println("  - Skipping: ", fileType, service.FType, service)
+						// 	// continue
+						// }
 
-					fmt.Println("\n\nMissing: ", missing)
+						if found {
+							fmt.Println("  - Found: ", rpc.Name)
+							continue
+						}
+
+						if _, ok := missing[name]; !ok {
+							missing[name] = make([]*spawn.ProtoRPC, 0)
+						}
+
+						// MISSING METHOD
+						// fmt.Println("Missing method: ", service.Name, service.Req, service.Res, service.Location)
+						rpc.Module = name
+						missing[name] = append(missing[name], rpc)
+						fmt.Println("  - Missing: ", rpc.Name)
+					}
 				}
 
-				// print filePaths
-				fmt.Println("\nFile Paths: ", filePaths)
+				fmt.Println("\n\nMissing: ")
+				for name, rpcs := range missing {
+					fmt.Println("  - Module: ", name)
+					for _, rpc := range rpcs {
+						fmt.Println("    - ", rpc.Name, rpc.Req, rpc.Res)
+					}
+				}
+			}
 
-				for _, missed := range missing {
-					for _, miss := range missed {
-						// get miss.FType from filePaths
-						p := filePaths[miss.Module][miss.FType]
-						fmt.Println("File: ", p)
+			// print filePaths
+			fmt.Println("\nFile Paths: ", filePaths)
 
-						content, err := os.ReadFile(p)
-						if err != nil {
-							fmt.Println("Error: ", err)
-						}
-						fmt.Println("Content: ", string(content))
+			// get filePaths[miss.Module]
+			fmt.Println("\n File Path Specific: ", filePaths["cnd"])
+			fmt.Println("\n File Path Specific2: ", filePaths["cnd"][spawn.Query])
 
-						// append to the file
-						fmt.Println("Append to file: ", miss.FType, miss.Name, miss.Req, miss.Res)
+			for _, missed := range missing {
+				for _, miss := range missed {
+					miss := miss
+					// get miss.FType from filePaths
+					// print miss.Module and miss.FType
+					fmt.Println("Module: ", miss.Module, "FType: ", miss.FType)
 
-						switch miss.FType {
-						case spawn.Tx:
-							fmt.Println("Append to Tx")
-							code := fmt.Sprintf(`// %s implements types.MsgServer.
+					p := filePaths[miss.Module][miss.FType]
+					fmt.Println("File: ", p)
+
+					content, err := os.ReadFile(p)
+					if err != nil {
+						panic(fmt.Sprintf("Error: %s, file: %s", err.Error(), p))
+					}
+					fmt.Println("Content: ", string(content))
+
+					// append to the file
+					fmt.Println("Append to file: ", miss.FType, miss.Name, miss.Req, miss.Res)
+
+					switch miss.FType {
+					case spawn.Tx:
+						fmt.Println("Append to Tx")
+						code := fmt.Sprintf(`// %s implements types.MsgServer.
 func (ms msgServer) %s(ctx context.Context, msg *types.%s) (*types.%s, error) {
 	// ctx := sdk.UnwrapSDKContext(goCtx)
 	panic("unimplemented")
 	return &types.%s{}, nil
 }
 `, miss.Name, miss.Name, miss.Req, miss.Res, miss.Res)
-							// append to the file content after a new line at the end
-							content = append(content, []byte("\n"+code)...)
-						case spawn.Query:
-							fmt.Println("Append to Query")
-							code := fmt.Sprintf(`// %s implements types.QueryServer.
+						// append to the file content after a new line at the end
+						content = append(content, []byte("\n"+code)...)
+					case spawn.Query:
+						fmt.Println("Append to Query")
+						code := fmt.Sprintf(`// %s implements types.QueryServer.
 func (k Querier) %s(goCtx context.Context, req *types.%s) (*types.%s, error) {
 	// ctx := sdk.UnwrapSDKContext(goCtx)
 	panic("unimplemented")
@@ -288,16 +251,14 @@ func (k Querier) %s(goCtx context.Context, req *types.%s) (*types.%s, error) {
 }
 `, miss.Name, miss.Name, miss.Req, miss.Res, miss.Res)
 
-							// append to the file content after a new line at the end
-							content = append(content, []byte("\n"+code)...)
+						// append to the file content after a new line at the end
+						content = append(content, []byte("\n"+code)...)
 
-						}
-
-						if err := os.WriteFile(p, content, 0644); err != nil {
-							fmt.Println("Error: ", err)
-						}
 					}
 
+					if err := os.WriteFile(p, content, 0644); err != nil {
+						fmt.Println("Error: ", err)
+					}
 				}
 
 			}
