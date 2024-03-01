@@ -174,6 +174,56 @@ func TestProtoGoPackageReduction(t *testing.T) {
 	}
 }
 
+func TestBuildProtoInterfaceStub(t *testing.T) {
+	type tcase struct {
+		pr       ProtoRPC
+		expected string
+	}
+
+	// take note of the extra line after the final close brace }
+	tests := []tcase{
+		{
+			pr: ProtoRPC{
+				Name:   "RPCMethodName",
+				Req:    "Query...Request",
+				Res:    "Query...Response",
+				Module: "mymodule",
+				FType:  Query,
+			},
+			expected: `// RPCMethodName implements types.QueryServer.
+func (k Querier) RPCMethodName(goCtx context.Context, req *types.Query...Request) (*types.Query...Response, error) {
+	// ctx := sdk.UnwrapSDKContext(goCtx)
+	panic("RPCMethodName is unimplemented")
+	return &types.Query...Response{}, nil
+}
+`,
+		},
+		{
+			pr: ProtoRPC{
+				Name:   "UpdateParams",
+				Req:    "MsgUpdateParams",
+				Res:    "MsgUpdateParamsResponse",
+				Module: "module",
+				FType:  Tx,
+			},
+			expected: `// UpdateParams implements types.MsgServer.
+func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
+	// ctx := sdk.UnwrapSDKContext(goCtx)
+	panic("UpdateParams is unimplemented")
+	return &types.MsgUpdateParamsResponse{}, nil
+}
+`,
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+
+		res := tc.pr.BuildProtoInterfaceStub()
+		require.Equal(t, tc.expected, res)
+	}
+}
+
 // make sure to `defer os.Remove("go.mod")` after calling
 func buildMockGoMod(t *testing.T, moduleName string) {
 	// create a go.mod file for this test

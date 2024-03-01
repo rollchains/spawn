@@ -72,7 +72,7 @@ func ProtoServiceParser(logger *slog.Logger, content []byte, pkgDir string, ft F
 	return pRPCs
 }
 
-// given a proto file content, parse out the package name
+// GetProtoPackageName inputs proto file content, then parse out the package (cosmos module) name
 // package cnd.v1; returns cnd as the name.
 func GetProtoPackageName(content []byte) string {
 	for _, line := range strings.Split(string(content), "\n") {
