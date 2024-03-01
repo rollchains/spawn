@@ -2,7 +2,6 @@
 
 set -e
 
-
 GO_MOD_PACKAGE="github.com/strangelove-ventures/simapp"
 
 echo "Generating gogo proto code"
@@ -37,4 +36,3 @@ for module in $custom_modules; do
   mv $dirPath/* ./api/$dirPath/
   rm -rf $dirPath
 done
-

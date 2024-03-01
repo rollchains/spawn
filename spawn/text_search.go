@@ -5,6 +5,8 @@ import (
 	"os"
 	"path"
 	"strings"
+
+	modfile "golang.org/x/mod/modfile"
 )
 
 // FindLinesWithText returns the start and end index of a block of text in a slice of strings.
@@ -87,20 +89,11 @@ func ReadCurrentGoModuleName(loc string) string {
 		loc = path.Join(loc, "go.mod")
 	}
 
-	// read file from path into a []byte
-	var fileContent []byte
-	fileContent, err := os.ReadFile(loc)
+	goModBz, err := os.ReadFile(loc)
 	if err != nil {
-		fmt.Println("Error reading file", err)
+		fmt.Println("Error reading go.mod file: ", err)
 		return ""
 	}
 
-	lines := strings.Split(string(fileContent), "\n")
-	for _, line := range lines {
-		if strings.Contains(line, "module") {
-			return strings.Split(line, " ")[1]
-		}
-	}
-
-	return ""
+	return modfile.ModulePath(goModBz)
 }
