@@ -50,6 +50,13 @@ func ProtoServiceGenerate() *cobra.Command {
 				logger.Error("Error", "error", err)
 				return
 			}
+
+			for _, v := range missingRPCMethods {
+				for _, rpc := range v {
+					logger.Info("Applied RPC Stub", "module", rpc.Module, "type", rpc.FType, "name", rpc.Name, "req", rpc.Req, "res", rpc.Res, "file", rpc.FileLoc)
+				}
+			}
+
 		},
 	}
 

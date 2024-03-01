@@ -28,7 +28,7 @@ func (mm ModuleMapping) Print(logger *slog.Logger) {
 		name := name
 
 		for _, rpc := range v {
-			logger.Debug("module", "module", name, "rpc", rpc.Name, "req", rpc.Req, "res", rpc.Res, "module", rpc.Module, "location", rpc.Location, "ftype", rpc.FType, "fileloc", rpc.FileLoc)
+			logger.Debug("module", "module", name, "rpc", rpc.Name, "req", rpc.Req, "res", rpc.Res, "module", rpc.Module, "ftype", rpc.FType, "fileloc", rpc.FileLoc)
 		}
 	}
 }
@@ -44,8 +44,6 @@ type ProtoRPC struct {
 
 	// The name of the cosmos extension (x/module)
 	Module string
-	// the relative directory location this proto file is location (x/mymodule/types)
-	Location string
 	// The type of file this proto service is (tx, query, none)
 	FType FileType
 	// Where there Query/Msg Server is located (querier.go, msgserver.gom, etc.)
@@ -54,7 +52,7 @@ type ProtoRPC struct {
 
 func (pr *ProtoRPC) String() string {
 	return fmt.Sprintf(
-		"Name: %s, Req: %s, Res: %s, Module: %s, Location: %s, FType: %s, FileLoc: %s",
-		pr.Name, pr.Req, pr.Res, pr.Module, pr.Location, pr.FType, pr.FileLoc,
+		"Name: %s, Req: %s, Res: %s, Module: %s, FType: %s, FileLoc: %s",
+		pr.Name, pr.Req, pr.Res, pr.Module, pr.FType, pr.FileLoc,
 	)
 }

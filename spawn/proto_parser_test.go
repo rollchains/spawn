@@ -50,22 +50,20 @@ func TestParser(t *testing.T) {
 			}`,
 			expected: []*ProtoRPC{
 				{
-					Name:     "Params",
-					Req:      "QueryParamsRequest",
-					Res:      "QueryParamsResponse",
-					Module:   "cnd",
-					Location: "x/cnd/types",
-					FType:    Query,
-					FileLoc:  "",
+					Name:    "Params",
+					Req:     "QueryParamsRequest",
+					Res:     "QueryParamsResponse",
+					Module:  "cnd",
+					FType:   Query,
+					FileLoc: "",
 				},
 				{
-					Name:     "FeeShare",
-					Req:      "QueryFeeShareRequest",
-					Res:      "QueryFeeShareResponse",
-					Module:   "cnd",
-					Location: "x/cnd/types",
-					FType:    Query,
-					FileLoc:  "",
+					Name:    "FeeShare",
+					Req:     "QueryFeeShareRequest",
+					Res:     "QueryFeeShareResponse",
+					Module:  "cnd",
+					FType:   Query,
+					FileLoc: "",
 				},
 			},
 		},
@@ -89,22 +87,20 @@ func TestParser(t *testing.T) {
 		}`,
 			expected: []*ProtoRPC{
 				{
-					Name:     "UpdateParams",
-					Req:      "MsgUpdateParams",
-					Res:      "MsgUpdateParamsResponse",
-					Module:   "amm",
-					Location: "x/amm/nested/types",
-					FType:    Tx,
-					FileLoc:  "",
+					Name:    "UpdateParams",
+					Req:     "MsgUpdateParams",
+					Res:     "MsgUpdateParamsResponse",
+					Module:  "amm",
+					FType:   Tx,
+					FileLoc: "",
 				},
 				{
-					Name:     "UpdateParams2",
-					Req:      "MsgUpdateParams2",
-					Res:      "MsgUpdateParamsResponse2",
-					Module:   "amm",
-					Location: "x/amm/nested/types",
-					FType:    Tx,
-					FileLoc:  "",
+					Name:    "UpdateParams2",
+					Req:     "MsgUpdateParams2",
+					Res:     "MsgUpdateParamsResponse2",
+					Module:  "amm",
+					FType:   Tx,
+					FileLoc: "",
 				},
 			},
 		},
@@ -119,9 +115,7 @@ func TestParser(t *testing.T) {
 
 		buildMockGoMod(t, tc.modPkg)
 
-		goPkgDir := GetGoPackageLocationOfFiles(content)
-
-		r := ProtoServiceParser(logger, content, goPkgDir, tc.ft, "")
+		r := ProtoServiceParser(logger, content, tc.ft, "")
 
 		require.Equal(t, len(tc.expected), len(r), tc.name, *r[0])
 

@@ -33,7 +33,7 @@ func (k Querier) %s(goCtx context.Context, req *types.%s) (*types.%s, error) {
 }
 
 // ProtoServiceParser parses out a proto file content and returns all the RPC services within it.
-func ProtoServiceParser(logger *slog.Logger, content []byte, pkgDir string, ft FileType, fileLoc string) []*ProtoRPC {
+func ProtoServiceParser(logger *slog.Logger, content []byte, ft FileType, fileLoc string) []*ProtoRPC {
 	pRPCs := make([]*ProtoRPC, 0)
 	c := strings.Split(string(content), "\n")
 
@@ -58,13 +58,12 @@ func ProtoServiceParser(logger *slog.Logger, content []byte, pkgDir string, ft F
 
 			words := strings.Fields(line)
 			pRPCs = append(pRPCs, &ProtoRPC{
-				Name:     words[0],
-				Req:      words[1],
-				Res:      words[2],
-				Location: pkgDir,
-				FType:    ft,
-				Module:   moduleName,
-				FileLoc:  fileLoc,
+				Name:    words[0],
+				Req:     words[1],
+				Res:     words[2],
+				FType:   ft,
+				Module:  moduleName,
+				FileLoc: fileLoc,
 			})
 		}
 	}
@@ -141,9 +140,7 @@ func GetCurrentModuleRPCsFromProto(logger *slog.Logger, absProtoPath string) Mod
 			return nil
 		}
 
-		goPkgDir := GetGoPackageLocationOfFiles(content)
-
-		rpcs := ProtoServiceParser(logger, content, goPkgDir, fileType, loc)
+		rpcs := ProtoServiceParser(logger, content, fileType, loc)
 
 		parent := path.Dir(relPath)
 		parent = strings.Split(parent, "/")[0]
@@ -205,7 +202,6 @@ func GetMissingRPCMethodsFromModuleProto(logger *slog.Logger, cwd string) (Modul
 
 			logger.Debug("rpc", "rpc", rpc)
 
-			// get files in rpc.Location
 			files, err := os.ReadDir(modulePath)
 			if err != nil {
 				return nil, err
@@ -367,7 +363,7 @@ func ApplyMissingRPCMethodsToGoSourceFiles(logger *slog.Logger, missingRPCMethod
 				return fmt.Errorf("error: %s, file: %s", err.Error(), fileLoc)
 			}
 
-			logger.Debug("Append to file: ", miss.Name, miss.Req, miss.Res, miss.Location)
+			logger.Debug("Append to file: ", "name", miss.Name, "req", miss.Req, "res", miss.Res)
 
 			code := miss.BuildProtoInterfaceStub()
 			if len(code) == 0 {
