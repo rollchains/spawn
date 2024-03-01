@@ -3,6 +3,7 @@ package spawn
 import (
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"os"
 	"path"
 	"strings"
@@ -32,13 +33,14 @@ func (k Querier) %s(goCtx context.Context, req *types.%s) (*types.%s, error) {
 }
 
 // ProtoServiceParser parses out a proto file content and returns all the services within it.
-func ProtoServiceParser(content []byte, pkgDir string, ft FileType) []*ProtoRPC {
+func ProtoServiceParser(logger *slog.Logger, content []byte, pkgDir string, ft FileType) []*ProtoRPC {
 	pRPCs := make([]*ProtoRPC, 0)
 	c := strings.Split(string(content), "\n")
 
 	for idx, line := range c {
 		if strings.Contains(line, "rpc ") {
-			fmt.Println("Found rpc line: ", strings.Trim(line, " "))
+			line = strings.Trim(line, " ")
+			logger.Debug("proto file", "rpc line", line)
 
 			// if line does not end with {, we also need to load the next line
 			if !strings.HasSuffix(line, "{") {
@@ -89,7 +91,8 @@ func GetGoPackageLocationOfFiles(bz []byte) string {
 }
 
 // Converts .proto files into a mapping depending on the type.
-func GetCurrentModuleRPCsFromProto(absProtoPath string) ModuleMapping {
+func GetCurrentModuleRPCsFromProto(logger *slog.Logger, absProtoPath string) ModuleMapping {
+
 	modules := make(ModuleMapping)
 
 	fs.WalkDir(os.DirFS(absProtoPath), ".", func(relPath string, d fs.DirEntry, e error) error {
@@ -99,7 +102,7 @@ func GetCurrentModuleRPCsFromProto(absProtoPath string) ModuleMapping {
 
 		content, err := os.ReadFile(path.Join(absProtoPath, relPath))
 		if err != nil {
-			fmt.Println("Error: ", err)
+			logger.Error("Error", "error", err)
 		}
 
 		fileType := GetFileTypeFromProtoContent(content)
@@ -109,7 +112,7 @@ func GetCurrentModuleRPCsFromProto(absProtoPath string) ModuleMapping {
 
 		goPkgDir := GetGoPackageLocationOfFiles(content)
 
-		rpcs := ProtoServiceParser(content, goPkgDir, fileType)
+		rpcs := ProtoServiceParser(logger, content, goPkgDir, fileType)
 
 		parent := path.Dir(relPath)
 		parent = strings.Split(parent, "/")[0]
@@ -123,7 +126,7 @@ func GetCurrentModuleRPCsFromProto(absProtoPath string) ModuleMapping {
 		return nil
 	})
 
-	modules.Print()
+	modules.Print(logger)
 
 	return modules
 }
@@ -145,20 +148,17 @@ func GetFileTypeFromProtoContent(bz []byte) FileType {
 	return None
 }
 
-func GetMissingRPCMethodsFromModuleProto(cwd string) (ModuleMapping, error) {
+func GetMissingRPCMethodsFromModuleProto(logger *slog.Logger, cwd string) (ModuleMapping, error) {
 	protoPath := path.Join(cwd, "proto")
-	modules := GetCurrentModuleRPCsFromProto(protoPath)
+	modules := GetCurrentModuleRPCsFromProto(logger, protoPath)
 
 	missing := make(ModuleMapping, 0)
-
-	// txMethods := make([]string, 0)
-	// 	queryMethods := make([]string, 0)
 
 	txMethods := make(map[string][]string)
 	queryMethods := make(map[string][]string)
 
 	for name, rpcMethods := range modules {
-		fmt.Println("\n------------- Module: ", name)
+		logger.Debug("module", "module", name)
 
 		modulePath := path.Join(cwd, "x", name, "keeper") // hardcode for keeper is less than ideal, but will do for now
 
@@ -166,7 +166,7 @@ func GetMissingRPCMethodsFromModuleProto(cwd string) (ModuleMapping, error) {
 			rpc := rpc
 			rpc.Module = name
 
-			fmt.Println("\nService: ", rpc)
+			logger.Debug("rpc", "rpc", rpc)
 
 			// get files in service.Location
 			files, err := os.ReadDir(modulePath)
@@ -181,7 +181,7 @@ func GetMissingRPCMethodsFromModuleProto(cwd string) (ModuleMapping, error) {
 
 				content, err := os.ReadFile(path.Join(modulePath, f.Name()))
 				if err != nil {
-					// fmt.Println("Error: ", err)
+					logger.Error("error", "err", err)
 					return nil, err
 				}
 
@@ -191,7 +191,7 @@ func GetMissingRPCMethodsFromModuleProto(cwd string) (ModuleMapping, error) {
 					continue
 				}
 
-				fmt.Println(" = File: ", f.Name())
+				logger.Debug(" = file", "file", f.Name())
 
 				// Set the file type tot his file
 				rpc.FileLoc = path.Join(modulePath, f.Name())
@@ -208,18 +208,18 @@ func GetMissingRPCMethodsFromModuleProto(cwd string) (ModuleMapping, error) {
 							case Query:
 								queryMethods[name] = append(queryMethods[name], parseReceiverMethodName(line))
 							default:
-								fmt.Println("Error: ", "Unknown FileType")
-								panic("RUT ROE RAGGY")
+								logger.Error("error", "err", "Unknown FileType")
+								return nil, fmt.Errorf("unknown file type")
 							}
 						}
 					}
 				}
+
 			}
 		}
 
-		// map[query:[Params] tx:[UpdateParams]]
-		fmt.Println("\n-------- Current Tx Methods: ", txMethods)
-		fmt.Println("-------- Current Query Methods: ", queryMethods)
+		logger.Debug("Current Tx Methods: ", "txMethods", txMethods)
+		logger.Debug("Current Query Methods: ", "queryMethods", queryMethods)
 	}
 
 	// iterate services again and apply any missing methods to the file
@@ -241,11 +241,11 @@ func GetMissingRPCMethodsFromModuleProto(cwd string) (ModuleMapping, error) {
 			case Query:
 				current = queryMethods[name]
 			default:
-				fmt.Println("Error: ", "Unknown FileType")
-				panic("RUT ROE RAGGY")
+				logger.Error("error", "err", "Unknown FileType")
+				return nil, fmt.Errorf("unknown file type")
 			}
 
-			fmt.Println("   Current: ", rpc.FType, current)
+			logger.Debug("    Current: ", "current", current)
 
 			found := false
 			for _, method := range current {
@@ -257,9 +257,9 @@ func GetMissingRPCMethodsFromModuleProto(cwd string) (ModuleMapping, error) {
 			}
 
 			if found {
-				fmt.Println("  - Found: ", rpc.Name)
 				continue
 			}
+			logger.Debug("  - Not Found: ", "rpc", rpc.Name)
 
 			alreadyIncluded := false
 			for _, m := range missing[name] {
@@ -273,19 +273,12 @@ func GetMissingRPCMethodsFromModuleProto(cwd string) (ModuleMapping, error) {
 			}
 
 			// MISSING METHOD
-			// fmt.Println("Missing method: ", service.Name, service.Req, service.Res, service.Location)
 			missing[name] = append(missing[name], rpc)
-			fmt.Println("  - Missing: ", rpc.Name, name)
+			logger.Debug("  - Missing: ", "rpc", rpc.Name, "module", name)
 		}
 	}
 
-	fmt.Println("\n\nMissing: ")
-	for name, rpcs := range missing {
-		fmt.Println("  - Module: ", name)
-		for _, rpc := range rpcs {
-			fmt.Println("    - ", rpc.Name, rpc.Req, rpc.Res)
-		}
-	}
+	missing.Print(logger)
 
 	return missing, nil
 }
@@ -317,21 +310,20 @@ func isFileQueryOrMsgServer(bz []byte) FileType {
 	return None
 }
 
-func ApplyMissingRPCMethodsToGoSourceFiles(missingRPCMethods ModuleMapping) error {
+func ApplyMissingRPCMethodsToGoSourceFiles(logger *slog.Logger, missingRPCMethods ModuleMapping) error {
 	for _, missing := range missingRPCMethods {
-		for _, miss := range missing {
-			miss := miss
-			fmt.Println("Module: ", miss.Module, "FType: ", miss.FType)
-
+		for _, rpc := range missing {
+			miss := rpc
 			fileLoc := miss.FileLoc
-			fmt.Println("File: ", fileLoc)
+
+			logger.Debug("rpc info", "module", miss.Module, "fileLoc", fileLoc, "name", miss.Name, "ftype", miss.FType.String())
 
 			content, err := os.ReadFile(fileLoc)
 			if err != nil {
 				return fmt.Errorf("error: %s, file: %s", err.Error(), fileLoc)
 			}
 
-			fmt.Println("Append to file: ", miss.FType, miss.Name, miss.Req, miss.Res)
+			logger.Debug("Append to file: ", miss.Name, miss.Req, miss.Res, miss.Location)
 
 			code := miss.BuildProtoInterfaceStub()
 			if len(code) == 0 {
@@ -342,6 +334,7 @@ func ApplyMissingRPCMethodsToGoSourceFiles(missingRPCMethods ModuleMapping) erro
 			content = append(content, []byte("\n"+code)...)
 
 			if err := os.WriteFile(fileLoc, content, 0644); err != nil {
+				logger.Error("Error: ", err)
 				return err
 			}
 		}

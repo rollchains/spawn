@@ -1,5 +1,7 @@
 package spawn
 
+import "log/slog"
+
 // FileType tells the application which type of proto file is it so we can sort Txs from Queries
 type FileType string
 
@@ -9,14 +11,21 @@ const (
 	None  FileType = "none"
 )
 
+// get the str of FileType
+func (ft FileType) String() string {
+	return string(ft)
+}
+
 // ModuleMapping a map of the module name to a list of ProtoRPCs
 type ModuleMapping map[string][]*ProtoRPC
 
-func (mm ModuleMapping) Print() {
+func (mm ModuleMapping) Print(logger *slog.Logger) {
 	for name, v := range mm {
-		println(name)
+		v := v
+		name := name
+
 		for _, rpc := range v {
-			println(rpc.Name, rpc.FileLoc)
+			logger.Debug("module", "module", name, "rpc", rpc.Name, "req", rpc.Req, "res", rpc.Res, "module", rpc.Module, "location", rpc.Location, "ftype", rpc.FType, "fileloc", rpc.FileLoc)
 		}
 	}
 }
