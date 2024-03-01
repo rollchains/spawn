@@ -10,24 +10,29 @@ import (
 
 func ProtoServiceGenerate() *cobra.Command {
 	cmd := &cobra.Command{
-		// TODO: this name is ew
 		// TODO: Put this in the make file on proto-gen? (after)
-		Use:     "service-generate [module]",
-		Short:   "Auto generate the MsgService stubs from proto -> Cosmos-SDK",
-		Example: `spawn service-generate mymodule`,
+		Use:     "stub-gen [module (optional)]",
+		Short:   "Auto generate the MsgService & Querier from proto -> Cosmos-SDK methods",
+		Long:    `Auto generate the interface stubs for the types.QueryServer and types.MsgServer for your module. If no module is provided, it will do for all modules in your proto folder.`,
+		Example: `spawn stub-gen [module_name]`,
 		Args:    cobra.MaximumNArgs(1),
-		Aliases: []string{"sg"},
+		Aliases: []string{
+			"stub", "stub-generate", "stub-interface", "stub-interfaces",
+			"service-generate", "sg",
+		},
 		Run: func(cmd *cobra.Command, args []string) {
 			logger := GetLogger()
 
 			cwd, err := os.Getwd()
 			if err != nil {
 				logger.Error("Error", "error", err)
+				return
 			}
 
 			missingRPCMethods, err := spawn.GetMissingRPCMethodsFromModuleProto(logger, cwd)
 			if err != nil {
 				fmt.Println("Error: ", err)
+				return
 			}
 
 			hasChanges := false
@@ -44,6 +49,7 @@ func ProtoServiceGenerate() *cobra.Command {
 
 			if err := spawn.ApplyMissingRPCMethodsToGoSourceFiles(logger, missingRPCMethods); err != nil {
 				logger.Error("Error", "error", err)
+				return
 			}
 		},
 	}

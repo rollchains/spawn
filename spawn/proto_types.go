@@ -42,13 +42,13 @@ type ProtoRPC struct {
 	// The response object, such as QueryParamsResponse (queries) or MsgUpdateParamsResponse (txs)
 	Res string
 
-	// The name of the module
+	// The name of the cosmos extension (x/module)
 	Module string
 	// the relative directory location this proto file is location (x/mymodule/types)
 	Location string
-	// The type of file this proto service is
+	// The type of file this proto service is (tx, query, none)
 	FType FileType
-	// Where there types.(Query/Msg)Server is located
+	// Where there Query/Msg Server is located (querier.go, msgserver.gom, etc.)
 	FileLoc string
 }
 

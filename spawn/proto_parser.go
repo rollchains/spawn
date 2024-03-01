@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// BuildProtoInterfaceStub builds the stub for the proto interface depending on the ProtoRPC's file type.
+// BuildProtoInterfaceStub returns the string to save to the file for the msgServer or Querier.
 func (pr ProtoRPC) BuildProtoInterfaceStub() string {
 	if pr.FType == Tx {
 		return fmt.Sprintf(`// %s implements types.MsgServer.
@@ -32,7 +32,7 @@ func (k Querier) %s(goCtx context.Context, req *types.%s) (*types.%s, error) {
 	}
 }
 
-// ProtoServiceParser parses out a proto file content and returns all the services within it.
+// ProtoServiceParser parses out a proto file content and returns all the RPC services within it.
 func ProtoServiceParser(logger *slog.Logger, content []byte, pkgDir string, ft FileType, fileLoc string) []*ProtoRPC {
 	pRPCs := make([]*ProtoRPC, 0)
 	c := strings.Split(string(content), "\n")
@@ -44,11 +44,10 @@ func ProtoServiceParser(logger *slog.Logger, content []byte, pkgDir string, ft F
 		line = strings.TrimLeft(line, "\t")
 
 		if strings.HasPrefix(line, "rpc ") {
-			// if strings.Contains(line, "rpc ") {
 			line = strings.Trim(line, " ")
 			logger.Debug("proto file", "rpc line", line)
 
-			// if line does not end with {, we also need to load the next line
+			// if line does not end with {, we also need to load the next line (multi line proto from linting)
 			if !strings.HasSuffix(line, "{") {
 				line = line + c[idx+1]
 			}
@@ -95,7 +94,6 @@ func GetProtoPackageName(content []byte) string {
 	}
 
 	return ""
-
 }
 
 // GetGoPackageLocationOfFiles parses the proto content pulling out the relative path
@@ -124,7 +122,6 @@ func GetGoPackageLocationOfFiles(bz []byte) string {
 
 // Converts .proto files into a mapping depending on the type.
 func GetCurrentModuleRPCsFromProto(logger *slog.Logger, absProtoPath string) ModuleMapping {
-
 	modules := make(ModuleMapping)
 
 	fs.WalkDir(os.DirFS(absProtoPath), ".", func(relPath string, d fs.DirEntry, e error) error {
@@ -139,7 +136,7 @@ func GetCurrentModuleRPCsFromProto(logger *slog.Logger, absProtoPath string) Mod
 			logger.Error("Error", "error", err)
 		}
 
-		fileType := GetFileTypeFromProtoContent(content)
+		fileType := FileTypeFromProtoContent(content)
 		if fileType == None {
 			return nil
 		}
@@ -166,7 +163,7 @@ func GetCurrentModuleRPCsFromProto(logger *slog.Logger, absProtoPath string) Mod
 }
 
 // returns "tx" or "query" depending on the content of the file
-func GetFileTypeFromProtoContent(bz []byte) FileType {
+func FileTypeFromProtoContent(bz []byte) FileType {
 	res := string(bz)
 
 	// if `service Query` or `message Query` found in the file, it's a query
@@ -221,7 +218,7 @@ func GetMissingRPCMethodsFromModuleProto(logger *slog.Logger, cwd string) (Modul
 
 				// if the file type is not the expected, continue
 				// if the content of this file is not the same as the service we are tying to use, continue
-				if rpc.FType != isFileQueryOrMsgServer(content) {
+				if rpc.FType != getFileType(content) {
 					continue
 				}
 
@@ -266,7 +263,6 @@ func GetMissingRPCMethodsFromModuleProto(logger *slog.Logger, cwd string) (Modul
 
 		for _, rpc := range rpcs {
 			rpc := rpc
-			// current := currentMethods[fileType]
 
 			var current []string
 			switch rpc.FType {
@@ -317,20 +313,27 @@ func GetMissingRPCMethodsFromModuleProto(logger *slog.Logger, cwd string) (Modul
 	return missing, nil
 }
 
+// given a string of text like `func (k Querier) Params(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {`
+// parse out Params, req and the response
 func parseReceiverMethodName(f string) string {
-	// given a string of text like `func (k Querier) Params(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {`
-	// parse out Params, req and the response
-
 	name := ""
 
+	// f = func (k Querier) Params(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+
+	// k Querier) Params(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
 	f = strings.ReplaceAll(f, "func (", "")
+
+	// [`k Querier` , `Params(c context.Context, req *types.QueryParamsRequest`, `(*types.QueryParamsResponse, error) {` ]
 	parts := strings.Split(f, ") ")
+
+	// [`Params`, `c context.Context, req *types.QueryParamsRequest`]
 	name = strings.Split(parts[1], "(")[0]
 
+	// `Params`
 	return strings.Trim(name, " ")
 }
 
-func isFileQueryOrMsgServer(bz []byte) FileType {
+func getFileType(bz []byte) FileType {
 	s := strings.ToLower(string(bz))
 
 	if strings.Contains(s, "queryserver") || strings.Contains(s, "querier") {
@@ -344,6 +347,8 @@ func isFileQueryOrMsgServer(bz []byte) FileType {
 	return None
 }
 
+// ApplyMissingRPCMethodsToGoSourceFiles builds the proto interface stubs and appends them to the file for missing methods.
+// If .proto file contained an rpc method for `Params` and `Other` but only `Params` is found in the querier, then `Other` is generated, appended, and saved.
 func ApplyMissingRPCMethodsToGoSourceFiles(logger *slog.Logger, missingRPCMethods ModuleMapping) error {
 	for _, missing := range missingRPCMethods {
 		for _, rpc := range missing {
