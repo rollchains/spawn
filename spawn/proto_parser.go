@@ -14,6 +14,8 @@ type ProtoService struct {
 	// the relative location this proto file is location
 	// such as x/mymodule/types/
 	Location string
+
+	FType FileType
 }
 
 // ProtoServiceParser parses out a proto file and returns all the services within it.

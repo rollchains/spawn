@@ -104,13 +104,16 @@ func ProtoServiceGenerate() *cobra.Command {
 
 			// iterate overall, find files containing the proto messages, and then set new stubs automatically
 			for name, module := range modules {
-				fmt.Println("Module: ", name)
+				fmt.Println("\n------------- Module: ", name)
 
 				modulePath := path.Join(cwd, "x", name, "keeper") // hardcode for keeper is less than ideal, but will do for now
 
-				for _, services := range module {
-					// fmt.Println("FileType: ", fileType)
-					for _, service := range services {
+				currentMethods := make(map[spawn.FileType][]string, 0) // tx/query -> methods
+				msgServerFile := ""
+				queryServerFile := ""
+
+				for fileType, services := range module {
+					for idx, service := range services {
 						fmt.Println("\nService: ", service)
 
 						// get files in service.Location
@@ -124,51 +127,100 @@ func ProtoServiceGenerate() *cobra.Command {
 								continue
 							}
 
-							// open and read the contents of f
 							content, err := os.ReadFile(path.Join(modulePath, f.Name()))
 							if err != nil {
 								fmt.Println("Error: ", err)
 							}
 
+							// This limits so we only check if the service is a type and also the file is the same type
 							t := isFileQueryOrMsgServer(content)
-							if t == "none" {
+							service.FType = t // set the file type for future iteration to set missing methods
+							services[idx] = service
+
+							switch t {
+							case "tx":
+								msgServerFile = path.Join(modulePath, f.Name())
+								if fileType != spawn.Tx {
+									continue
+								}
+							case "query":
+								queryServerFile = path.Join(modulePath, f.Name())
+								if fileType != spawn.Query {
+									continue
+								}
+							case "none":
 								continue
 							}
 
-							fmt.Println("File: ", f, t)
+							fmt.Println(" = File: ", f.Name(), t)
 
 							// find any line with `func ` in it
-							currentMethods := make([]string, 0)
+
 							lines := strings.Split(string(content), "\n")
 							for _, line := range lines {
 								// receiver func
 								if strings.Contains(line, "func (") {
 									// fmt.Println("  func: ", line)
-									currentMethods = append(currentMethods, line)
+									// currentMethods = append(currentMethods, line)
+
+									// if the method is already in the currentMethods, skip
+									// if not, add to missingMethods
+
+									if _, ok := currentMethods[t]; !ok {
+										currentMethods[t] = make([]string, 0)
+									}
+
+									if !strings.Contains(line, service.Name) {
+										continue
+									}
+
+									// if the method is already in the currentMethods, skip
+									if strings.Contains(line, service.Name) {
+										// fmt.Println("    method: ", line)
+										currentMethods[t] = append(currentMethods[t], parseReceiverMethodName(line))
+									}
 								}
 							}
+						}
+					}
 
-							fmt.Println("Current methods: ", currentMethods)
+					// map[query:[Params] tx:[UpdateParams]]
+					fmt.Println("\nCurrent Methods: ", currentMethods)
+					// fmt.Println("Current Methods: ", currentMethods)
+					fmt.Println("MsgServerFile: ", msgServerFile)
+					fmt.Println("QueryServerFile: ", queryServerFile)
 
-							// get missing methods
-							// missingMethods := make([]string, 0)
-							// for _, method := range service {
-							// 	found := false
-							// 	for _, currentMethod := range currentMethods {
-							// 		if strings.Contains(currentMethod, method.Name) {
-							// 			found = true
-							// 			break
-							// 		}
-							// 	}
+					// iterate services again and apply any missing methods to the file
+					missing := make(map[spawn.FileType][]spawn.ProtoService, 0)
+					for _, service := range services {
+						service := service
+						ft := service.FType // tx or spawn, found in currentMethods
+						// if service.Name
 
-							// 	if !found {
-							// 		missingMethods = append(missingMethods, method.Name)
-							// 	}
-							// }
+						current := currentMethods[ft]
+						fmt.Println("   Current: ", ft, current)
+
+						found := false
+						for _, method := range current {
+							method := method
+							if method == service.Name {
+								found = true
+								break
+							}
 						}
 
+						if !found {
+
+							// MISSING METHOD
+							// fmt.Println("Missing method: ", service.Name, service.Req, service.Res, service.Location)
+							missing[ft] = append(missing[ft], service)
+						}
 					}
+
+					// print missing
+					fmt.Println("Missing: ", missing)
 				}
+
 			}
 
 		},
@@ -177,21 +229,35 @@ func ProtoServiceGenerate() *cobra.Command {
 	return cmd
 }
 
-// if a file only has an UpdateParams, but UpdateParams and OtherMethod are in proto, just add the OtherMethod signature
-func modifyFileContentsToMatchProtoDefinitions() {
+// type methodReceiver struct {
+// 	Name string
+// 	Req  string
+// 	Res  string
+// }
 
+func parseReceiverMethodName(f string) string {
+	// given a string of text like `func (k Querier) Params(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {`
+	// parse out Params, req and the response
+
+	name := ""
+
+	f = strings.ReplaceAll(f, "func (", "")
+	parts := strings.Split(f, ") ")
+	name = strings.Split(parts[1], "(")[0]
+
+	return strings.Trim(name, " ")
 }
 
-func isFileQueryOrMsgServer(bz []byte) string {
+func isFileQueryOrMsgServer(bz []byte) spawn.FileType {
 	s := strings.ToLower(string(bz))
 
 	if strings.Contains(s, "queryserver") || strings.Contains(s, "querier") {
-		return "query"
+		return spawn.Query
 	}
 
 	if strings.Contains(s, "msgserver") || strings.Contains(s, "msgservice") {
-		return "tx"
+		return spawn.Tx
 	}
 
-	return "none"
+	return spawn.None
 }
