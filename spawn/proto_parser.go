@@ -33,7 +33,7 @@ func (k Querier) %s(goCtx context.Context, req *types.%s) (*types.%s, error) {
 }
 
 // ProtoServiceParser parses out a proto file content and returns all the services within it.
-func ProtoServiceParser(logger *slog.Logger, content []byte, pkgDir string, ft FileType) []*ProtoRPC {
+func ProtoServiceParser(logger *slog.Logger, content []byte, pkgDir string, ft FileType, fileLoc string) []*ProtoRPC {
 	pRPCs := make([]*ProtoRPC, 0)
 	c := strings.Split(string(content), "\n")
 
@@ -65,6 +65,7 @@ func ProtoServiceParser(logger *slog.Logger, content []byte, pkgDir string, ft F
 				Location: pkgDir,
 				FType:    ft,
 				Module:   moduleName,
+				FileLoc:  fileLoc,
 			})
 		}
 	}
@@ -131,7 +132,9 @@ func GetCurrentModuleRPCsFromProto(logger *slog.Logger, absProtoPath string) Mod
 			return nil
 		}
 
-		content, err := os.ReadFile(path.Join(absProtoPath, relPath))
+		loc := path.Join(absProtoPath, relPath)
+
+		content, err := os.ReadFile(loc)
 		if err != nil {
 			logger.Error("Error", "error", err)
 		}
@@ -143,7 +146,7 @@ func GetCurrentModuleRPCsFromProto(logger *slog.Logger, absProtoPath string) Mod
 
 		goPkgDir := GetGoPackageLocationOfFiles(content)
 
-		rpcs := ProtoServiceParser(logger, content, goPkgDir, fileType)
+		rpcs := ProtoServiceParser(logger, content, goPkgDir, fileType, loc)
 
 		parent := path.Dir(relPath)
 		parent = strings.Split(parent, "/")[0]

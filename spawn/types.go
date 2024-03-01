@@ -1,6 +1,9 @@
 package spawn
 
-import "log/slog"
+import (
+	"fmt"
+	"log/slog"
+)
 
 // FileType tells the application which type of proto file is it so we can sort Txs from Queries
 type FileType string
@@ -47,4 +50,11 @@ type ProtoRPC struct {
 	FType FileType
 	// Where there types.(Query/Msg)Server is located
 	FileLoc string
+}
+
+func (pr *ProtoRPC) String() string {
+	return fmt.Sprintf(
+		"Name: %s, Req: %s, Res: %s, Module: %s, Location: %s, FType: %s, FileLoc: %s",
+		pr.Name, pr.Req, pr.Res, pr.Module, pr.Location, pr.FType, pr.FileLoc,
+	)
 }

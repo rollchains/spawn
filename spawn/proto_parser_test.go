@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -120,7 +121,7 @@ func TestParser(t *testing.T) {
 
 		goPkgDir := GetGoPackageLocationOfFiles(content)
 
-		r := ProtoServiceParser(logger, content, goPkgDir, tc.ft)
+		r := ProtoServiceParser(logger, content, goPkgDir, tc.ft, "")
 
 		require.Equal(t, len(tc.expected), len(r), tc.name, *r[0])
 
@@ -222,6 +223,80 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 		res := tc.pr.BuildProtoInterfaceStub()
 		require.Equal(t, tc.expected, res)
 	}
+}
+
+func TestReadingMissingRPCsFromDirectory(t *testing.T) {
+	wd, err := os.Getwd()
+	require.NoError(t, err)
+
+	protoDir := path.Join(wd, "proto")
+	defer os.RemoveAll(protoDir)
+
+	require.NoError(t, os.Mkdir(protoDir, 0755))
+	defer os.RemoveAll(protoDir)
+
+	defer os.Remove("go.mod")
+
+	type tcase struct {
+		keeperDir     string
+		goModuleName  string
+		protoFilePath string
+		protoFileName string
+		protoContent  string
+
+		expectedMissing int
+	}
+
+	for _, tc := range []tcase{
+		{
+			keeperDir:       path.Join(wd, "x", "amm", "keeper"),
+			protoFilePath:   path.Join(protoDir, "amm", "v1"),
+			protoFileName:   "transaction.proto",
+			goModuleName:    "github.com/aaa/bbb",
+			expectedMissing: 2,
+			protoContent: `syntax = "proto3";
+package amm.v1;
+option go_package = "github.com/aaa/bbb/x/amm/nested/types";
+service Msg {
+	rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+	rpc UpdateParams2(MsgUpdateParams2) returns (MsgUpdateParamsResponse2);
+}`,
+		},
+	} {
+		tc := tc
+
+		defer os.Remove(tc.keeperDir)
+		defer os.Remove(tc.protoFilePath)
+
+		require.NoError(t, os.MkdirAll(tc.keeperDir, 0755))
+		require.NoError(t, os.MkdirAll(tc.protoFilePath, 0755))
+
+		f, err := os.Create(path.Join(tc.protoFilePath, tc.protoFileName))
+		require.NoError(t, err)
+		defer f.Close()
+
+		_, err = f.WriteString(tc.protoContent)
+		require.NoError(t, err)
+
+		buildMockGoMod(t, tc.goModuleName)
+
+		missing, err := GetMissingRPCMethodsFromModuleProto(logger, wd)
+		require.NoError(t, err)
+
+		missingSum := 0
+		for _, m := range missing {
+			missingSum += len(m)
+		}
+
+		require.Equal(t, tc.expectedMissing, missingSum)
+
+		os.Remove("go.mod")
+		os.RemoveAll(tc.keeperDir)
+	}
+
+	t.Cleanup(func() {
+		os.RemoveAll(protoDir)
+	})
 }
 
 // make sure to `defer os.Remove("go.mod")` after calling
