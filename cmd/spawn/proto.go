@@ -228,10 +228,12 @@ func ProtoServiceGenerate() *cobra.Command {
 							}
 
 							if !found {
-
+								// TODO: fix this hack, yuck, *spits*. phew
+								// it's the wrong type, fix
 								if fileType != service.FType {
-									fmt.Println("  - Skipping: ", fileType, service.FType, service)
-									continue
+									service.FType = fileType
+									// fmt.Println("  - Skipping: ", fileType, service.FType, service)
+									// continue
 								}
 
 								// MISSING METHOD
@@ -267,29 +269,31 @@ func ProtoServiceGenerate() *cobra.Command {
 						switch miss.FType {
 						case spawn.Tx:
 							fmt.Println("Append to Tx")
+							code := fmt.Sprintf(`// %s implements types.MsgServer.
+func (ms msgServer) %s(ctx context.Context, msg *types.%s) (*types.%s, error) {
+	// ctx := sdk.UnwrapSDKContext(goCtx)
+	panic("unimplemented")
+	return &types.%s{}, nil
+}`, miss.Name, miss.Name, miss.Req, miss.Res, miss.Res)
+							// append to the file content after a new line at the end
+							content = append(content, []byte("\n"+code)...)
 						case spawn.Query:
 							fmt.Println("Append to Query")
-
-							// FeeShare implements types.QueryServer.
-							// func (k Querier) FeeShare(context.Context, *types.QueryFeeShareRequest) (*types.QueryFeeShareResponse, error) {
-							// 	panic("unimplemented")
-							// }
-							code := `// ` + miss.Name + ` implements types.QueryServer.
-func (k Querier) ` + miss.Name + `(c context.Context, req *types.` + miss.Req + `) (*types.` + miss.Res + `, error) {
+							code := fmt.Sprintf(`// %s implements types.QueryServer.
+func (k Querier) %s(goCtx context.Context, req *types.%s) (*types.%s, error) {
+	// ctx := sdk.UnwrapSDKContext(goCtx)
 	panic("unimplemented")
-	// ctx := sdk.UnwrapSDKContext(c)
-	return &types.` + miss.Res + `{}, nil
-}`
+	return &types.%s{}, nil
+}`, miss.Name, miss.Name, miss.Req, miss.Res, miss.Res)
 
 							// append to the file content after a new line at the end
 							content = append(content, []byte("\n"+code)...)
 
-							fmt.Println("New Content: ", string(content))
+						}
 
-							if err := os.WriteFile(p, content, 0644); err != nil {
-								fmt.Println("Error: ", err)
-							}
-
+						fmt.Println("New Content: ", string(content))
+						if err := os.WriteFile(p, content, 0644); err != nil {
+							fmt.Println("Error: ", err)
 						}
 
 					}
