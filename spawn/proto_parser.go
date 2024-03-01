@@ -10,10 +10,14 @@ type ProtoService struct {
 	Name string
 	Req  string
 	Res  string
+
+	// the relative location this proto file is location
+	// such as x/mymodule/types/
+	Location string
 }
 
 // ProtoServiceParser parses out a proto file and returns all the services within it.
-func ProtoServiceParser(content []byte) []ProtoService {
+func ProtoServiceParser(content []byte, pkgDir string) []ProtoService {
 	qss := make([]ProtoService, 0)
 	c := strings.Split(string(content), "\n")
 
@@ -32,9 +36,10 @@ func ProtoServiceParser(content []byte) []ProtoService {
 
 			words := strings.Fields(line)
 			qss = append(qss, ProtoService{
-				Name: words[0],
-				Req:  words[1],
-				Res:  words[2],
+				Name:     words[0],
+				Req:      words[1],
+				Res:      words[2],
+				Location: pkgDir,
 			})
 		}
 	}
@@ -66,4 +71,21 @@ func SortContentToFileType(bz []byte) FileType {
 	}
 
 	return None
+}
+
+// GetGoPackageLocationOfFiles parses the proto content pulling out the relative path
+// of the go package location. Such as x/mymodule/types/
+func GetGoPackageLocationOfFiles(bz []byte) string {
+	modName := ReadCurrentGoModuleName("go.mod")
+
+	for _, line := range strings.Split(string(bz), "\n") {
+		// option go_package = "github.com/rollchains/mychain/x/cnd/types";
+		if strings.Contains(line, "option go_package") {
+			line = strings.Trim(line, " ")
+			line = strings.NewReplacer("option go_package", "", "=", "", ";", "", fmt.Sprintf("%s/", modName), "", "\"", "").Replace(line)
+			return strings.Trim(line, " ")
+		}
+	}
+
+	return ""
 }

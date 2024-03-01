@@ -32,7 +32,7 @@ func main() {
 
 	applyPluginCmds()
 
-	rootCmd.PersistentFlags().String(LogLevelFlag, "info", "log level (debug, info, warn, error)")
+	rootCmd.PersistentFlags().String("log-level", "info", "log level (debug, info, warn, error)")
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "error while executing your CLI. Err: %v\n", err)
