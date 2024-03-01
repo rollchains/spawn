@@ -95,30 +95,6 @@ func GetProtoPackageName(content []byte) string {
 	return ""
 }
 
-// GetGoPackageLocationOfFiles parses the proto content pulling out the relative path
-// of the go package location.
-// option go_package = "github.com/rollchains/mychain/x/cnd/types"; -> x/cnd/types
-func GetGoPackageLocationOfFiles(bz []byte) string {
-	modName := ReadCurrentGoModuleName("go.mod")
-
-	for _, line := range strings.Split(string(bz), "\n") {
-		if strings.Contains(line, "option go_package") {
-			// option go_package = "github.com/rollchains/mychain/x/cnd/types";
-			line = strings.Trim(line, " ")
-
-			// x/cnd/types";
-			line := strings.Split(line, fmt.Sprintf("%s/", modName))[1]
-
-			// x/cnd/types
-			line = strings.Split(line, "\"")[0]
-
-			return strings.Trim(line, " ")
-		}
-	}
-
-	return ""
-}
-
 // Converts .proto files into a mapping depending on the type.
 func GetCurrentModuleRPCsFromProto(logger *slog.Logger, absProtoPath string) ModuleMapping {
 	modules := make(ModuleMapping)

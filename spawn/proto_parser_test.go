@@ -125,50 +125,6 @@ func TestParser(t *testing.T) {
 	}
 }
 
-func TestProtoGoPackageReduction(t *testing.T) {
-	type tcase struct {
-		modPkg   string
-		input    string
-		expected string
-	}
-
-	tests := []tcase{
-		{
-			modPkg:   "github.com/rollchains/mychain",
-			input:    `option go_package = "github.com/rollchains/mychain/x/cnd/types";`,
-			expected: "x/cnd/types",
-		},
-		{
-			modPkg:   "github.com/rollchains/other",
-			input:    `option go_package = "github.com/rollchains/other/x/cnd/types";`,
-			expected: "x/cnd/types",
-		},
-		{
-			modPkg:   "github.com/rollchains/other",
-			input:    `option go_package = "github.com/rollchains/other/x/cosmosmod/types";`,
-			expected: "x/cosmosmod/types",
-		},
-		{
-			modPkg:   "github.com/abcchain/misc",
-			input:    `option go_package = "github.com/abcchain/misc/x/module/subfolder/types";`,
-			expected: "x/module/subfolder/types",
-		},
-	}
-
-	defer os.Remove("go.mod")
-
-	for _, tc := range tests {
-		tc := tc
-
-		buildMockGoMod(t, tc.modPkg)
-
-		actual := GetGoPackageLocationOfFiles([]byte(tc.input))
-		require.Equal(t, tc.expected, actual)
-
-		os.Remove("go.mod")
-	}
-}
-
 func TestBuildProtoInterfaceStub(t *testing.T) {
 	type tcase struct {
 		pr       ProtoRPC
