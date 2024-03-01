@@ -37,8 +37,14 @@ func ProtoServiceParser(logger *slog.Logger, content []byte, pkgDir string, ft F
 	pRPCs := make([]*ProtoRPC, 0)
 	c := strings.Split(string(content), "\n")
 
+	moduleName := GetProtoPackageName(content)
+
 	for idx, line := range c {
-		if strings.Contains(line, "rpc ") {
+		line = strings.TrimLeft(line, " ")
+		line = strings.TrimLeft(line, "\t")
+
+		if strings.HasPrefix(line, "rpc ") {
+			// if strings.Contains(line, "rpc ") {
 			line = strings.Trim(line, " ")
 			logger.Debug("proto file", "rpc line", line)
 
@@ -58,11 +64,37 @@ func ProtoServiceParser(logger *slog.Logger, content []byte, pkgDir string, ft F
 				Res:      words[2],
 				Location: pkgDir,
 				FType:    ft,
+				Module:   moduleName,
 			})
 		}
 	}
 
 	return pRPCs
+}
+
+// given a proto file content, parse out the package name
+// package cnd.v1; returns cnd as the name.
+func GetProtoPackageName(content []byte) string {
+	for _, line := range strings.Split(string(content), "\n") {
+		line = strings.Trim(line, " ")
+		line = strings.Trim(line, "\t")
+
+		if strings.HasPrefix(line, "package ") {
+			// package cnd.v1;
+			line = strings.Trim(line, " ")
+
+			// cnd.v1;
+			line = strings.Split(line, "package ")[1]
+
+			// split at the first .
+			line = strings.Split(line, ".")[0]
+
+			return strings.Trim(line, " ")
+		}
+	}
+
+	return ""
+
 }
 
 // GetGoPackageLocationOfFiles parses the proto content pulling out the relative path
@@ -76,10 +108,9 @@ func GetGoPackageLocationOfFiles(bz []byte) string {
 			// option go_package = "github.com/rollchains/mychain/x/cnd/types";
 			line = strings.Trim(line, " ")
 
-			// line = strings.NewReplacer("option go_package", "", "=", "", ";", "", , "", "\"", "").Replace(line)
-
 			// x/cnd/types";
-			line = strings.Split(line, fmt.Sprintf("%s/", modName))[1]
+			line := strings.Split(line, fmt.Sprintf("%s/", modName))[1]
+
 			// x/cnd/types
 			line = strings.Split(line, "\";")[0]
 
