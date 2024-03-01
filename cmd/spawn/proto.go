@@ -51,6 +51,8 @@ func ProtoServiceGenerate() *cobra.Command {
 
 				for _, rpc := range rpcMethods {
 					rpc := rpc
+					rpc.Module = name
+
 					fmt.Println("\nService: ", rpc)
 
 					// get files in service.Location
@@ -188,7 +190,6 @@ func ProtoServiceGenerate() *cobra.Command {
 
 						// MISSING METHOD
 						// fmt.Println("Missing method: ", service.Name, service.Req, service.Res, service.Location)
-						rpc.Module = name
 						missing[name] = append(missing[name], rpc)
 						fmt.Println("  - Missing: ", rpc.Name)
 					}
@@ -224,7 +225,7 @@ func ProtoServiceGenerate() *cobra.Command {
 					if err != nil {
 						panic(fmt.Sprintf("Error: %s, file: %s", err.Error(), p))
 					}
-					fmt.Println("Content: ", string(content))
+					// fmt.Println("Content: ", string(content))
 
 					// append to the file
 					fmt.Println("Append to file: ", miss.FType, miss.Name, miss.Req, miss.Res)
