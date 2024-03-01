@@ -25,13 +25,19 @@ func ProtoServiceGenerate() *cobra.Command {
 				fmt.Println("Error: ", err)
 			}
 
-			missingRPCMethods := spawn.GetMissingRPCMethodsFromModuleProto(cwd)
+			missingRPCMethods, err := spawn.GetMissingRPCMethodsFromModuleProto(cwd)
+			if err != nil {
+				fmt.Println("Error: ", err)
+			}
+
 			if len(missingRPCMethods) == 0 {
 				fmt.Println("No missing methods")
 				return
 			}
 
-			spawn.ApplyMissingRPCMethodsToGoSourceFiles(missingRPCMethods)
+			if err := spawn.ApplyMissingRPCMethodsToGoSourceFiles(missingRPCMethods); err != nil {
+				fmt.Println("Error: ", err)
+			}
 		},
 	}
 

@@ -27,6 +27,29 @@ type ProtoRPC struct {
 	FileLoc string
 }
 
+// BuildProtoInterfaceStub builds the stub for the proto interface depending on the ProtoRPC's file type.
+func (pr ProtoRPC) BuildProtoInterfaceStub() string {
+	if pr.FType == Tx {
+		return fmt.Sprintf(`// %s implements types.MsgServer.
+func (ms msgServer) %s(ctx context.Context, msg *types.%s) (*types.%s, error) {
+	// ctx := sdk.UnwrapSDKContext(goCtx)
+	panic("%s is unimplemented")
+	return &types.%s{}, nil
+}
+`, pr.Name, pr.Name, pr.Req, pr.Res, pr.Name, pr.Res)
+	} else if pr.FType == Query {
+		return fmt.Sprintf(`// %s implements types.QueryServer.
+func (k Querier) %s(goCtx context.Context, req *types.%s) (*types.%s, error) {
+	// ctx := sdk.UnwrapSDKContext(goCtx)
+	panic("%s is unimplemented")
+	return &types.%s{}, nil
+}
+`, pr.Name, pr.Name, pr.Req, pr.Res, pr.Name, pr.Res)
+	} else {
+		panic("Unknown FileType for: " + pr.Name)
+	}
+}
+
 // ProtoServiceParser parses out a proto file content and returns all the services within it.
 func ProtoServiceParser(content []byte, pkgDir string, ft FileType) []*ProtoRPC {
 	pRPCs := make([]*ProtoRPC, 0)
@@ -189,7 +212,7 @@ func GetFileTypeFromProtoContent(bz []byte) FileType {
 	return None
 }
 
-func GetMissingRPCMethodsFromModuleProto(cwd string) map[string][]*ProtoRPC {
+func GetMissingRPCMethodsFromModuleProto(cwd string) (map[string][]*ProtoRPC, error) {
 	protoPath := path.Join(cwd, "proto")
 	modules := GetCurrentModuleRPCsFromProto(protoPath)
 
@@ -214,7 +237,7 @@ func GetMissingRPCMethodsFromModuleProto(cwd string) map[string][]*ProtoRPC {
 			// get files in service.Location
 			files, err := os.ReadDir(modulePath)
 			if err != nil {
-				fmt.Println("Error: ", err)
+				return nil, err
 			}
 
 			for _, f := range files {
@@ -224,7 +247,8 @@ func GetMissingRPCMethodsFromModuleProto(cwd string) map[string][]*ProtoRPC {
 
 				content, err := os.ReadFile(path.Join(modulePath, f.Name()))
 				if err != nil {
-					fmt.Println("Error: ", err)
+					// fmt.Println("Error: ", err)
+					return nil, err
 				}
 
 				// if the file type is not the expected, continue
@@ -315,7 +339,7 @@ func GetMissingRPCMethodsFromModuleProto(cwd string) map[string][]*ProtoRPC {
 		}
 	}
 
-	return missing
+	return missing, nil
 }
 
 func parseReceiverMethodName(f string) string {
@@ -358,40 +382,18 @@ func ApplyMissingRPCMethodsToGoSourceFiles(missingRPCMethods map[string][]*Proto
 			if err != nil {
 				return fmt.Errorf("error: %s, file: %s", err.Error(), fileLoc)
 			}
-			// fmt.Println("Content: ", string(content))
 
-			// append to the file
 			fmt.Println("Append to file: ", miss.FType, miss.Name, miss.Req, miss.Res)
 
-			switch miss.FType {
-			case Tx:
-				fmt.Println("Append to Tx")
-				code := fmt.Sprintf(`// %s implements types.MsgServer.
-func (ms msgServer) %s(ctx context.Context, msg *types.%s) (*types.%s, error) {
-	// ctx := sdk.UnwrapSDKContext(goCtx)
-	panic("%s is unimplemented")
-	return &types.%s{}, nil
-}
-`, miss.Name, miss.Name, miss.Req, miss.Res, miss.Name, miss.Res)
-				// append to the file content after a new line at the end
-				content = append(content, []byte("\n"+code)...)
-			case Query:
-				fmt.Println("Append to Query")
-				code := fmt.Sprintf(`// %s implements types.QueryServer.
-func (k Querier) %s(goCtx context.Context, req *types.%s) (*types.%s, error) {
-	// ctx := sdk.UnwrapSDKContext(goCtx)
-	panic("%s is unimplemented")
-	return &types.%s{}, nil
-}
-`, miss.Name, miss.Name, miss.Req, miss.Res, miss.Name, miss.Res)
-
-				// append to the file content after a new line at the end
-				content = append(content, []byte("\n"+code)...)
-
+			code := miss.BuildProtoInterfaceStub()
+			if len(code) == 0 {
+				continue
 			}
 
+			// append to the file content after a new line at the end
+			content = append(content, []byte("\n"+code)...)
+
 			if err := os.WriteFile(fileLoc, content, 0644); err != nil {
-				// fmt.Println("Error: ", err)
 				return err
 			}
 		}
