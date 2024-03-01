@@ -124,7 +124,7 @@ func GetGoPackageLocationOfFiles(bz []byte) string {
 func GetCurrentModuleRPCsFromProto(logger *slog.Logger, absProtoPath string) ModuleMapping {
 	modules := make(ModuleMapping)
 
-	fs.WalkDir(os.DirFS(absProtoPath), ".", func(relPath string, d fs.DirEntry, e error) error {
+	err := fs.WalkDir(os.DirFS(absProtoPath), ".", func(relPath string, d fs.DirEntry, e error) error {
 		if !strings.HasSuffix(relPath, ".proto") {
 			return nil
 		}
@@ -156,6 +156,10 @@ func GetCurrentModuleRPCsFromProto(logger *slog.Logger, absProtoPath string) Mod
 
 		return nil
 	})
+	if err != nil {
+		logger.Error("Error", "error", err)
+		panic(err)
+	}
 
 	modules.Print(logger)
 
