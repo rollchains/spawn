@@ -103,12 +103,16 @@ func ProtoServiceGenerate() *cobra.Command {
 			// do for querier too.
 
 			// iterate overall, find files containing the proto messages, and then set new stubs automatically
+			// map[module][spawn.FileType]string
+			filePaths := make(map[string]map[spawn.FileType]string, 0)
+
 			for name, module := range modules {
 				fmt.Println("\n------------- Module: ", name)
 
 				modulePath := path.Join(cwd, "x", name, "keeper") // hardcode for keeper is less than ideal, but will do for now
 
 				currentMethods := make(map[spawn.FileType][]string, 0) // tx/query -> methods
+
 				msgServerFile := ""
 				queryServerFile := ""
 
@@ -136,6 +140,8 @@ func ProtoServiceGenerate() *cobra.Command {
 							t := isFileQueryOrMsgServer(content)
 							service.FType = t // set the file type for future iteration to set missing methods
 							services[idx] = service
+							module[fileType] = services
+							modules[name] = module
 
 							switch t {
 							case "tx":
@@ -184,42 +190,63 @@ func ProtoServiceGenerate() *cobra.Command {
 						}
 					}
 
-					// map[query:[Params] tx:[UpdateParams]]
-					fmt.Println("\nCurrent Methods: ", currentMethods)
-					// fmt.Println("Current Methods: ", currentMethods)
-					fmt.Println("MsgServerFile: ", msgServerFile)
-					fmt.Println("QueryServerFile: ", queryServerFile)
+					filePaths[name] = map[spawn.FileType]string{
+						spawn.Tx:    msgServerFile,
+						spawn.Query: queryServerFile,
+					}
+				}
 
-					// iterate services again and apply any missing methods to the file
-					missing := make(map[spawn.FileType][]spawn.ProtoService, 0)
-					for _, service := range services {
-						service := service
-						ft := service.FType // tx or spawn, found in currentMethods
-						// if service.Name
+				// map[query:[Params] tx:[UpdateParams]]
+				fmt.Println("\n-------- Current Methods: ", currentMethods)
 
-						current := currentMethods[ft]
-						fmt.Println("   Current: ", ft, current)
+				// print modules
+				// fmt.Println("\nModules: ", modules)
 
-						found := false
-						for _, method := range current {
-							method := method
-							if method == service.Name {
-								found = true
-								break
+				// iterate services again and apply any missing methods to the file
+				missing := make(map[spawn.FileType][]spawn.ProtoService, 0)
+
+				for _, module := range modules {
+					for fileType, services := range module {
+						fmt.Println("\nFile Type: ", fileType)
+						current := currentMethods[fileType]
+						fmt.Println("   Current: ", fileType, current)
+
+						for _, service := range services {
+							service := service
+							fmt.Println(" - Service: ", service)
+							// ft := service.FType // tx or spawn, found in currentMethods
+							// if service.Name
+
+							found := false
+							for _, method := range current {
+								method := method
+								if method == service.Name {
+									found = true
+									break
+								}
+							}
+
+							if !found {
+
+								if fileType != service.FType {
+									fmt.Println("  - Skipping: ", fileType, service.FType, service)
+									continue
+								}
+
+								// MISSING METHOD
+								// fmt.Println("Missing method: ", service.Name, service.Req, service.Res, service.Location)
+								missing[fileType] = append(missing[fileType], service)
 							}
 						}
 
-						if !found {
-
-							// MISSING METHOD
-							// fmt.Println("Missing method: ", service.Name, service.Req, service.Res, service.Location)
-							missing[ft] = append(missing[ft], service)
-						}
+						// print missing
 					}
 
-					// print missing
-					fmt.Println("Missing: ", missing)
+					fmt.Println("\n\nMissing: ", missing)
 				}
+
+				// print filePaths
+				fmt.Println("\nFile Paths: ", filePaths)
 
 			}
 
