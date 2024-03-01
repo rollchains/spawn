@@ -12,6 +12,15 @@ const (
 // ModuleMapping a map of the module name to a list of ProtoRPCs
 type ModuleMapping map[string][]*ProtoRPC
 
+func (mm ModuleMapping) Print() {
+	for name, v := range mm {
+		println(name)
+		for _, rpc := range v {
+			println(rpc.Name, rpc.FileLoc)
+		}
+	}
+}
+
 // A Proto server RPC method.
 type ProtoRPC struct {
 	// The name of the proto RPC service (i.e. rpc Params would be Params for the name)

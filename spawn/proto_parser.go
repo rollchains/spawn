@@ -123,7 +123,8 @@ func GetCurrentModuleRPCsFromProto(absProtoPath string) ModuleMapping {
 		return nil
 	})
 
-	fmt.Printf("Modules: %+v\n", modules)
+	modules.Print()
+
 	return modules
 }
 
@@ -150,15 +151,16 @@ func GetMissingRPCMethodsFromModuleProto(cwd string) (ModuleMapping, error) {
 
 	missing := make(ModuleMapping, 0)
 
-	// TODO: currently if using multiple modules, it will run the code 2 times for generating missing methods.
+	// txMethods := make([]string, 0)
+	// 	queryMethods := make([]string, 0)
+
+	txMethods := make(map[string][]string)
+	queryMethods := make(map[string][]string)
 
 	for name, rpcMethods := range modules {
 		fmt.Println("\n------------- Module: ", name)
 
 		modulePath := path.Join(cwd, "x", name, "keeper") // hardcode for keeper is less than ideal, but will do for now
-
-		txMethods := make([]string, 0)
-		queryMethods := make([]string, 0)
 
 		for _, rpc := range rpcMethods {
 			rpc := rpc
@@ -202,9 +204,9 @@ func GetMissingRPCMethodsFromModuleProto(cwd string) (ModuleMapping, error) {
 						if strings.Contains(line, rpc.Name+"(") {
 							switch rpc.FType {
 							case Tx:
-								txMethods = append(txMethods, parseReceiverMethodName(line))
+								txMethods[name] = append(txMethods[name], parseReceiverMethodName(line))
 							case Query:
-								queryMethods = append(queryMethods, parseReceiverMethodName(line))
+								queryMethods[name] = append(queryMethods[name], parseReceiverMethodName(line))
 							default:
 								fmt.Println("Error: ", "Unknown FileType")
 								panic("RUT ROE RAGGY")
@@ -218,56 +220,70 @@ func GetMissingRPCMethodsFromModuleProto(cwd string) (ModuleMapping, error) {
 		// map[query:[Params] tx:[UpdateParams]]
 		fmt.Println("\n-------- Current Tx Methods: ", txMethods)
 		fmt.Println("-------- Current Query Methods: ", queryMethods)
+	}
 
-		// iterate services again and apply any missing methods to the file
-		for name, rpcs := range modules {
-			for _, rpc := range rpcs {
-				// current := currentMethods[fileType]
+	// iterate services again and apply any missing methods to the file
+	for name, rpcs := range modules {
+		rpcs := rpcs
 
-				var current []string
-				switch rpc.FType {
-				case Tx:
-					current = txMethods
-				case Query:
-					current = queryMethods
-				default:
-					fmt.Println("Error: ", "Unknown FileType")
-					panic("RUT ROE RAGGY")
-				}
-
-				fmt.Println("   Current: ", rpc.FType, current)
-
-				found := false
-				for _, method := range current {
-					method := method
-					if method == rpc.Name {
-						found = true
-						break
-					}
-				}
-
-				if found {
-					fmt.Println("  - Found: ", rpc.Name)
-					continue
-				}
-
-				if _, ok := missing[name]; !ok {
-					missing[name] = make([]*ProtoRPC, 0)
-				}
-
-				// MISSING METHOD
-				// fmt.Println("Missing method: ", service.Name, service.Req, service.Res, service.Location)
-				missing[name] = append(missing[name], rpc)
-				fmt.Println("  - Missing: ", rpc.Name)
-			}
+		if _, ok := missing[name]; !ok {
+			missing[name] = make([]*ProtoRPC, 0)
 		}
 
-		fmt.Println("\n\nMissing: ")
-		for name, rpcs := range missing {
-			fmt.Println("  - Module: ", name)
-			for _, rpc := range rpcs {
-				fmt.Println("    - ", rpc.Name, rpc.Req, rpc.Res)
+		for _, rpc := range rpcs {
+			rpc := rpc
+			// current := currentMethods[fileType]
+
+			var current []string
+			switch rpc.FType {
+			case Tx:
+				current = txMethods[name]
+			case Query:
+				current = queryMethods[name]
+			default:
+				fmt.Println("Error: ", "Unknown FileType")
+				panic("RUT ROE RAGGY")
 			}
+
+			fmt.Println("   Current: ", rpc.FType, current)
+
+			found := false
+			for _, method := range current {
+				method := method
+				if method == rpc.Name {
+					found = true
+					break
+				}
+			}
+
+			if found {
+				fmt.Println("  - Found: ", rpc.Name)
+				continue
+			}
+
+			alreadyIncluded := false
+			for _, m := range missing[name] {
+				if m.Name == rpc.Name {
+					alreadyIncluded = true
+					break
+				}
+			}
+			if alreadyIncluded {
+				continue
+			}
+
+			// MISSING METHOD
+			// fmt.Println("Missing method: ", service.Name, service.Req, service.Res, service.Location)
+			missing[name] = append(missing[name], rpc)
+			fmt.Println("  - Missing: ", rpc.Name, name)
+		}
+	}
+
+	fmt.Println("\n\nMissing: ")
+	for name, rpcs := range missing {
+		fmt.Println("  - Module: ", name)
+		for _, rpc := range rpcs {
+			fmt.Println("    - ", rpc.Name, rpc.Req, rpc.Res)
 		}
 	}
 
