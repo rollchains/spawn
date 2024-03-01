@@ -274,7 +274,8 @@ func (ms msgServer) %s(ctx context.Context, msg *types.%s) (*types.%s, error) {
 	// ctx := sdk.UnwrapSDKContext(goCtx)
 	panic("unimplemented")
 	return &types.%s{}, nil
-}`, miss.Name, miss.Name, miss.Req, miss.Res, miss.Res)
+}
+`, miss.Name, miss.Name, miss.Req, miss.Res, miss.Res)
 							// append to the file content after a new line at the end
 							content = append(content, []byte("\n"+code)...)
 						case spawn.Query:
@@ -284,18 +285,17 @@ func (k Querier) %s(goCtx context.Context, req *types.%s) (*types.%s, error) {
 	// ctx := sdk.UnwrapSDKContext(goCtx)
 	panic("unimplemented")
 	return &types.%s{}, nil
-}`, miss.Name, miss.Name, miss.Req, miss.Res, miss.Res)
+}
+`, miss.Name, miss.Name, miss.Req, miss.Res, miss.Res)
 
 							// append to the file content after a new line at the end
 							content = append(content, []byte("\n"+code)...)
 
 						}
 
-						fmt.Println("New Content: ", string(content))
 						if err := os.WriteFile(p, content, 0644); err != nil {
 							fmt.Println("Error: ", err)
 						}
-
 					}
 
 				}
@@ -307,12 +307,6 @@ func (k Querier) %s(goCtx context.Context, req *types.%s) (*types.%s, error) {
 
 	return cmd
 }
-
-// type methodReceiver struct {
-// 	Name string
-// 	Req  string
-// 	Res  string
-// }
 
 func parseReceiverMethodName(f string) string {
 	// given a string of text like `func (k Querier) Params(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {`
