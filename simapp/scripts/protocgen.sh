@@ -31,8 +31,17 @@ rm -rf api && mkdir api
 custom_modules=$(find . -name 'module' -type d -not -path "./proto/*")
 for module in $custom_modules; do
   dirPath=`basename $(dirname $module)`
+  if [ ! -d $dirPath ]; then
+    continue
+  fi
+
   mkdir -p api/$dirPath
 
   mv $dirPath/* ./api/$dirPath/
+
+  # incorrect reference to the module for coins
+  find api/$dirPath -type f -name '*.go' -exec sed -i -e 's|types "github.com/cosmos/cosmos-sdk/types"|types "cosmossdk.io/api/cosmos/base/v1beta1"|g' {} \;
+  find api/$dirPath -type f -name '*.go' -exec sed -i -e 's|types1 "github.com/cosmos/cosmos-sdk/x/bank/types"|types1 "cosmossdk.io/api/cosmos/bank/v1beta1"|g' {} \;
+
   rm -rf $dirPath
 done
