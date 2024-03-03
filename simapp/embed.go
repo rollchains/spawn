@@ -6,9 +6,7 @@ import (
 
 // !IMPORTANT: interchaintest/ has its own `InterchainTest` embed.FS that will need to be iterated on.
 
-// TODO: x/ and proto/ in the future
-//
-//go:embed .github/* app/* chains/* cmd/* contrib/* scripts/* Makefile Dockerfile *.*
+//go:embed .github/* app/* chains/* cmd/* contrib/* scripts/* Makefile Dockerfile proto/*.lock proto/*.yaml *.*
 var SimAppFS embed.FS
 
 //go:embed interchaintest/*
