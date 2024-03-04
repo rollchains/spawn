@@ -36,6 +36,23 @@ func TestRemoveLineWithTag(t *testing.T) {
 	require.Equal(t, 2, contentLen(fc))
 }
 
+func TestRemoveLeftOverComments(t *testing.T) {
+	fc := &FileContent{
+		Contents: `SourceCode goes here!
+		this line stays //spawntag:test
+		this line stays too // ?spawntag:testing
+		// <spawntag:multiline
+		this line stays too
+		// spawntag:multiline>
+`,
+	}
+
+	deleteLine := false
+	fc.RemoveTaggedLines("", deleteLine)
+
+	require.False(t, strings.Contains(fc.Contents, "spawntag"))
+}
+
 func TestBatchRemoveText(t *testing.T) {
 	happyDir := path.Join("app", "app.go")
 
