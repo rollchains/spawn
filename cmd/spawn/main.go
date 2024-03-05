@@ -14,7 +14,7 @@ import (
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
-	"gitub.com/strangelove-ventures/spawn/plugins"
+	"gitub.com/rollchains/spawn/plugins"
 )
 
 // Set in the makefile ld_flags on compile
@@ -60,8 +60,9 @@ func GetLogger() *slog.Logger {
 
 func applyPluginCmds() {
 	plugins := &cobra.Command{
-		Use:   "plugins",
-		Short: "Manage plugins",
+		Use:     "plugins",
+		Short:   "Manage plugins",
+		Aliases: []string{"plugin", "plug", "pl"},
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := cmd.Help(); err != nil {
 				log.Fatal(err)
@@ -78,6 +79,8 @@ func applyPluginCmds() {
 
 func loadPlugins() map[string]*plugins.SpawnPluginBase {
 	p := make(map[string]*plugins.SpawnPluginBase)
+
+	logger := GetLogger()
 
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -111,17 +114,20 @@ func loadPlugins() map[string]*plugins.SpawnPluginBase {
 		// read the absolute path
 		plug, err := plugin.Open(absPath)
 		if err != nil {
-			return fmt.Errorf("error opening plugin %s: %w", absPath, err)
+			logger.Error(fmt.Sprintf("Error opening plugin: %v", err))
+			return nil
 		}
 
 		base, err := plug.Lookup("Plugin")
 		if err != nil {
-			return fmt.Errorf("error looking up symbol: %w", err)
+			logger.Error(fmt.Sprintf("Error looking up symbol: %v", err))
+			return nil
 		}
 
 		pluginInstance, ok := base.(plugins.SpawnPlugin)
 		if !ok {
-			log.Fatal("Symbol 'Plugin' does not implement the SpawnPlugin interface")
+			logger.Error(fmt.Sprintf("Plugin %s does not implement the SpawnPlugin interface. Skipping", absPath))
+			return nil
 		}
 
 		p[relPath] = plugins.NewSpawnPluginBase(pluginInstance.Cmd())
@@ -129,6 +135,7 @@ func loadPlugins() map[string]*plugins.SpawnPluginBase {
 		return nil
 	})
 	if err != nil {
+		logger.Error(fmt.Sprintf("Error walking the path %s: %v", pluginsDir, err))
 		panic(err)
 	}
 
@@ -159,7 +166,7 @@ var versionCmd = &cobra.Command{
 func parseLogLevelFromFlags() slog.Level {
 	logLevel, err := rootCmd.PersistentFlags().GetString(LogLevelFlag)
 	if err != nil {
-		log.Fatal(err)
+		return slog.LevelInfo
 	}
 
 	var lvl slog.Level

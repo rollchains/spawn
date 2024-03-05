@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/strangelove-ventures/simapp"
-	"gitub.com/strangelove-ventures/spawn/spawn"
+	"gitub.com/rollchains/spawn/spawn"
 
 	textcases "golang.org/x/text/cases"
 	lang "golang.org/x/text/language"

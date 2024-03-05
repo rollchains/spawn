@@ -6,7 +6,7 @@ import (
 	"path"
 
 	"github.com/spf13/cobra"
-	plugins "gitub.com/strangelove-ventures/spawn/plugins"
+	plugins "gitub.com/rollchains/spawn/plugins"
 )
 
 // Make the plugin public

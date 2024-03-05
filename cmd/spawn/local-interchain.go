@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"gitub.com/strangelove-ventures/spawn/spawn"
+	"gitub.com/rollchains/spawn/spawn"
 )
 
 const (

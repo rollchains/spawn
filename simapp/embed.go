@@ -9,6 +9,8 @@ import (
 //go:embed .github/* app/* chains/* cmd/* contrib/* scripts/* Makefile Dockerfile proto/*.* *.*
 var SimAppFS embed.FS
 
+// To embed the interchaintest/ directory, rename the go.mod file to `go.mod_`
+//
 //go:embed interchaintest/*
 var ICTestFS embed.FS
 
