@@ -36,7 +36,7 @@ base_namespace=$(echo $custom_modules | sed -e 's|/module||g' | sed -e 's|\./||g
 
 # echo "Base namespace: $base_namespace"
 for module in $base_namespace; do
-  echo " [+] Moving path: $module to api/$module"
+  echo " [+] Moving: ./$module to ./api/$module"
 
   mkdir -p api/$module
 

@@ -6,13 +6,13 @@ import (
 
 // !IMPORTANT: interchaintest/ has its own `InterchainTest` embed.FS that will need to be iterated on.
 
-//go:embed .github/* app/* chains/* cmd/* contrib/* scripts/* Makefile Dockerfile proto/*.lock proto/*.yaml *.*
+//go:embed .github/* app/* chains/* cmd/* contrib/* scripts/* Makefile Dockerfile proto/*.* *.*
 var SimAppFS embed.FS
 
 //go:embed interchaintest/*
 var ICTestFS embed.FS
 
-//go:embed proto/*
+//go:embed proto/example/* proto/ibcmiddleware/*
 var ProtoModuleFS embed.FS
 
 //go:embed x/*

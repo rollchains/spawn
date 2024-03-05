@@ -102,7 +102,8 @@ func NewCmd() *cobra.Command {
 			// Announce the new module & how to code gen the proto files.
 			fmt.Printf("\n🎉 New Module '%s' generated!\n", extName)
 			fmt.Println("🏅Generate Go Code:")
-			fmt.Println("  - $ make proto-gen       # convert proto -> code + generate depinject api")
+			fmt.Println("  - $ make proto-gen         # proto -> types + dependency injection API")
+			fmt.Println("  - $ spawn stub-interfaces  # proto -> MsgServer (txs) + Querier generation")
 		},
 	}
 
@@ -270,7 +271,7 @@ func AddModuleToAppGo(logger *slog.Logger, extName string, ibcMiddleware bool) e
 	goModName := spawn.ReadCurrentGoModuleName(path.Join(cwd, "go.mod"))
 
 	appGoPath := path.Join(cwd, "app", "app.go")
-	fmt.Println("appGoPath", appGoPath)
+	logger.Debug("app.go path", "path", appGoPath)
 
 	var buffer []byte
 	buffer, err = os.ReadFile(appGoPath)
