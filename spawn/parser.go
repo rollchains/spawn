@@ -37,8 +37,8 @@ func (fc *FileContent) HandleCommentSwaps(name string) {
 			continue
 		}
 
-		// removes the // spawntag:[name] comment from the end of the source code
-		line = RemoveSpawnTagLineComment(line, tag)
+		// removes the // spawntag: and // ?spawntag: comment from the end of the source code
+		line = RemoveSpawnTagLineComment(line, "")
 
 		// uncomments the line (to expose the source code for application usage)
 		line = uncommentLineSource(line)
