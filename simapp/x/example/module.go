@@ -22,11 +22,7 @@ import (
 	"github.com/strangelove-ventures/simapp/x/example/client/cli"
 	"github.com/strangelove-ventures/simapp/x/example/keeper"
 	"github.com/strangelove-ventures/simapp/x/example/types"
-
 	// this line is used by starport scaffolding # 1
-
-	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	examplev1 "github.com/strangelove-ventures/simapp/api/example/v1"
 )
 
 const (
@@ -98,19 +94,6 @@ func (a AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux 
 	if err != nil {
 		// same behavior as in cosmos-sdk
 		panic(err)
-	}
-}
-
-// AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.
-func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
-	return &autocliv1.ModuleOptions{
-		Query: &autocliv1.ServiceCommandDescriptor{
-			Service: examplev1.Query_ServiceDesc.ServiceName,
-		},
-		Tx: &autocliv1.ServiceCommandDescriptor{
-			Service:           examplev1.Msg_ServiceDesc.ServiceName,
-			RpcCommandOptions: []*autocliv1.RpcCommandOptions{},
-		},
 	}
 }
 
