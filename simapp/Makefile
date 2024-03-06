@@ -281,4 +281,7 @@ testnet: setup-testnet
 testnet-basic: setup-testnet
 	spawn local-ic start testnet
 
-.PHONY: testnet testnet-basic
+sh-testnet:
+	CHAIN_ID="local-1" HOME_DIR="~/.simapp" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
+
+.PHONY: testnet testnet-basic sh-testnet
