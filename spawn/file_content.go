@@ -88,6 +88,9 @@ func (fc *FileContent) ReplaceTestNodeScript(cfg *NewChainConfig) {
 		fc.ReplaceAll("export BINARY=${BINARY:-wasmd}", fmt.Sprintf("export BINARY=${BINARY:-%s}", cfg.BinDaemon))
 		fc.ReplaceAll("export DENOM=${DENOM:-token}", fmt.Sprintf("export DENOM=${DENOM:-%s}", cfg.Denom))
 
+		fc.ReplaceAll(`export HOME_DIR=$(eval echo "${HOME_DIR:-"~/.simapp"}")`, fmt.Sprintf(`export HOME_DIR=$(eval echo "${HOME_DIR:-"~/%s"}")`, cfg.HomeDir))
+		fc.ReplaceAll(`HOME_DIR="~/.simapp"`, fmt.Sprintf(`HOME_DIR="~/%s"`, cfg.HomeDir))
+
 		fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix)
 	}
 }

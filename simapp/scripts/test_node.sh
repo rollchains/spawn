@@ -37,8 +37,12 @@ alias BINARY="$BINARY --home=$HOME_DIR"
 command -v $BINARY > /dev/null 2>&1 || { echo >&2 "$BINARY command not found. Ensure this is setup / properly installed in your GOPATH (make install)."; exit 1; }
 command -v jq > /dev/null 2>&1 || { echo >&2 "jq not installed. More info: https://stedolan.github.io/jq/download/"; exit 1; }
 
-$BINARY config set client chain-id $CHAIN_ID
-$BINARY config set client keyring-backend $KEYRING
+set_config() {
+  $BINARY config set client chain-id $CHAIN_ID
+  $BINARY config set client keyring-backend $KEYRING
+}
+set_config
+
 
 from_scratch () {
   # Fresh install on current branch
@@ -50,6 +54,9 @@ from_scratch () {
       return
   fi
   rm -rf $HOME_DIR && echo "Removed $HOME_DIR"
+
+  # reset values if not set already after whipe
+  set_config
 
   add_key() {
     key=$1
