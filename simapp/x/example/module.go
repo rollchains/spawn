@@ -6,7 +6,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/spf13/cobra"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
@@ -19,14 +18,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/strangelove-ventures/simapp/x/example/client/cli"
 	"github.com/strangelove-ventures/simapp/x/example/keeper"
 	"github.com/strangelove-ventures/simapp/x/example/types"
-
 	// this line is used by starport scaffolding # 1
-
-	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	examplev1 "github.com/strangelove-ventures/simapp/api/example/v1"
 )
 
 const (
@@ -41,9 +35,7 @@ var (
 	_ module.AppModuleGenesis = AppModule{}
 	_ module.AppModule        = AppModule{}
 
-	_ autocli.HasAutoCLIConfig      = AppModule{}
-	_ autocli.HasCustomQueryCommand = AppModule{}
-	_ autocli.HasCustomTxCommand    = AppModule{}
+	_ autocli.HasAutoCLIConfig = AppModule{}
 )
 
 // AppModuleBasic defines the basic application module used by the wasm module.
@@ -101,19 +93,8 @@ func (a AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux 
 	}
 }
 
-// AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.
-func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
-	return &autocliv1.ModuleOptions{
-		Query: &autocliv1.ServiceCommandDescriptor{
-			Service: examplev1.Query_ServiceDesc.ServiceName,
-		},
-		Tx: &autocliv1.ServiceCommandDescriptor{
-			Service:           examplev1.Msg_ServiceDesc.ServiceName,
-			RpcCommandOptions: []*autocliv1.RpcCommandOptions{},
-		},
-	}
-}
-
+// Disable in favor of autocli.go. If you wish to use these, it will override AutoCLI methods.
+/*
 func (a AppModuleBasic) GetTxCmd() *cobra.Command {
 	return cli.NewTxCmd()
 }
@@ -121,6 +102,7 @@ func (a AppModuleBasic) GetTxCmd() *cobra.Command {
 func (a AppModuleBasic) GetQueryCmd() *cobra.Command {
 	return cli.GetQueryCmd()
 }
+*/
 
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterLegacyAminoCodec(cdc)
