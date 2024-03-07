@@ -52,7 +52,8 @@ message QueryResolveNameResponse {
 }
 ```
 
-![proto/nameservice/v1/query.proto file](image.png)
+![proto/nameservice/v1/query.proto file](https://github.com/rollchains/spawn/assets/31943163/234a13d7-be62-492d-961c-63e92d7543d9)
+
 
 Then edit `tx.proto` *(proto/nameservice/v1/tx.proto)* to add the transaction setter message.
 
@@ -73,7 +74,7 @@ message MsgSetServiceName {
 message MsgSetServiceNameResponse {}
 ```
 
-![proto/nameservice/v1/tx.proto file](image-1.png)
+![proto/nameservice/v1/tx.proto file](https://github.com/rollchains/spawn/assets/31943163/73a583e2-9edd-471f-ada6-1010d0dbf072)
 
 Now we build the proto files into their .go counterparts. Once generated, the new interface requirements are automatically satisfied for us for both MsgServer & Querier.
 
@@ -81,7 +82,8 @@ Now we build the proto files into their .go counterparts. Once generated, the ne
 make proto-gen
 ```
 
-![make proto-gen](image-2.png)
+![make proto-gen](https://github.com/rollchains/spawn/assets/31943163/c51bf57c-e83a-4004-8041-9b1f3d3a24f4)
+
 
 # Setting the CLI Client
 
@@ -95,7 +97,7 @@ Modify the Query RPC options to support the recently introduced ResolveName mess
 	return &autocliv1.ModuleOptions{
 		Query: &autocliv1.ServiceCommandDescriptor{
 
-      ...
+                 ...
 
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
@@ -106,13 +108,14 @@ Modify the Query RPC options to support the recently introduced ResolveName mess
 						{ProtoField: "wallet"},
 					},
 				},
-        ...
+                ...
       },
     }
   }
 ```
 
-![AutoCLI Query](image-3.png)
+![AutoCLI Query](https://github.com/rollchains/spawn/assets/31943163/fefe8c7d-88b5-42d5-afd9-cb33cd22df16)
+
 
 ### Transaction
 
@@ -137,7 +140,8 @@ And also for setting the Transaction
     }
 ```
 
-![AutoCLI Tx](image-4.png)
+![AutoCLI Tx](https://github.com/rollchains/spawn/assets/31943163/e945c898-415c-4d22-8bb3-b8af34a44cee)
+
 
 # Keeper Storage Structure
 
@@ -167,7 +171,8 @@ func NewKeeper() Keeper {
 }
 ```
 
-![keeper NewKeeper NameMapping](image-5.png)
+![keeper NewKeeper NameMapping](https://github.com/rollchains/spawn/assets/31943163/47ed4a41-4df2-4a5d-9ac5-bfb23aeefd94)
+
 
 # Application Logic
 
