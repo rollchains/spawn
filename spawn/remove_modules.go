@@ -12,13 +12,13 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		switch strings.ToLower(name) {
 		case "tokenfactory", "token-factory", "tf":
 			fc.RemoveTokenFactory()
-		case "poa":
+		case "proof-of-authority", "poa", "proofofauthority", "poauthority":
 			fc.RemovePOA()
 		case "globalfee":
 			fc.RemoveGlobalFee()
 		case "wasm", "cosmwasm", "cw":
 			fc.RemoveCosmWasm()
-		case "packetforward", "pfm":
+		case "ibc-packetforward", "packetforward", "pfm":
 			fc.RemovePacketForward()
 		case "ignite", "ignite-cli":
 			fc.RemoveIgniteCLI()

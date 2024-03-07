@@ -42,14 +42,15 @@ func selectItems(selectedPos int, allItems items, returnOpposite bool) (items, e
 	if len(allItems) > 0 && allItems[0].ID != doneID {
 		var items = []*item{
 			{
-				ID: doneID,
+				ID:      doneID,
+				Details: "",
 			},
 		}
 		allItems = append(items, allItems...)
 	}
 
 	templates := &promptui.SelectTemplates{
-		Details: `{{ .ID }}{{if .Details}}: {{ .Details }}{{end}}`,
+		Details: `{{if .Details}}{{ .ID }}: {{ .Details }}{{end}}`,
 		Label: `{{if .IsSelected}}
                     ✔
                 {{end}} {{ .ID }} - label`,

@@ -12,12 +12,12 @@ import (
 
 var (
 	SupportedFeatures = items{
+		{ID: "proof-of-authority", IsSelected: true, Details: "Proof-of-Authority consensus algorithm (permissioned network)"},
 		{ID: "tokenfactory", IsSelected: true, Details: "Native token minting, sending, and burning on the chain"},
-		{ID: "poa", IsSelected: true, Details: "Proof-of-Authority consensus algorithm (permissioned network)"},
 		{ID: "globalfee", IsSelected: true, Details: "Static minimum fee(s) for all transactions, controlled by governance"},
-		{ID: "cosmwasm", IsSelected: true, Details: "Cosmos smart contracts"},
-		{ID: "packetforward", IsSelected: true, Details: "Packet forwarding (for IBC)"},
-		{ID: "ignite-cli", IsSelected: false, Details: "Ignite CLI Support"},
+		{ID: "cosmwasm", IsSelected: false, Details: "Cosmos smart contracts"},
+		{ID: "ignite-cli", IsSelected: false, Details: "Ignite-CLI Support"},
+		{ID: "ibc-packetforward", IsSelected: true, Details: "Packet forwarding (for IBC)"},
 	}
 )
 
