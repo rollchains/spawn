@@ -12,6 +12,8 @@ import (
 	"github.com/strangelove-ventures/simapp/x/example/types"
 )
 
+// !NOTE: Must enable in module.go (disabled in favor of autocli.go)
+
 // NewTxCmd returns a root CLI command handler for certain modules
 // transaction commands.
 func NewTxCmd() *cobra.Command {

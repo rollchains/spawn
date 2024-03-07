@@ -9,6 +9,8 @@ import (
 	"github.com/strangelove-ventures/simapp/x/example/types"
 )
 
+// !NOTE: Must enable in module.go (disabled in favor of autocli.go)
+
 func GetQueryCmd() *cobra.Command {
 	queryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
