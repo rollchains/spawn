@@ -16,8 +16,8 @@ import (
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
 
-	modulev1 "github.com/strangelove-ventures/simapp/api/example/module/v1"
-	"github.com/strangelove-ventures/simapp/x/example/keeper"
+	modulev1 "github.com/rollchains/simapp/api/example/module/v1"
+	"github.com/rollchains/simapp/x/example/keeper"
 )
 
 var _ appmodule.AppModule = AppModule{}

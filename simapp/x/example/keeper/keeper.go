@@ -12,7 +12,7 @@ import (
 	storetypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 
-	"github.com/strangelove-ventures/simapp/x/example/types"
+	"github.com/rollchains/simapp/x/example/types"
 )
 
 type Keeper struct {

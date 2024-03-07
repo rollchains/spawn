@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/strangelove-ventures/simapp/x/example/types"
+	"github.com/rollchains/simapp/x/example/types"
 )
 
 var _ types.QueryServer = Querier{}

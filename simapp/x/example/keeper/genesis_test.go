@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/strangelove-ventures/simapp/x/example/types"
+	"github.com/rollchains/simapp/x/example/types"
 	"github.com/stretchr/testify/require"
 )
 

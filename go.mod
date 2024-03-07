@@ -2,16 +2,16 @@ module gitub.com/rollchains/spawn
 
 go 1.21.0
 
-replace github.com/strangelove-ventures/simapp => ./simapp
+replace github.com/rollchains/simapp => ./simapp
 
 require (
 	github.com/cosmos/btcutil v1.0.5
 	github.com/lmittmann/tint v1.0.4
 	github.com/manifoldco/promptui v0.9.0
 	github.com/mattn/go-isatty v0.0.20
+	github.com/rollchains/simapp v0.0.0-00000000-000000000000
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
-	github.com/strangelove-ventures/simapp v0.0.0-00000000-000000000000
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/mod v0.15.0
 	golang.org/x/text v0.14.0

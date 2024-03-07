@@ -117,7 +117,7 @@ func (fc *FileContent) ReplaceApp(cfg *NewChainConfig) {
 
 // ReplaceEverywhereReplaces any file content that matches anywhere in the file regardless of location.
 func (fc *FileContent) ReplaceEverywhere(cfg *NewChainConfig) {
-	fc.ReplaceAll("github.com/strangelove-ventures/simapp", cfg.GithubPath())
+	fc.ReplaceAll("github.com/rollchains/simapp", cfg.GithubPath())
 
 	wasmBin := path.Join("cmd", "wasmd")
 	if fc.ContainsPath(wasmBin) {
@@ -130,7 +130,7 @@ func (fc *FileContent) ReplaceEverywhere(cfg *NewChainConfig) {
 func (fc *FileContent) ReplaceMakeFile(cfg *NewChainConfig) {
 	bin := cfg.BinDaemon
 
-	fc.ReplaceAll("https://github.com/strangelove-ventures/simapp.git", fmt.Sprintf("https://%s.git", cfg.GithubPath()))
+	fc.ReplaceAll("https://github.com/rollchains/simapp.git", fmt.Sprintf("https://%s.git", cfg.GithubPath()))
 	fc.ReplaceAll("version.Name=wasm", fmt.Sprintf("version.Name=%s", cfg.ProjectName)) // ldflags
 	fc.ReplaceAll("version.AppName=wasmd", fmt.Sprintf("version.AppName=%s", bin))
 	fc.ReplaceAll("cmd/wasmd", fmt.Sprintf("cmd/%s", bin))

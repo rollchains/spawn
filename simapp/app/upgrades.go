@@ -5,8 +5,8 @@ import (
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 
-	"github.com/strangelove-ventures/simapp/app/upgrades"
-	"github.com/strangelove-ventures/simapp/app/upgrades/noop"
+	"github.com/rollchains/simapp/app/upgrades"
+	"github.com/rollchains/simapp/app/upgrades/noop"
 )
 
 // Upgrades list of chain upgrades

@@ -10,7 +10,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/strangelove-ventures/simapp"
+	"github.com/rollchains/simapp"
 	"golang.org/x/tools/imports"
 )
 
@@ -181,6 +181,9 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 			fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix)
 
 		}
+
+		// *All Files
+		fc.ReplaceEverywhere(cfg)
 
 		// Removes any modules references after we modify interchaintest values
 		fc.RemoveDisabledFeatures(cfg)

@@ -1,4 +1,4 @@
-module github.com/strangelove-ventures/simapp/interchaintest
+module github.com/rollchains/simapp/interchaintest
 
 go 1.21
 
@@ -15,7 +15,7 @@ replace (
 	github.com/spf13/viper => github.com/spf13/viper v1.17.0
 
 	// If using custom internal modules, replace your app here with the parent application
-	// github.com/strangelove-ventures/simapp => ../.
+	// github.com/rollchains/simapp => ../.
 
 	github.com/vedhavyas/go-subkey => github.com/strangelove-ventures/go-subkey v1.0.7
 )

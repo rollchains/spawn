@@ -26,10 +26,10 @@ import (
 
 	"cosmossdk.io/core/store"
 
+	module "github.com/rollchains/simapp/x/example"
+	"github.com/rollchains/simapp/x/example/keeper"
+	"github.com/rollchains/simapp/x/example/types"
 	"github.com/strangelove-ventures/poa"
-	module "github.com/strangelove-ventures/simapp/x/example"
-	"github.com/strangelove-ventures/simapp/x/example/keeper"
-	"github.com/strangelove-ventures/simapp/x/example/types"
 )
 
 var maccPerms = map[string][]string{
