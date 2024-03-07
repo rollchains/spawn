@@ -37,6 +37,7 @@ The protobuf files have been automatically generated for you with a default `Par
 Head into the proto/nameservice directory and find `query.proto` *(proto/nameservice/v1/query.proto)* and add the following lines in
 
 ```proto
+
   rpc ResolveName(QueryResolveNameRequest) returns (QueryResolveNameResponse) {
     option (google.api.http).get = "/nameservice/v1/names/{wallet}";
   }
@@ -51,7 +52,7 @@ message QueryResolveNameResponse {
 }
 ```
 
-## TODO: image of the file proto/nameservice/v1/query.proto
+![proto/nameservice/v1/query.proto file](image.png)
 
 Then edit `tx.proto` *(proto/nameservice/v1/tx.proto)* to add the transaction setter message.
 
@@ -72,7 +73,7 @@ message MsgSetServiceName {
 message MsgSetServiceNameResponse {}
 ```
 
-## TODO: image of the file proto/nameservice/v1/tx.proto
+![proto/nameservice/v1/tx.proto file](image-1.png)
 
 Now we build the proto files into their .go counterparts. Once generated, the new interface requirements are automatically satisfied for us for both MsgServer & Querier.
 
@@ -80,18 +81,7 @@ Now we build the proto files into their .go counterparts. Once generated, the ne
 make proto-gen
 ```
 
-## TODO: image of the terminal here after a make proto-gen
-
-```
-$ make proto-gen
-
-Generating Protobuf files
-Generating gogo proto code
-Generating pulsar proto code
- [+] Moving: ./nameservice to ./api/nameservice
-3INF Applied RPC Stub module=nameservice type=query name=ResolveName req=QueryResolveNameRequest res=QueryResolveNameResponse file=rollchain/x/nameservice/keeper/query_server.go
-3INF Applied RPC Stub module=nameservice type=tx name=SetServiceName req=MsgSetServiceName res=MsgSetServiceNameResponse file=rollchain/x/nameservice/keeper/msg_server.go
-```
+![make proto-gen](image-2.png)
 
 # Setting the CLI Client
 
@@ -122,7 +112,7 @@ Modify the Query RPC options to support the recently introduced ResolveName mess
   }
 ```
 
-# TODO: Show image of the Query side entirely
+![AutoCLI Query](image-3.png)
 
 ### Transaction
 
@@ -147,6 +137,7 @@ And also for setting the Transaction
     }
 ```
 
+![AutoCLI Tx](image-4.png)
 
 # Keeper Storage Structure
 
@@ -175,6 +166,8 @@ func NewKeeper() Keeper {
 
 }
 ```
+
+![keeper NewKeeper NameMapping](image-5.png)
 
 # Application Logic
 
