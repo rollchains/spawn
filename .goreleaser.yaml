@@ -1,7 +1,7 @@
 project_name: spawn
 release:
   github:
-    owner: strangelove-ventures
+    owner: rollchains
     name: spawn
   name_template: '{{.Tag}}'
 builds:
