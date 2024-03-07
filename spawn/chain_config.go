@@ -182,6 +182,9 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 
 		}
 
+		// *All Files
+		fc.ReplaceEverywhere(cfg)
+
 		// Removes any modules references after we modify interchaintest values
 		fc.RemoveDisabledFeatures(cfg)
 
