@@ -1,4 +1,4 @@
-module github.com/strangelove-ventures/simapp
+module github.com/rollchains/simapp
 
 go 1.21
 

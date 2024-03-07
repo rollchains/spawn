@@ -8,7 +8,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/strangelove-ventures/simapp/app/upgrades"
+	"github.com/rollchains/simapp/app/upgrades"
 )
 
 // NewUpgrade constructor

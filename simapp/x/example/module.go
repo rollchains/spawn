@@ -18,8 +18,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/strangelove-ventures/simapp/x/example/keeper"
-	"github.com/strangelove-ventures/simapp/x/example/types"
+	"github.com/rollchains/simapp/x/example/keeper"
+	"github.com/rollchains/simapp/x/example/types"
 	// this line is used by starport scaffolding # 1
 )
 

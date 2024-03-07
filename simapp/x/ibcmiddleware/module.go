@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/rollchains/simapp/x/ibcmiddleware/keeper"
+	"github.com/rollchains/simapp/x/ibcmiddleware/types"
 	"github.com/spf13/cobra"
-	"github.com/strangelove-ventures/simapp/x/ibcmiddleware/keeper"
-	"github.com/strangelove-ventures/simapp/x/ibcmiddleware/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"

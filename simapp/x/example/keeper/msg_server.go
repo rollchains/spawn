@@ -6,7 +6,7 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	"cosmossdk.io/errors"
-	"github.com/strangelove-ventures/simapp/x/example/types"
+	"github.com/rollchains/simapp/x/example/types"
 )
 
 type msgServer struct {

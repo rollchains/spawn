@@ -4,7 +4,7 @@ package example.v1;
 import "google/api/annotations.proto";
 import "example/v1/genesis.proto";
 
-option go_package = "github.com/strangelove-ventures/simapp/x/example/types";
+option go_package = "github.com/rollchains/simapp/x/example/types";
 
 // Query provides defines the gRPC querier service.
 service Query {
