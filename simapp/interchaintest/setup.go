@@ -16,9 +16,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	wasm "github.com/CosmWasm/wasmd/x/wasm/types"
-	globalfee "github.com/reecepbcups/globalfee/x/globalfee/types"
-	tokenfactory "github.com/reecepbcups/tokenfactory/x/tokenfactory/types"
+	globalfee "github.com/strangelove-ventures/globalfee/x/globalfee/types"
 	poa "github.com/strangelove-ventures/poa"
+	tokenfactory "github.com/strangelove-ventures/tokenfactory/x/tokenfactory/types"
 )
 
 var (

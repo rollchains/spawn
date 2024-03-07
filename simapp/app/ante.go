@@ -20,8 +20,8 @@ import (
 	sdkmath "cosmossdk.io/math"
 	poaante "github.com/strangelove-ventures/poa/ante"
 
-	globalfeeante "github.com/reecepbcups/globalfee/x/globalfee/ante"
-	globalfeekeeper "github.com/reecepbcups/globalfee/x/globalfee/keeper"
+	globalfeeante "github.com/strangelove-ventures/globalfee/x/globalfee/ante"
+	globalfeekeeper "github.com/strangelove-ventures/globalfee/x/globalfee/keeper"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC

@@ -143,18 +143,18 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
-	tokenfactory "github.com/reecepbcups/tokenfactory/x/tokenfactory"
-	tokenfactorybindings "github.com/reecepbcups/tokenfactory/x/tokenfactory/bindings"
-	tokenfactorykeeper "github.com/reecepbcups/tokenfactory/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/reecepbcups/tokenfactory/x/tokenfactory/types"
+	tokenfactory "github.com/strangelove-ventures/tokenfactory/x/tokenfactory"
+	tokenfactorybindings "github.com/strangelove-ventures/tokenfactory/x/tokenfactory/bindings"
+	tokenfactorykeeper "github.com/strangelove-ventures/tokenfactory/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/strangelove-ventures/tokenfactory/x/tokenfactory/types"
 
 	poa "github.com/strangelove-ventures/poa"
 	poakeeper "github.com/strangelove-ventures/poa/keeper"
 	poamodule "github.com/strangelove-ventures/poa/module"
 
-	globalfee "github.com/reecepbcups/globalfee/x/globalfee"
-	globalfeekeeper "github.com/reecepbcups/globalfee/x/globalfee/keeper"
-	globalfeetypes "github.com/reecepbcups/globalfee/x/globalfee/types"
+	globalfee "github.com/strangelove-ventures/globalfee/x/globalfee"
+	globalfeekeeper "github.com/strangelove-ventures/globalfee/x/globalfee/keeper"
+	globalfeetypes "github.com/strangelove-ventures/globalfee/x/globalfee/types"
 
 	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
 	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
