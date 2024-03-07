@@ -52,13 +52,13 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/prometheus/client_golang v1.18.0
-	github.com/reecepbcups/globalfee v0.0.1-alpha.2
-	github.com/reecepbcups/tokenfactory v0.50.0-alpha.3
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.2
+	github.com/strangelove-ventures/globalfee v0.50.0-alpha.1
 	github.com/strangelove-ventures/poa v0.0.1-alpha.3
+	github.com/strangelove-ventures/tokenfactory v0.50.0-alpha.4
 	github.com/stretchr/testify v1.8.4
 	google.golang.org/genproto/googleapis/api v0.0.0-20231120223509-83a465c0220f
 	google.golang.org/grpc v1.60.1

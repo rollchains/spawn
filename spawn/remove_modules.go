@@ -33,7 +33,7 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 
 func (fc *FileContent) RemoveTokenFactory() {
 	text := "tokenfactory"
-	fc.RemoveGoModImport("github.com/reecepbcups/tokenfactory")
+	fc.RemoveGoModImport("github.com/strangelove-ventures/tokenfactory")
 
 	fc.RemoveModuleFromText(text,
 		path.Join("app", "app.go"),
@@ -63,7 +63,7 @@ func (fc *FileContent) RemovePOA() {
 
 func (fc *FileContent) RemoveGlobalFee() {
 	text := "globalfee"
-	fc.RemoveGoModImport("github.com/reecepbcups/globalfee")
+	fc.RemoveGoModImport("github.com/strangelove-ventures/globalfee")
 
 	fc.HandleCommentSwaps(text)
 	fc.RemoveTaggedLines(text, true)
