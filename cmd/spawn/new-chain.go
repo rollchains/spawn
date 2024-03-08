@@ -118,6 +118,17 @@ var newChain = &cobra.Command{
 			}
 		}
 
+		// remove duplicates
+		dups := make(map[string]bool)
+		for _, d := range disabled {
+			dups[d] = true
+		}
+
+		disabled = []string{}
+		for d := range dups {
+			disabled = append(disabled, d)
+		}
+
 		// 2) If a feature is enabled, remove it from the disabled slice
 		for _, name := range enabled {
 			alias := spawn.AliasName(name)
@@ -129,17 +140,6 @@ var newChain = &cobra.Command{
 					disabled = append(disabled[:i], disabled[i+1:]...)
 				}
 			}
-		}
-
-		// remove duplicates
-		dups := make(map[string]bool)
-		for _, d := range disabled {
-			dups[d] = true
-		}
-
-		disabled = []string{}
-		for d := range dups {
-			disabled = append(disabled, d)
 		}
 
 		cfg := &spawn.NewChainConfig{
