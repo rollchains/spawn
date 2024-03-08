@@ -35,6 +35,7 @@ type NewChainConfig struct {
 	IgnoreGitInit bool
 
 	DisabledModules []string
+	EnabledModules  []string
 
 	Logger *slog.Logger
 }
@@ -76,6 +77,7 @@ func (cfg *NewChainConfig) NewChain() {
 
 	logger.Info("Spawning new app", "app", NewDirName)
 	logger.Info("Disabled features", "features", disabled)
+	logger.Info("Enabled features", "features", cfg.EnabledModules)
 
 	if err := os.MkdirAll(NewDirName, 0755); err != nil {
 		panic(err)

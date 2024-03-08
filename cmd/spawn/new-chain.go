@@ -34,17 +34,30 @@ const (
 	FlagTokenDenom     = "denom"
 	FlagGithubOrg      = "org"
 	FlagDisabled       = "disable"
+	FlagEnabled        = "enable"
 	FlagNoGit          = "skip-git"
 	FlagBypassPrompt   = "bypass-prompt"
 	FlagIgniteCLIOptIn = "ignite-cli"
 )
 
 func init() {
+
+	defaultOffFeatures := []string{}
+	defaultOnFeatures := []string{}
+	for _, feat := range SupportedFeatures {
+		if !feat.IsSelected {
+			defaultOffFeatures = append(defaultOffFeatures, feat.ID)
+		} else {
+			defaultOnFeatures = append(defaultOnFeatures, feat.ID)
+		}
+	}
+
 	newChain.Flags().String(FlagWalletPrefix, "cosmos", "chain wallet bech32 prefix")
 	newChain.Flags().StringP(FlagBinDaemon, "b", "simd", "binary name")
 	newChain.Flags().String(FlagGithubOrg, "rollchains", "github organization")
 	newChain.Flags().String(FlagTokenDenom, "token", "bank token denomination")
-	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features: "+SupportedFeatures.String())
+	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable features: "+strings.Join(defaultOnFeatures, ","))
+	newChain.Flags().StringSlice(FlagEnabled, []string{}, "enable: "+strings.Join(defaultOffFeatures, ","))
 	newChain.Flags().Bool(FlagDebugging, false, "enable debugging")
 	newChain.Flags().Bool(FlagNoGit, false, "ignore git init")
 	newChain.Flags().Bool(FlagBypassPrompt, false, "bypass UI prompt")
@@ -69,6 +82,7 @@ var newChain = &cobra.Command{
 		homeDir := "." + projName
 
 		disabled, _ := cmd.Flags().GetStringSlice(FlagDisabled)
+		enabled, _ := cmd.Flags().GetStringSlice(FlagEnabled)
 		walletPrefix, _ := cmd.Flags().GetString(FlagWalletPrefix)
 		binName, _ := cmd.Flags().GetString(FlagBinDaemon)
 		denom, _ := cmd.Flags().GetString(FlagTokenDenom)
@@ -94,7 +108,21 @@ var newChain = &cobra.Command{
 			disabled = items.NOTSlice()
 		}
 
-		// if we disable a feature which has dependencies, we need to disable those too
+		// normalize disabled to standard aliases
+		for i, name := range disabled {
+			disabled[i] = spawn.AliasName(name)
+		}
+
+		// iterate through disabled and remove any which are in enabled
+		for _, name := range disabled {
+			for i, enabled := range enabled {
+				if name == enabled {
+					disabled = append(disabled[:i], disabled[i+1:]...)
+				}
+			}
+		}
+
+		// if we disable a feature which has disabled dependency, we need to disable those too
 		for _, name := range disabled {
 			if deps, ok := dependencies[name]; ok {
 				disabled = append(disabled, deps...)
@@ -110,6 +138,7 @@ var newChain = &cobra.Command{
 			GithubOrg:       githubOrg,
 			IgnoreGitInit:   ignoreGitInit,
 			DisabledModules: disabled,
+			EnabledModules:  enabled,
 			Logger:          logger,
 		}
 		if err := cfg.Validate(); err != nil {
@@ -128,6 +157,8 @@ func normalizeWhitelistVarRun(f *pflag.FlagSet, name string) pflag.NormalizedNam
 		name = FlagBinDaemon
 	case "disabled":
 		name = FlagDisabled
+	case "enabled":
+		name = FlagEnabled
 	case "bypass", "skip", "force", "prompt-bypass", "bypass-ui", "no-ui":
 		name = FlagBypassPrompt
 	case "token", "denomination", "coin":
