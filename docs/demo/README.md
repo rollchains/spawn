@@ -62,7 +62,6 @@ Then edit `tx.proto` *(proto/nameservice/v1/tx.proto)* to add the transaction se
   rpc SetServiceName(MsgSetServiceName) returns (MsgSetServiceNameResponse);
 }
 
-
 message MsgSetServiceName {
   option (cosmos.msg.v1.signer) = "sender";
 
@@ -84,6 +83,69 @@ make proto-gen
 
 ![make proto-gen](https://github.com/rollchains/spawn/assets/31943163/c51bf57c-e83a-4004-8041-9b1f3d3a24f4)
 
+
+# Keeper Storage Structure
+
+Now set the data structure map in the keeper *x/nameservice/keeper/keeper.go* to store the wallet to name pair.
+
+```go
+
+type Keeper struct {
+	...
+
+	NameMapping collections.Map[string, string]
+
+  ...
+}
+
+...
+
+func NewKeeper() Keeper {
+  ...
+
+  k := Keeper{
+    ...
+
+    NameMapping: collections.NewMap(sb, collections.NewPrefix(1), "name_mapping", collections.StringKey, collections.StringValue),
+  }
+
+}
+```
+
+![keeper NewKeeper NameMapping](https://github.com/rollchains/spawn/assets/31943163/47ed4a41-4df2-4a5d-9ac5-bfb23aeefd94)
+
+---
+
+# Application Logic
+
+Update the `x/nameservice/keeper/msg_server.go` now to set on the newly created map.
+
+```go
+func (ms msgServer) SetServiceName(ctx context.Context, msg *types.MsgSetServiceName) (*types.MsgSetServiceNameResponse, error) {
+	if err := ms.k.NameMapping.Set(ctx, msg.Sender, msg.Name); err != nil {
+		return nil, err
+	}
+
+	return &types.MsgSetServiceNameResponse{}, nil
+}
+```
+
+and also for the query in `x/nameservice/keeper/query_server.go`
+
+```go
+func (k Querier) ResolveName(goCtx context.Context, req *types.QueryResolveNameRequest) (*types.QueryResolveNameResponse, error) {
+	v, err := k.Keeper.NameMapping.Get(goCtx, req.Wallet)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryResolveNameResponse{
+		Name: v,
+	}, nil
+}
+```
+
+---
 
 # Setting the CLI Client
 
@@ -143,65 +205,7 @@ And also for setting the Transaction
 ![AutoCLI Tx](https://github.com/rollchains/spawn/assets/31943163/e945c898-415c-4d22-8bb3-b8af34a44cee)
 
 
-# Keeper Storage Structure
-
-Now set the data structure map in the keeper *x/nameservice/keeper/keeper.go* to store the wallet to name pair.
-
-```go
-
-type Keeper struct {
-	...
-
-	NameMapping collections.Map[string, string]
-
-  ...
-}
-
-...
-
-func NewKeeper() Keeper {
-  ...
-
-  k := Keeper{
-    ...
-
-    NameMapping: collections.NewMap(sb, collections.NewPrefix(1), "name_mapping", collections.StringKey, collections.StringValue),
-  }
-
-}
-```
-
-![keeper NewKeeper NameMapping](https://github.com/rollchains/spawn/assets/31943163/47ed4a41-4df2-4a5d-9ac5-bfb23aeefd94)
-
-
-# Application Logic
-
-Update the `x/nameservice/keeper/msg_server.go` now to set on the newly created map.
-
-```go
-func (ms msgServer) SetServiceName(ctx context.Context, msg *types.MsgSetServiceName) (*types.MsgSetServiceNameResponse, error) {
-	if err := ms.k.NameMapping.Set(ctx, msg.Sender, msg.Name); err != nil {
-		return nil, err
-	}
-
-	return &types.MsgSetServiceNameResponse{}, nil
-}
-```
-
-and also for the query in `x/nameservice/keeper/query_server.go`
-
-```go
-func (k Querier) ResolveName(goCtx context.Context, req *types.QueryResolveNameRequest) (*types.QueryResolveNameResponse, error) {
-	v, err := k.Keeper.NameMapping.Get(goCtx, req.Wallet)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.QueryResolveNameResponse{
-		Name: v,
-	}, nil
-}
-```
+---
 
 # Testnet
 
