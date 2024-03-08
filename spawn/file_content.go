@@ -158,7 +158,6 @@ func (fc *FileContent) ReplaceLocalInterchainJSON(cfg *NewChainConfig) {
 
 		fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix)
 	}
-
 }
 
 // FindAndReplaceStandardWalletsBech32 finds a prefix1... address and replaces it with a new prefix1... address
