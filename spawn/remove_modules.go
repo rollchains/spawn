@@ -151,13 +151,13 @@ func (fc *FileContent) RemoveCosmWasm() {
 }
 
 func (fc *FileContent) RemoveWasmLightClient() {
-	text := "wasmlc"
+	text := "08wasmlc"
 	fc.RemoveGoModImport("github.com/cosmos/ibc-go/modules/light-clients/08-wasm")
 
 	// This takes care of most
 	fc.RemoveTaggedLines(text, true)
 
-	fc.RemoveModuleFromText(text,
+	fc.RemoveModuleFromText("wasmlc",
 		path.Join("app", "app.go"),
 	)
 

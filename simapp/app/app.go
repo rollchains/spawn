@@ -755,8 +755,7 @@ func NewChainApp(
 		wasmOpts...,
 	)
 
-	// TODO: wasmlc depends on wasm. if wasm is removed, remove wasmlc too.
-	// <spawntag:wasmlc
+	// <spawntag:08wasmlc
 	wasmLightClientQuerier := wasmlctypes.QueryPlugins{
 		// Custom: MyCustomQueryPlugin(),
 		// `myAcceptList` is a `[]string` containing the list of gRPC query paths that the chain wants to allow for the `08-wasm` module to query.
@@ -786,7 +785,7 @@ func NewChainApp(
 		bApp.GRPCQueryRouter(),
 		wasmlckeeper.WithQueryPlugins(&wasmLightClientQuerier),
 	)
-	// spawntag:wasmlc>
+	// spawntag:08wasmlc>
 
 	// Create Transfer Stack
 	var transferStack porttypes.IBCModule
