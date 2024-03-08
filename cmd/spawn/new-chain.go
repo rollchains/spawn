@@ -15,10 +15,10 @@ var (
 		{ID: "proof-of-authority", IsSelected: true, Details: "Proof-of-Authority consensus algorithm (permissioned network)"},
 		{ID: "tokenfactory", IsSelected: true, Details: "Native token minting, sending, and burning on the chain"},
 		{ID: "globalfee", IsSelected: true, Details: "Static minimum fee(s) for all transactions, controlled by governance"},
+		{ID: "ibc-packetforward", IsSelected: true, Details: "Packet forwarding (for IBC)"},
 		{ID: "cosmwasm", IsSelected: false, Details: "Cosmos smart contracts"},
 		{ID: "wasm-light-client", IsSelected: false, Details: "08 Wasm Light Client"},
 		{ID: "ignite-cli", IsSelected: false, Details: "Ignite-CLI Support"},
-		{ID: "ibc-packetforward", IsSelected: true, Details: "Packet forwarding (for IBC)"},
 	}
 
 	dependencies = map[string][]string{
