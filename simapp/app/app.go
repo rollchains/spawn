@@ -773,7 +773,7 @@ func NewChainApp(
 
 	lcWasmer, err := wasmvm.NewVM(filepath.Join(dataDir, "light-client-wasm"), wasmCapabilities, 32, wasmConfig.ContractDebugMode, wasmConfig.MemoryCacheSize)
 	if err != nil {
-		panic(fmt.Sprintf("failed to create juno wasm vm for 08-wasm: %s", err))
+		panic(fmt.Sprintf("failed to create wasmvm for 08-wasm: %s", err))
 	}
 
 	app.WasmClientKeeper = wasmlckeeper.NewKeeperWithVM(
