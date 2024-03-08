@@ -50,7 +50,7 @@ func TestRemoveLeftOverComments(t *testing.T) {
 	deleteLine := false
 	fc.RemoveTaggedLines("", deleteLine)
 
-	require.False(t, strings.Contains(fc.Contents, "spawntag"))
+	require.False(t, strings.Contains(fc.Contents, "spawntag"), fc.Contents)
 }
 
 func TestBatchRemoveText(t *testing.T) {

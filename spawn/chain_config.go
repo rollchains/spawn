@@ -35,6 +35,7 @@ type NewChainConfig struct {
 	IgnoreGitInit bool
 
 	DisabledModules []string
+	EnabledModules  []string
 
 	Logger *slog.Logger
 }
@@ -76,6 +77,7 @@ func (cfg *NewChainConfig) NewChain() {
 
 	logger.Info("Spawning new app", "app", NewDirName)
 	logger.Info("Disabled features", "features", disabled)
+	logger.Info("Enabled features", "features", cfg.EnabledModules)
 
 	if err := os.MkdirAll(NewDirName, 0755); err != nil {
 		panic(err)
@@ -107,24 +109,23 @@ func (cfg *NewChainConfig) SetupMainChainApp() error {
 			return nil
 		}
 
-		// Removes any modules we care nothing about
-		fc.RemoveDisabledFeatures(cfg)
-
-		// scripts/test_node.sh
-		fc.ReplaceTestNodeScript(cfg)
-		// .github/workflows/interchaintest-e2e.yml
+		// .github/workflows/interchaintest-e2e.yml (required to replace docker image in workflow)
 		fc.ReplaceGithubActionWorkflows(cfg)
 		// Dockerfile
 		fc.ReplaceDockerFile(cfg)
+		// scripts/test_node.sh
+		fc.ReplaceTestNodeScript(cfg)
 		// app/app.go
 		fc.ReplaceApp(cfg)
 		// Makefile
 		fc.ReplaceMakeFile(cfg)
 		// *testnet.json (chains/ directory)
 		fc.ReplaceLocalInterchainJSON(cfg)
-
 		// *All Files
 		fc.ReplaceEverywhere(cfg)
+
+		// Removes any modules we care nothing about
+		fc.RemoveDisabledFeatures(cfg)
 
 		// Removes unused imports & tidies up the files
 		if strings.HasSuffix(fc.NewPath, ".go") && len(fc.Contents) > 0 {

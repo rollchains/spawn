@@ -37,8 +37,8 @@ func (fc *FileContent) HandleCommentSwaps(name string) {
 			continue
 		}
 
-		// removes the // spawntag: and // ?spawntag: comment from the end of the source code
-		line = RemoveSpawnTagLineComment(line, "")
+		// removes the // spawntag:[name] comment from the end of the source code
+		line = RemoveSpawnTagLineComment(line, tag)
 
 		// uncomments the line (to expose the source code for application usage)
 		line = uncommentLineSource(line)
@@ -58,14 +58,6 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 
 	startMultiLineDelete := false
 	for idx, line := range splitContent {
-
-		if name == "" && !deleteLine {
-			// remove the spawntag comment from the line
-			line = RemoveSpawnTagLineComment(line, fmt.Sprintf(StdFormat, ""))
-			newContent = append(newContent, line)
-			continue
-		}
-
 		// if the line has a tag, and the tag starts with a !, then we will continue until we
 		// find the end of the tag with another.
 		if startMultiLineDelete {
@@ -97,7 +89,7 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 				continue
 			}
 
-			line = RemoveSpawnTagLineComment(line, ExpectedFormat)
+			line = RemoveSpawnTagLineComment(line, name)
 		}
 
 		newContent = append(newContent, line)
@@ -110,21 +102,9 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 func RemoveSpawnTagLineComment(line string, tag string) string {
 	// QOL for us to not tear our hair out if we have a space or not
 	// Could do this for all contents on load?
-	//spawntag: -> // spawntag:
 	line = strings.ReplaceAll(line, "//spawntag:", ExpectedFormat)
 
-	// replace other formats to the stdfmt since we are moving anyways
-	line = strings.ReplaceAll(line, fmt.Sprintf(CommentSwapFormat, ""), fmt.Sprintf(StdFormat, ""))
-	line = strings.ReplaceAll(line, fmt.Sprintf(MultiLineStartFormat, ""), fmt.Sprintf(StdFormat, ""))
-
-	if tag == "" {
-		tag = fmt.Sprintf(StdFormat, "")
-	}
-
-	// remove spawntag comment from the line
-	f := fmt.Sprintf("// %s", tag)
-
-	line = strings.Split(line, f)[0]
+	line = strings.Split(line, fmt.Sprintf("// %s", tag))[0]
 	return strings.TrimRight(line, " ")
 }
 

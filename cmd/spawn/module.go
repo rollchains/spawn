@@ -71,7 +71,7 @@ func NewCmd() *cobra.Command {
 				return
 			}
 			if _, err := os.Stat(path.Join(cwd, "x", extName)); err == nil {
-				logger.Error("TODO: Module already exists in x/.", "module", extName)
+				logger.Error("Module already exists in x/.", "module", extName)
 				return
 			}
 
@@ -189,8 +189,6 @@ func SetupModuleProtoBase(logger *slog.Logger, extName string, ibcMiddleware boo
 
 		// replace example -> the new x/ name
 		fc.ReplaceAll(moduleName, extName)
-
-		// TODO: set the values in the keepers / msg server automatically
 
 		return fc.Save()
 	})

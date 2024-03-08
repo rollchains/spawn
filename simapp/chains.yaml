@@ -8,4 +8,4 @@
     - /go/bin/wasmd
   build-env:
     - LEDGER_ENABLED=false
-    - BUILD_TAGS=muslc
+    - BUILD_TAGS=muslc //spawntag:wasm

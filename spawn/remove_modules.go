@@ -6,21 +6,50 @@ import (
 	"strings"
 )
 
+// Given a string, return the reduced name for the module
+// e.g. "tf" and "token-factory" both return "tokenfactory"
+func AliasName(name string) string {
+	switch strings.ToLower(name) {
+	case "tokenfactory", "token-factory", "tf":
+		return "tokenfactory"
+	case "proof-of-authority", "poa", "proofofauthority", "poauthority":
+		return "poa"
+	case "globalfee", "global-fee":
+		return "globalfee"
+	case "wasm", "cosmwasm", "cw":
+		return "cosmwasm"
+	case "wasmlc", "wasm-lc", "cwlc", "cosmwasm-lc", "wasm-light-client", "08wasm", "08-wasm":
+		return "wasmlc"
+	case "ibc-packetforward", "packetforward", "pfm":
+		return "packetforward"
+	case "ignite", "ignite-cli":
+		return "ignite"
+	default:
+		panic(fmt.Sprintf("AliasName: unknown feature to remove %s", name))
+	}
+}
+
 // Removes disabled features from the files specified
 func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 	for _, name := range cfg.DisabledModules {
-		switch strings.ToLower(name) {
-		case "tokenfactory", "token-factory", "tf":
+
+		base := AliasName(name)
+
+		// must match MainAliasNames return
+		switch strings.ToLower(base) {
+		case "tokenfactory":
 			fc.RemoveTokenFactory()
-		case "proof-of-authority", "poa", "proofofauthority", "poauthority":
+		case "poa":
 			fc.RemovePOA()
 		case "globalfee":
 			fc.RemoveGlobalFee()
-		case "wasm", "cosmwasm", "cw":
+		case "cosmwasm":
 			fc.RemoveCosmWasm()
-		case "ibc-packetforward", "packetforward", "pfm":
+		case "wasmlc":
+			fc.RemoveWasmLightClient()
+		case "packetforward":
 			fc.RemovePacketForward()
-		case "ignite", "ignite-cli":
+		case "ignite":
 			fc.RemoveIgniteCLI()
 		default:
 			panic(fmt.Sprintf("unknown feature to remove %s", name))
@@ -119,6 +148,18 @@ func (fc *FileContent) RemoveCosmWasm() {
 
 	fc.DeleteContents(path.Join("interchaintest", "cosmwasm_test.go"))
 	fc.DeleteDirectoryContents(path.Join("interchaintest", "contracts"))
+}
+
+func (fc *FileContent) RemoveWasmLightClient() {
+	// tag <spawntag:08wasmlc is used instead so it does not match spawntag:wasm
+	text := "08wasmlc"
+	fc.RemoveGoModImport("github.com/cosmos/ibc-go/modules/light-clients/08-wasm")
+
+	fc.RemoveTaggedLines(text, true)
+
+	fc.RemoveModuleFromText("wasmlc",
+		path.Join("app", "app.go"),
+	)
 }
 
 func (fc *FileContent) RemovePacketForward() {

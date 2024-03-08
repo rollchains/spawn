@@ -59,7 +59,6 @@ func StdExecute(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, us
 	return contractAddr
 }
 
-// TODO: use internal functions now instead of these
 func SmartQueryString(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, contractAddr, queryMsg string, res interface{}) error {
 	var jsonMap map[string]interface{}
 	if err := json.Unmarshal([]byte(queryMsg), &jsonMap); err != nil {

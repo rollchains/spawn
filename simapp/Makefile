@@ -169,6 +169,12 @@ format: format-tools
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "./tests/system/vendor*" -not -path "*.git*" -not -path "./client/lcd/statik/statik.go" | xargs misspell -w
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "./tests/system/vendor*" -not -path "*.git*" -not -path "./client/lcd/statik/statik.go" | xargs gci write --skip-generated -s standard -s default -s "prefix(cosmossdk.io)" -s "prefix(github.com/cosmos/cosmos-sdk)" -s "prefix(github.com/CosmWasm/wasmd)" --custom-order
 
+mod-tidy:
+	go mod tidy
+	cd interchaintest && go mod tidy
+
+.PHONY: format-tools lint format mod-tidy
+
 
 ###############################################################################
 ###                                Protobuf                                 ###
@@ -284,4 +290,4 @@ testnet-basic: setup-testnet
 sh-testnet:
 	CHAIN_ID="local-1" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
 
-.PHONY: testnet testnet-basic sh-testnet
+.PHONY: setup-testnet set-testnet-configs testnet testnet-basic sh-testnet

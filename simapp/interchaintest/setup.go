@@ -97,7 +97,7 @@ var (
 	RelayerVersion = "main"
 )
 
-// TODO: move these into interchaintest?
+// Other Helpers
 func ExecuteQuery(ctx context.Context, chain *cosmos.CosmosChain, cmd []string, i interface{}, extraFlags ...string) {
 	flags := []string{
 		"--node", chain.GetRPCAddress(),
