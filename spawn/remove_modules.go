@@ -18,7 +18,7 @@ func AliasName(name string) string {
 		return "globalfee"
 	case "wasm", "cosmwasm", "cw":
 		return "cosmwasm"
-	case "wasmlc", "wasm-lc", "cwlc", "cosmwasm-lc", "wasm-light-client":
+	case "wasmlc", "wasm-lc", "cwlc", "cosmwasm-lc", "wasm-light-client", "08wasm", "08-wasm":
 		return "wasmlc"
 	case "ibc-packetforward", "packetforward", "pfm":
 		return "packetforward"
@@ -151,16 +151,15 @@ func (fc *FileContent) RemoveCosmWasm() {
 }
 
 func (fc *FileContent) RemoveWasmLightClient() {
+	// tag <spawntag:08wasmlc is used instead so it does not match spawntag:wasm
 	text := "08wasmlc"
 	fc.RemoveGoModImport("github.com/cosmos/ibc-go/modules/light-clients/08-wasm")
 
-	// This takes care of most
 	fc.RemoveTaggedLines(text, true)
 
 	fc.RemoveModuleFromText("wasmlc",
 		path.Join("app", "app.go"),
 	)
-
 }
 
 func (fc *FileContent) RemovePacketForward() {

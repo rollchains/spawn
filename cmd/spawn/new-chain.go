@@ -22,7 +22,7 @@ var (
 	}
 
 	dependencies = map[string][]string{
-		// if cosmwasm is removed, also remove wasm-light-client (depends on cosmwasm)
+		// 08wasm light client depends on cosmwasm
 		"cosmwasm": {spawn.AliasName("wasm-light-client")},
 	}
 )
@@ -94,12 +94,12 @@ var newChain = &cobra.Command{
 			disabled = items.NOTSlice()
 		}
 
+		// if we disable a feature which has dependencies, we need to disable those too
 		for _, name := range disabled {
 			if deps, ok := dependencies[name]; ok {
 				disabled = append(disabled, deps...)
 			}
 		}
-		fmt.Println("Disabled:", disabled)
 
 		cfg := &spawn.NewChainConfig{
 			ProjectName:     projName,
