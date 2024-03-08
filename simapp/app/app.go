@@ -661,7 +661,6 @@ func NewChainApp(
 		app.StakingKeeper,
 		app.SlashingKeeper,
 		app.BankKeeper,
-		authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
 		logger,
 	)
 
