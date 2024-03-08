@@ -116,11 +116,11 @@ func (fc *FileContent) RemoveGlobalFee() {
 	fc.RemoveModuleFromText("GlobalFee", path.Join("app", "app.go"))
 }
 
-func (fc *FileContent) RemoveCosmWasm(isWasmLCUsed bool) {
+func (fc *FileContent) RemoveCosmWasm(isWasmClientDisabled bool) {
 	text := "wasm"
 	fc.RemoveGoModImport("github.com/CosmWasm/wasmd")
 
-	if !isWasmLCUsed {
+	if isWasmClientDisabled {
 		fc.RemoveGoModImport("github.com/CosmWasm/wasmvm")
 	}
 
