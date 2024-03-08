@@ -22,8 +22,8 @@ var (
 	}
 
 	dependencies = map[string][]string{
-		// 08wasm light client depends on cosmwasm
-		"cosmwasm": {spawn.AliasName("wasm-light-client")},
+		// 08wasm light client depends on cosmwasm (or not?)
+		// "cosmwasm": {spawn.AliasName("wasm-light-client")},
 	}
 )
 
@@ -92,17 +92,20 @@ var newChain = &cobra.Command{
 
 		// Show a UI if the user did not specific to bypass it, or if nothing is disabled. So they get to see what is to be picked from.
 		bypassPrompt, _ := cmd.Flags().GetBool(FlagBypassPrompt)
-		if len(disabled) == 0 && len(enabled) == 0 && !bypassPrompt {
+		useUI := len(disabled) == 0 && len(enabled) == 0 && !bypassPrompt
+		if useUI {
 			items, err := selectItems(0, SupportedFeatures, true)
 			if err != nil {
 				logger.Error("Error selecting disabled", "err", err)
 				return
 			}
 			disabled = items.NOTSlice()
+			fmt.Println("UI Disabled:", disabled)
+		} else {
+			// Auto disable features that are not off by default (duplicates are fine)
+			// This is not done for the UI since that is set by the user for all directly.
+			disabled = append(disabled, disabledByDefault...)
 		}
-
-		// Auto disable features that are not off by default (duplicates are fine)
-		disabled = append(disabled, disabledByDefault...)
 
 		for i, name := range disabled {
 			// normalize disabled to standard aliases

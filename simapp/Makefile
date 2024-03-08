@@ -266,7 +266,7 @@ ictest-tokenfactory:
 ###                                    testnet                              ###
 ###############################################################################
 
-setup-testnet: is-localic-installed install local-image set-testnet-configs setup-testnet-keys
+setup-testnet: mod-tidy is-localic-installed install local-image set-testnet-configs setup-testnet-keys
 
 # Run this before testnet keys are added
 # chainid-1 is used in the testnet.json
@@ -287,7 +287,7 @@ testnet: setup-testnet
 testnet-basic: setup-testnet
 	spawn local-ic start testnet
 
-sh-testnet:
+sh-testnet: mod-tidy
 	CHAIN_ID="local-1" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
 
 .PHONY: setup-testnet set-testnet-configs testnet testnet-basic sh-testnet
