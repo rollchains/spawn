@@ -11,7 +11,7 @@ Let's create a new chain called 'rollchain'. We are going to set some of the def
 - and the binary
 
 ```bash
-spawn new rollchain --disable=cosmwasm,globalfee --bech32=roll --denom=uroll --bin=rolld --org=rollchains
+spawn new rollchain --disable=globalfee --bech32=roll --denom=uroll --bin=rolld --org=rollchains
 ```
 
 The chain is now created and we can start to write our application logic on top.
@@ -34,28 +34,7 @@ This creates a new template module with the name `nameservice` in the `x` and `p
 
 The protobuf files have been automatically generated for you with a default `Params` section. Building off this, we are adding our new messages to query and set a wallets name.
 
-Head into the proto/nameservice directory and find `query.proto` *(proto/nameservice/v1/query.proto)* and add the following lines in
-
-```proto
-
-  rpc ResolveName(QueryResolveNameRequest) returns (QueryResolveNameResponse) {
-    option (google.api.http).get = "/nameservice/v1/names/{wallet}";
-  }
-}
-
-message QueryResolveNameRequest {
-  string wallet = 1;
-}
-
-message QueryResolveNameResponse {
-  string name = 1;
-}
-```
-
-![proto/nameservice/v1/query.proto file](https://github.com/rollchains/spawn/assets/31943163/234a13d7-be62-492d-961c-63e92d7543d9)
-
-
-Then edit `tx.proto` *(proto/nameservice/v1/tx.proto)* to add the transaction setter message.
+Open the proto/nameservice directory. Edit `tx.proto` *(proto/nameservice/v1/tx.proto)* to add the transaction setter message.
 
 ```proto
 
@@ -75,7 +54,27 @@ message MsgSetServiceNameResponse {}
 
 ![proto/nameservice/v1/tx.proto file](https://github.com/rollchains/spawn/assets/31943163/73a583e2-9edd-471f-ada6-1010d0dbf072)
 
-Now we build the proto files into their .go counterparts. Once generated, the new interface requirements are automatically satisfied for us for both MsgServer & Querier.
+Find `query.proto` *(proto/nameservice/v1/query.proto)* and add the following
+
+```proto
+
+  rpc ResolveName(QueryResolveNameRequest) returns (QueryResolveNameResponse) {
+    option (google.api.http).get = "/nameservice/v1/names/{wallet}";
+  }
+}
+
+message QueryResolveNameRequest {
+  string wallet = 1;
+}
+
+message QueryResolveNameResponse {
+  string name = 1;
+}
+```
+
+![proto/nameservice/v1/query.proto file](https://github.com/rollchains/spawn/assets/31943163/234a13d7-be62-492d-961c-63e92d7543d9)
+
+Now build the proto files into their .go counterparts. Once generated, the new interface requirements are automatically satisfied for us for both MsgServer & Querier.
 
 ```bash
 make proto-gen
@@ -227,6 +226,8 @@ Then, we resolve this name with the nameservice lookup. `$(rolld keys show user1
 
 ```bash
 rolld tx nameservice set myname --from=user1 --yes
+
+# rolld q tx 088382C43C35440676438359B88899D97A8092F34BBDADD32345498297D332BA
 
 sleep 2
 
