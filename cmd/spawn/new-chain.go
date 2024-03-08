@@ -100,7 +100,6 @@ var newChain = &cobra.Command{
 				return
 			}
 			disabled = items.NOTSlice()
-			fmt.Println("UI Disabled:", disabled)
 		} else {
 			// Auto disable features that are not off by default (duplicates are fine)
 			// This is not done for the UI since that is set by the user for all directly.
