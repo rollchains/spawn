@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath" // spawntag:wasm
+	"path/filepath"
 	"sort"
-	"strings" // spawntag:wasm
+	"strings"
 	"sync"
 
 	abci "github.com/cometbft/cometbft/abci/types"
