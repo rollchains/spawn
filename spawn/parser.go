@@ -38,7 +38,7 @@ func (fc *FileContent) HandleCommentSwaps(name string) {
 		}
 
 		// removes the // spawntag:[name] comment from the end of the source code
-		line = removeSpawnTagLineComment(line, tag)
+		line = RemoveSpawnTagLineComment(line, tag)
 
 		// uncomments the line (to expose the source code for application usage)
 		line = uncommentLineSource(line)
@@ -58,7 +58,6 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 
 	startMultiLineDelete := false
 	for idx, line := range splitContent {
-
 		// if the line has a tag, and the tag starts with a !, then we will continue until we
 		// find the end of the tag with another.
 		if startMultiLineDelete {
@@ -90,7 +89,7 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 				continue
 			}
 
-			line = removeSpawnTagLineComment(line, ExpectedFormat)
+			line = RemoveSpawnTagLineComment(line, name)
 		}
 
 		newContent = append(newContent, line)
@@ -100,7 +99,7 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 }
 
 // removeSpawnTagLineComment removes just the spawntag comment from a line of code.
-func removeSpawnTagLineComment(line string, tag string) string {
+func RemoveSpawnTagLineComment(line string, tag string) string {
 	// QOL for us to not tear our hair out if we have a space or not
 	// Could do this for all contents on load?
 	line = strings.ReplaceAll(line, "//spawntag:", ExpectedFormat)
