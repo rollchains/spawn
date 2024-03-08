@@ -1102,7 +1102,7 @@ func NewChainApp(
 	}
 
 	if loadLatest {
-		if err := app.LoadLatestVersion(); err != nil { // spawntag:test
+		if err := app.LoadLatestVersion(); err != nil {
 			panic(fmt.Errorf("error loading last version: %w", err))
 		}
 
