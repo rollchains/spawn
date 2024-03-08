@@ -40,6 +40,7 @@ require (
 	cosmossdk.io/x/tx v0.13.0
 	cosmossdk.io/x/upgrade v0.1.1
 	github.com/CosmWasm/wasmd v0.50.0
+	github.com/CosmWasm/wasmvm v1.5.2
 	github.com/cometbft/cometbft v0.38.5
 	github.com/cosmos/cosmos-db v1.0.0
 	github.com/cosmos/cosmos-proto v1.0.0-beta.4
@@ -65,8 +66,6 @@ require (
 	google.golang.org/grpc v1.60.1
 	google.golang.org/protobuf v1.32.0
 )
-
-require github.com/CosmWasm/wasmvm v1.5.2
 
 require (
 	cloud.google.com/go v0.110.10 // indirect
