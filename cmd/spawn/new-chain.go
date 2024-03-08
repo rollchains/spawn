@@ -16,8 +16,14 @@ var (
 		{ID: "tokenfactory", IsSelected: true, Details: "Native token minting, sending, and burning on the chain"},
 		{ID: "globalfee", IsSelected: true, Details: "Static minimum fee(s) for all transactions, controlled by governance"},
 		{ID: "cosmwasm", IsSelected: false, Details: "Cosmos smart contracts"},
+		{ID: "wasm-light-client", IsSelected: false, Details: "08 Wasm Light Client"},
 		{ID: "ignite-cli", IsSelected: false, Details: "Ignite-CLI Support"},
 		{ID: "ibc-packetforward", IsSelected: true, Details: "Packet forwarding (for IBC)"},
+	}
+
+	dependencies = map[string][]string{
+		// if cosmwasm is removed, also remove wasm-light-client (depends on cosmwasm)
+		"cosmwasm": {spawn.AliasName("wasm-light-client")},
 	}
 )
 
@@ -87,6 +93,13 @@ var newChain = &cobra.Command{
 			}
 			disabled = items.NOTSlice()
 		}
+
+		for _, name := range disabled {
+			if deps, ok := dependencies[name]; ok {
+				disabled = append(disabled, deps...)
+			}
+		}
+		fmt.Println("Disabled:", disabled)
 
 		cfg := &spawn.NewChainConfig{
 			ProjectName:     projName,

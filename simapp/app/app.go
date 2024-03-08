@@ -786,6 +786,7 @@ func NewChainApp(
 		bApp.GRPCQueryRouter(),
 		wasmlckeeper.WithQueryPlugins(&wasmLightClientQuerier),
 	)
+	// spawntag:wasmlc>
 
 	// Create Transfer Stack
 	var transferStack porttypes.IBCModule
