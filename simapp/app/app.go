@@ -139,7 +139,6 @@ import (
 
 	ibcchanneltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	wasmapp "github.com/CosmWasm/wasmd/app"
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -174,12 +173,12 @@ var (
 	NodeDir      = ".wasmd"
 	Bech32Prefix = "wasm"
 
-	// <spawntag:wasm
-	wasmCapabilities = strings.Join(
-		append(wasmapp.AllCapabilities(),
+	capabilities = strings.Join(
+		[]string{
+			"iterator", "staking", "stargate",
+			"cosmwasm_1_1", "cosmwasm_1_2", "cosmwasm_1_3", "cosmwasm_1_4",
 			"token_factory", // spawntag:tokenfactory
-		), ",")
-	// spawntag:wasm>
+		}, ",")
 )
 
 // These constants are derived from the above variables.
@@ -661,7 +660,6 @@ func NewChainApp(
 		app.StakingKeeper,
 		app.SlashingKeeper,
 		app.BankKeeper,
-		authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
 		logger,
 	)
 
@@ -771,9 +769,10 @@ func NewChainApp(
 
 	dataDir := filepath.Join(homePath, "data")
 
-	lcWasmer, err := wasmvm.NewVM(filepath.Join(dataDir, "light-client-wasm"), wasmCapabilities, 32, wasmConfig.ContractDebugMode, wasmConfig.MemoryCacheSize)
+	var memCacheSizeMB uint32 = 100
+	lc08, err := wasmvm.NewVM(filepath.Join(dataDir, "08-light-client"), capabilities, 32, false, memCacheSizeMB)
 	if err != nil {
-		panic(fmt.Sprintf("failed to create wasmvm for 08-wasm: %s", err))
+		panic(fmt.Sprintf("failed to create VM for 08 light client: %s", err))
 	}
 
 	app.WasmClientKeeper = wasmlckeeper.NewKeeperWithVM(
@@ -781,7 +780,7 @@ func NewChainApp(
 		runtime.NewKVStoreService(keys[wasmlctypes.StoreKey]),
 		app.IBCKeeper.ClientKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		lcWasmer,
+		lc08,
 		bApp.GRPCQueryRouter(),
 		wasmlckeeper.WithQueryPlugins(&wasmLightClientQuerier),
 	)
@@ -1106,8 +1105,9 @@ func NewChainApp(
 			panic(fmt.Errorf("error loading last version: %w", err))
 		}
 
-		// Initialize pinned codes in wasmvm as they are not persisted there
-		ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{}) // spawntag:wasm
+		ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{})
+		_ = ctx
+
 		if err := app.WasmKeeper.InitializePinnedCodes(ctx); err != nil {
 			panic(fmt.Sprintf("failed initialize pinned codes %s", err))
 		}

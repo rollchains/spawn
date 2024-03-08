@@ -13,7 +13,6 @@ import (
 // This starts with the text searched for, and continues to look until and end bracket or parenthesis is found.
 // This allows for the finding of multi-line function signatures, if-else blocks, etc.
 func FindLinesWithText(src []string, text string) (startIdx, endIdx int) {
-	// TODO Very similar to RemoveModuleFromText / RemoveTaggedLines. May be able to re-purpose.
 	startMultiLineFind := false
 	for idx, line := range src {
 		if startMultiLineFind {

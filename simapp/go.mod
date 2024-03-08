@@ -46,7 +46,7 @@ require (
 	github.com/cosmos/cosmos-proto v1.0.0-beta.4
 	github.com/cosmos/cosmos-sdk v0.50.4
 	github.com/cosmos/gogoproto v1.4.11
-	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8 v8.0.1
+	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8 v8.0.2-0.20240228211029-91e486ec4dbb
 	github.com/cosmos/ibc-go/modules/capability v1.0.0
 	github.com/cosmos/ibc-go/modules/light-clients/08-wasm v0.1.1-0.20231213092650-57fcdb9a9a9d
 	github.com/cosmos/ibc-go/v8 v8.1.0
@@ -58,9 +58,9 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.2
-	github.com/strangelove-ventures/globalfee v0.50.0-alpha.1
-	github.com/strangelove-ventures/poa v0.0.1-alpha.3
-	github.com/strangelove-ventures/tokenfactory v0.50.0-alpha.4
+	github.com/strangelove-ventures/globalfee v0.50.0
+	github.com/strangelove-ventures/poa v0.50.0
+	github.com/strangelove-ventures/tokenfactory v0.50.0
 	github.com/stretchr/testify v1.8.4
 	google.golang.org/genproto/googleapis/api v0.0.0-20231120223509-83a465c0220f
 	google.golang.org/grpc v1.60.1

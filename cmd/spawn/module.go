@@ -37,8 +37,7 @@ func ModuleCmd() *cobra.Command {
 
 	cmd.AddCommand(
 		NewCmd(),
-		RemoveCmd(),
-		// TODO: import/add from upstream -> app.go
+		// TODO: remove, import/add from upstream -> app.go
 	)
 
 	return cmd
@@ -109,24 +108,6 @@ func NewCmd() *cobra.Command {
 
 	cmd.Flags().Bool(FlagIsIBCMiddleware, false, "Set the module as an IBC Middleware module")
 	cmd.Flags().SetNormalizeFunc(normalizeModuleFlags)
-
-	return cmd
-}
-
-func RemoveCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "remove [name]",
-		Short:   "Remove a module from the app.",
-		Example: `spawn module remove mymodule`,
-		Args:    cobra.ExactArgs(1),
-		Aliases: []string{"rm"},
-		Run: func(cmd *cobra.Command, args []string) {
-			// logger := GetLogger()
-			// ext name is the x/ cosmos module name.
-			// extName := strings.ToLower(args[0])
-			fmt.Println("TODO: Not implemented yet.")
-		},
-	}
 
 	return cmd
 }

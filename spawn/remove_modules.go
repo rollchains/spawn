@@ -31,6 +31,15 @@ func AliasName(name string) string {
 
 // Removes disabled features from the files specified
 func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
+
+	isWasmLCDisabled := false
+	for _, name := range cfg.DisabledModules {
+		if AliasName(name) == "wasmlc" {
+			isWasmLCDisabled = true
+			break
+		}
+	}
+
 	for _, name := range cfg.DisabledModules {
 
 		base := AliasName(name)
@@ -44,7 +53,7 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		case "globalfee":
 			fc.RemoveGlobalFee()
 		case "cosmwasm":
-			fc.RemoveCosmWasm()
+			fc.RemoveCosmWasm(isWasmLCDisabled)
 		case "wasmlc":
 			fc.RemoveWasmLightClient()
 		case "packetforward":
@@ -107,10 +116,13 @@ func (fc *FileContent) RemoveGlobalFee() {
 	fc.RemoveModuleFromText("GlobalFee", path.Join("app", "app.go"))
 }
 
-func (fc *FileContent) RemoveCosmWasm() {
+func (fc *FileContent) RemoveCosmWasm(isWasmClientDisabled bool) {
 	text := "wasm"
 	fc.RemoveGoModImport("github.com/CosmWasm/wasmd")
-	fc.RemoveGoModImport("github.com/CosmWasm/wasmvm")
+
+	if isWasmClientDisabled {
+		fc.RemoveGoModImport("github.com/CosmWasm/wasmvm")
+	}
 
 	fc.RemoveTaggedLines(text, true)
 
@@ -119,7 +131,7 @@ func (fc *FileContent) RemoveCosmWasm() {
 	for _, word := range []string{
 		"WasmKeeper", "wasmtypes", "wasmStack",
 		"wasmOpts", "TXCounterStoreService", "WasmConfig",
-		"wasmDir", "tokenfactorybindings", "github.com/CosmWasm/wasmd", "wasmvm",
+		"wasmDir", "tokenfactorybindings", "github.com/CosmWasm/wasmd",
 	} {
 		fc.RemoveModuleFromText(word,
 			path.Join("app", "app.go"),
