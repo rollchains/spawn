@@ -76,7 +76,6 @@ func (cfg *NewChainConfig) NewChain() {
 
 	logger.Info("Spawning new app", "app", NewDirName)
 	logger.Info("Disabled features", "features", disabled)
-	panic(1)
 
 	if err := os.MkdirAll(NewDirName, 0755); err != nil {
 		panic(err)

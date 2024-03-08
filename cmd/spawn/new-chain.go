@@ -11,7 +11,6 @@ import (
 )
 
 var (
-	// TODO: auto set these  in the on and off features. It does not set currently (i.e. wasm is enabled on base).
 	SupportedFeatures = items{
 		{ID: "proof-of-authority", IsSelected: true, Details: "Proof-of-Authority consensus algorithm (permissioned network)"},
 		{ID: "tokenfactory", IsSelected: true, Details: "Native token minting, sending, and burning on the chain"},
