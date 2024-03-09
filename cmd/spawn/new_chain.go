@@ -11,6 +11,9 @@ import (
 )
 
 var (
+	// SupportedFeatures is a list of all features that can be toggled.
+	// - UI: uses the IsSelected
+	// - CLI: all are enabled by default. Must opt out.
 	SupportedFeatures = items{
 		{ID: "proof-of-authority", IsSelected: true, Details: "Proof-of-Authority consensus algorithm (permissioned network)"},
 		{ID: "tokenfactory", IsSelected: true, Details: "Native token minting, sending, and burning on the chain"},
@@ -21,9 +24,9 @@ var (
 		{ID: "ignite-cli", IsSelected: false, Details: "Ignite-CLI Support"},
 	}
 
-	dependencies = map[string][]string{
-		// 08wasm light client depends on cosmwasm (or not?)
-		// "cosmwasm": {spawn.AliasName("wasm-light-client")},
+	// parentDeps is a map of module name to a list of module names that are disabled if the parent is disabled
+	parentDeps = map[string][]string{
+		// "cosmwasm": {spawn.AliasName("some-wasmd-child-feature")},
 	}
 )
 
@@ -34,31 +37,21 @@ const (
 	FlagTokenDenom   = "denom"
 	FlagGithubOrg    = "org"
 	FlagDisabled     = "disable"
-	FlagEnabled      = "enable"
 	FlagNoGit        = "skip-git"
 	FlagBypassPrompt = "bypass-prompt"
 )
 
-var (
-	disabledByDefault = []string{}
-)
-
 func init() {
-	showcaseOnFeatures := []string{}
-	for _, feat := range SupportedFeatures {
-		if !feat.IsSelected {
-			disabledByDefault = append(disabledByDefault, feat.ID)
-		} else {
-			showcaseOnFeatures = append(showcaseOnFeatures, feat.ID)
-		}
+	features := make([]string, len(SupportedFeatures))
+	for idx, feat := range SupportedFeatures {
+		features[idx] = feat.ID
 	}
 
 	newChain.Flags().String(FlagWalletPrefix, "cosmos", "chain wallet bech32 prefix")
 	newChain.Flags().StringP(FlagBinDaemon, "b", "simd", "binary name")
 	newChain.Flags().String(FlagGithubOrg, "rollchains", "github organization")
 	newChain.Flags().String(FlagTokenDenom, "token", "bank token denomination")
-	newChain.Flags().StringSlice(FlagDisabled, []string{}, "disable: "+strings.Join(showcaseOnFeatures, ","))
-	newChain.Flags().StringSlice(FlagEnabled, []string{}, "enable : "+strings.Join(disabledByDefault, ","))
+	newChain.Flags().StringSlice(FlagDisabled, []string{}, strings.Join(features, ","))
 	newChain.Flags().Bool(FlagDebugging, false, "enable debugging")
 	newChain.Flags().Bool(FlagNoGit, false, "ignore git init")
 	newChain.Flags().Bool(FlagBypassPrompt, false, "bypass UI prompt")
@@ -82,65 +75,24 @@ var newChain = &cobra.Command{
 		homeDir := "." + projName
 
 		disabled, _ := cmd.Flags().GetStringSlice(FlagDisabled)
-		enabled, _ := cmd.Flags().GetStringSlice(FlagEnabled)
-
 		walletPrefix, _ := cmd.Flags().GetString(FlagWalletPrefix)
 		binName, _ := cmd.Flags().GetString(FlagBinDaemon)
 		denom, _ := cmd.Flags().GetString(FlagTokenDenom)
 		ignoreGitInit, _ := cmd.Flags().GetBool(FlagNoGit)
 		githubOrg, _ := cmd.Flags().GetString(FlagGithubOrg)
 
-		// Show a UI if the user did not specific to bypass it, or if nothing is disabled. So they get to see what is to be picked from.
+		// Show a UI if the user did not specific to bypass it, or if nothing is disabled.
 		bypassPrompt, _ := cmd.Flags().GetBool(FlagBypassPrompt)
-		useUI := len(disabled) == 0 && len(enabled) == 0 && !bypassPrompt
-		if useUI {
+		if len(disabled) == 0 && !bypassPrompt {
 			items, err := selectItems(0, SupportedFeatures, true)
 			if err != nil {
 				logger.Error("Error selecting disabled", "err", err)
 				return
 			}
 			disabled = items.NOTSlice()
-		} else {
-			// Auto disable features that are not off by default (duplicates are fine)
-			// This is not done for the UI since that is set by the user for all directly.
-			disabled = append(disabled, disabledByDefault...)
 		}
 
-		for i, name := range disabled {
-			// normalize disabled to standard aliases
-			alias := spawn.AliasName(name)
-			disabled[i] = alias
-
-			// if we disable a feature which has disabled dependency, we need to disable those too
-			if deps, ok := dependencies[alias]; ok {
-				// duplicates will arise, will be removed layer
-				disabled = append(disabled, deps...)
-			}
-		}
-
-		// remove duplicates
-		dups := make(map[string]bool)
-		for _, d := range disabled {
-			dups[d] = true
-		}
-
-		disabled = []string{}
-		for d := range dups {
-			disabled = append(disabled, d)
-		}
-
-		// 2) If a feature is enabled, remove it from the disabled slice
-		for _, name := range enabled {
-			alias := spawn.AliasName(name)
-
-			for i, d := range disabled {
-				if d == alias {
-					// the user could have disabled a feature and enabled too.
-					// if so, we go with disabled for it (thus not breaking early)
-					disabled = append(disabled[:i], disabled[i+1:]...)
-				}
-			}
-		}
+		disabled = CleanDisabled(disabled)
 
 		cfg := &spawn.NewChainConfig{
 			ProjectName:     projName,
@@ -163,14 +115,40 @@ var newChain = &cobra.Command{
 	},
 }
 
+// CleanDisabled normalizes the names, removes any parent dependencies, and removes duplicates
+func CleanDisabled(disabled []string) []string {
+	for i, name := range disabled {
+		// normalize disabled to standard aliases
+		alias := spawn.AliasName(name)
+		disabled[i] = alias
+
+		// if we disable a feature which has disabled dependency, we need to disable those too
+		if deps, ok := parentDeps[alias]; ok {
+			// duplicates will arise, removed in the next step
+			disabled = append(disabled, deps...)
+		}
+	}
+
+	// remove duplicates
+	dups := make(map[string]bool)
+	for _, d := range disabled {
+		dups[d] = true
+	}
+
+	disabled = []string{}
+	for d := range dups {
+		disabled = append(disabled, d)
+	}
+
+	return disabled
+}
+
 func normalizeWhitelistVarRun(f *pflag.FlagSet, name string) pflag.NormalizedName {
 	switch name {
 	case "binary":
 		name = FlagBinDaemon
-	case "disabled":
+	case "disabled", "remove":
 		name = FlagDisabled
-	case "enabled":
-		name = FlagEnabled
 	case "bypass", "skip", "force", "prompt-bypass", "bypass-ui", "no-ui":
 		name = FlagBypassPrompt
 	case "token", "denomination", "coin":
