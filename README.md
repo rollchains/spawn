@@ -39,7 +39,7 @@ spawn new rollchain \
 --bech32=roll `# the prefix for addresses` \
 --denom=uroll `# the coin denomination to create` \
 --bin=rolld `# the name of the binary` \
---disabled=cosmwasm `# modules to disable. By default all modules are enabled [tokenfactory, PoA, globalfee, cosmwasm]` \
+--disabled=cosmwasm `# modules to disable. [proof-of-authority,tokenfactory,globalfee,packetforward,cosmwasm,wasm-lc,ignite]` \
 --org=${GITHUB_USERNAME} `# the github username or organization to use for the module imports`
 ```
 
