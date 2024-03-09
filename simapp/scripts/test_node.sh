@@ -98,7 +98,7 @@ from_scratch () {
 
   # === CUSTOM MODULES ===
   # globalfee
-  update_test_genesis `printf '.app_state["globalfee"]["params"]["minimum_gas_prices"]=[{"amount":"0.002500000000000000","denom":"%s"}]' $DENOM`
+  update_test_genesis `printf '.app_state["globalfee"]["params"]["minimum_gas_prices"]=[{"amount":"0.000000000000000000","denom":"%s"}]' $DENOM`
   # tokenfactory
   update_test_genesis '.app_state["tokenfactory"]["params"]["denom_creation_fee"]=[]'
   update_test_genesis '.app_state["tokenfactory"]["params"]["denom_creation_gas_consume"]=100000'
