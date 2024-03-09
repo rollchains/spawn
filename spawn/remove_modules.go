@@ -18,7 +18,8 @@ func AliasName(name string) string {
 		return "globalfee"
 	case "wasm", "cosmwasm", "cw":
 		return "cosmwasm"
-	case "wasmlc", "wasm-lc", "cwlc", "cosmwasm-lc", "wasm-light-client", "08wasm", "08-wasm":
+	case "wasmlc", "wasm-lc", "cwlc", "cosmwasm-lc", "wasm-light-client",
+		"08wasm", "08-wasm", "08wasmlc", "08wasm-lc", "08-wasm-lc", "08-wasmlc":
 		return "wasmlc"
 	case "ibc-packetforward", "packetforward", "pfm":
 		return "packetforward"
