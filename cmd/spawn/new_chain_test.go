@@ -51,7 +51,23 @@ func TestDisabled(t *testing.T) {
 
 			res := CleanDisabled(tc.disabled)
 			if !tc.panics {
-				require.EqualValues(t, tc.expected, res, "expected %v, got %v", tc.expected, res)
+				require.Len(t, res, len(tc.expected))
+
+				// ensure every element within tc.expected is in res (ignore order)
+				found := make(map[string]bool)
+				for _, e := range tc.expected {
+					found[e] = false
+				}
+
+				for _, r := range res {
+					if _, ok := found[r]; ok {
+						found[r] = true
+					}
+				}
+
+				for k, v := range found {
+					require.True(t, v, "expected %s to be found in res", k)
+				}
 			}
 		})
 	}
