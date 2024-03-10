@@ -13,12 +13,10 @@ In this 4 minute demo Jack:
   - Stores the new data types
   - Adds the application logic
   - Connect it to the command line
-
-He then:
 - Runs the `sh-testnet` to build and launch the chain locally
 - Interacts with the chain's nameservice logic, settings a name, and retrieving it
 
-TODO Upload here !!!!
+https://github.com/rollchains/spawn/assets/31943163/ecc21ce4-c42c-4ff2-8e73-897c0ede27f0
 
 ## Requirements
 
