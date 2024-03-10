@@ -6,13 +6,17 @@ Spawn is the best development platform for building custom modular Cosmos-SDK bl
 
 ## Spawn in Action
 
-In this demo @Reecepbcups:
-- Downloads and installs `spawn`
+In this 4 minute demo Jack:
 - Creates a new chain, customizing the modules and genesis
-- Installs the chain binary and spins up a local testnet
-- Interacts with the chain using the `appd` CLI
+- Creates a new `nameservice` module
+  - Adds the new message structure for transactions and queries
+  - Stores the new data types
+  - Adds the application logic
+  - Connect it to the command line
+- Runs the `sh-testnet` to build and launch the chain locally
+- Interacts with the chain's nameservice logic, settings a name, and retrieving it
 
-https://github.com/rollchains/spawn/assets/10821110/0de7bf37-c82a-4826-a3e3-13def6a53327
+https://github.com/rollchains/spawn/assets/31943163/ecc21ce4-c42c-4ff2-8e73-897c0ede27f0
 
 ## Requirements
 
