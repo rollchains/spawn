@@ -2,11 +2,11 @@
   <h1>Spawn</h1>
 </div>
 
-Spawn is the best development platform for building custom modular Cosmos-SDK blockchains. Pick and choose modules to create a network tailor-fit to your needs. Use the native Cosmos tools and standards you're already familiar with. Quickly test interoperability between your new chain and established networks like the Cosmos-Hub across local devnet, public testnet, and mainnet through native InterchainTest support. Take advantage of the latest innovations, such as Proof-Of-Authority consensus and Celestia Data Availability. Build without limits.
+Spawn is the easiest way to build, maintain and scale a Cosmos SDK blockchain. Built for developers, by developers, Spawn solves all the key pain points engineers face when building new SDK networks. Pick and choose modules to create a network tailor-fit to your needs. Use the native Cosmos tools and standards you're already familiar with. Quickly test interoperability between your new chain and established networks like the Cosmos-Hub across local devnet, public testnet, and mainnet through native InterchainTest support. Take advantage of the latest innovations, such as Proof-Of-Authority consensus and Celestia Data Availability. Build without limits.
 
 ## Spawn in Action
 
-In this 4 minute demo Jack:
+In this 4 minute demo we:
 - Creates a new chain, customizing the modules and genesis
 - Creates a new `nameservice` module
   - Adds the new message structure for transactions and queries
