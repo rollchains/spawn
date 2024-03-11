@@ -79,11 +79,7 @@ rolld tx ibc-transfer transfer transfer channel-0 cosmos1hj5fveer5cjtn4wd6wstzug
 # Query the other side to confirm it went through
 sleep 10
 
-curl -X POST -H "Content-Type: application/json" -d '{
-  "chain_id": "localcosmos-1",
-  "action": "query",
-  "cmd": "bank balances cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr"
-}' http://127.0.0.1:8080/
+local-ic interact localcosmos-1 query 'bank balances cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr'
 ```
 
 6. Push your new chain to a new repository
@@ -95,4 +91,5 @@ curl -X POST -H "Content-Type: application/json" -d '{
 git remote add origin https://github.com/{your_github_username}/rollchain.git
 git push -u origin master
 ```
-In this tutorial, we configured a new custom chain, launched a testnet for it, tested a simple token transfer, and then pushed the custom chain code to a new git repo. This tutorial demonstrates just how easy it is to create a brand new custom Cosmos-SDK blockchain from scratch, saving developers time.
+
+In this tutorial, we configured a new custom chain, launched a testnet for it, tested a simple token transfer, and confirmed it was successful. This tutorial demonstrates just how easy it is to create a brand new custom Cosmos-SDK blockchain from scratch, saving developers time.
