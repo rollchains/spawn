@@ -173,12 +173,11 @@ var (
 	NodeDir      = ".wasmd"
 	Bech32Prefix = "wasm"
 
-	capabilities = strings.Join(
-		[]string{
-			"iterator", "staking", "stargate",
-			"cosmwasm_1_1", "cosmwasm_1_2", "cosmwasm_1_3", "cosmwasm_1_4",
-			"token_factory", // spawntag:tokenfactory
-		}, ",")
+	capabilities = []string{
+		"iterator", "staking", "stargate",
+		"cosmwasm_1_1", "cosmwasm_1_2", "cosmwasm_1_3", "cosmwasm_1_4",
+		"token_factory", // spawntag:tokenfactory
+	}
 )
 
 // These constants are derived from the above variables.
@@ -748,7 +747,7 @@ func NewChainApp(
 		app.GRPCQueryRouter(),
 		wasmDir,
 		wasmConfig,
-		strings.Join(AllCapabilities(), ","),
+		capabilities,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		wasmOpts...,
 	)
@@ -770,7 +769,8 @@ func NewChainApp(
 	dataDir := filepath.Join(homePath, "data")
 
 	var memCacheSizeMB uint32 = 100
-	lc08, err := wasmvm.NewVM(filepath.Join(dataDir, "08-light-client"), capabilities, 32, false, memCacheSizeMB)
+	// TODO: change this to v2 wasmvm, remove capabilities
+	lc08, err := wasmvm.NewVM(filepath.Join(dataDir, "08-light-client"), strings.Join(capabilities, ","), 32, false, memCacheSizeMB)
 	if err != nil {
 		panic(fmt.Sprintf("failed to create VM for 08 light client: %s", err))
 	}
