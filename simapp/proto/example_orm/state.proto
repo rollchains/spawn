@@ -1,0 +1,18 @@
+syntax = "proto3";
+package example_orm.v1;
+
+import "cosmos/orm/v1/orm.proto";
+
+option go_package = "github.com/rollchains/simapp/x/example_orm/types";
+
+message Balance {
+    option (cosmos.orm.v1.table) = {
+      id: 1;
+      primary_key: { fields: "account,denom" }
+      index: { id: 1 fields: "denom" } // this allows querying for the accounts which own a denom
+    };
+
+    bytes account = 1;
+    string denom   = 2;
+    uint64 amount  = 3;
+}
