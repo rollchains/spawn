@@ -24,13 +24,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set env variables
-        run: |
-          echo "SERVER_IPV4_ADDR=$(curl icanhazip.com -4)" >> $GITHUB_ENV
-          echo "GITHUB_SHA=${{github.sha}}" >> $GITHUB_ENV
-          echo "GITHUB_REF_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
-          echo "REPO_NAME=`echo ${{ github.repository }} | cut -d'/' -f2`" >> $GITHUB_ENV
-
       - name: Setup System
         run: |
           sudo apt-get update
