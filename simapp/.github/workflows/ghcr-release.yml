@@ -54,8 +54,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # TODO: update package to be public in repo settings
-      # TODO: also push up normal ref_name tag (v0.0.1) along with local
+      # make sure to update package to be public in repo ghcr settings
       - name: Build and push Docker image
         uses: strangelove-ventures/heighliner-build-action@v1.0.0
         with:
