@@ -52,7 +52,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-            assignees: ${{ github.actor }}
             filename: .github/testnet.md
             update_existing: true
 

@@ -1,7 +1,6 @@
 ---
 title: New Testnet {{ date | date('dddd MMMM Do') }}
-# assignees: yourusernamehere
-# labels: enhancement
+labels: enhancement
 ---
 Server IP: {{ env.SERVER_IPV4_ADDR }}
 SSH: `ssh -o StrictHostKeyChecking=no root@{{ env.SERVER_IPV4_ADDR }}`
