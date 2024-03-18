@@ -1,23 +1,23 @@
 name: cloud testnet
 
 on:
-    push:
-      tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+' # ignore rc
+  push:
+    tags:
+    - 'v[0-9]+.[0-9]+.[0-9]+' # ignore rc
 
 # https://github.com/<org>/<repo>/settings/secrets/actions/new
 # - HCLOUD_TOKEN
 # - SSH_PRIVATE_KEY
 
 env:
-    GO_VERSION: 1.21.0
-    REGISTRY: ghcr.io
-    IMAGE_NAME: ${{ github.repository }}
-    LOCALIC_PORT: 8080
-    LOCALIC_AUTH_KEY: ""
-    HETZNER_SSH_KEY: "reece-hetzner"
-    # HETZNER_MACHINE_TYPE: "cpx31" # shared 4vCPU ($7/Mo)
-    HETZNER_MACHINE_TYPE: "ccx23" # dedicated 4 CPU 16GB Ram ($25/Mo)
+  GO_VERSION: 1.21.0
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  LOCALIC_PORT: 8080
+  LOCALIC_AUTH_KEY: ""
+  HETZNER_SSH_KEY: "reece-hetzner"
+  # HETZNER_MACHINE_TYPE: "cpx31" # shared 4vCPU ($7/Mo)
+  HETZNER_MACHINE_TYPE: "ccx23" # dedicated 4 CPU 16GB Ram ($25/Mo)
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

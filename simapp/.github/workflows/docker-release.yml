@@ -1,18 +1,18 @@
 name: docker image release
 
 on:
-    push:
-      tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+' # ignore rc
+  push:
+    tags:
+    - 'v[0-9]+.[0-9]+.[0-9]+' # ignore rc
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-    GO_VERSION: 1.21.0
-    REGISTRY: ghcr.io
-    IMAGE_NAME: ${{ github.repository }}
+  GO_VERSION: 1.21.0
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   release-image:
@@ -68,6 +68,6 @@ jobs:
             make install
           local: true
           binaries: |
-            - /go/bin/simd
+            - /go/bin/wasmd
           build-env: |
             - BUILD_TAGS=muslc

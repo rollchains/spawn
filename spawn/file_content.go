@@ -99,6 +99,10 @@ func (fc *FileContent) ReplaceGithubActionWorkflows(cfg *NewChainConfig) {
 	if fc.IsPath(path.Join(".github", "workflows", "interchaintest-e2e.yml")) {
 		fc.ReplaceAll("wasmd:local", fmt.Sprintf("%s:local", strings.ToLower(cfg.ProjectName)))
 	}
+	if fc.IsPath(path.Join(".github", "workflows", "docker-release.yml")) {
+		fc.ReplaceAll("/go/bin/wasmd", fmt.Sprintf("/go/bin/%s", cfg.BinDaemon))
+	}
+
 }
 
 func (fc *FileContent) ReplaceDockerFile(cfg *NewChainConfig) {
