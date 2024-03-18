@@ -56,7 +56,7 @@ jobs:
             filename: .github/testnet.md
             update_existing: true
 
-      - name: executing remote ssh commands using ssh key
+      - name: Testnet setup
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ env.SERVER_IPV4_ADDR }}
@@ -64,10 +64,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            function docker-killall() {
-              docker kill $(docker ps -q)
-            }
-
             sudo apt-get update
             sudo DEBIAN_FRONTEND=noninteractive apt -y install make gcc jq bison ca-certificates curl
 
@@ -93,7 +89,6 @@ jobs:
             git checkout ${{ github.ref_name }}
             make local-image
 
-            # TODO: service file would be 10x better :) (put in ictest local-ic dir for setup too)
-            # auth_key should be a github env secret
+            # TODO: service file would be 10x better :) (local-ic gen-service-file) -- (put in ictest local-ic dir for example setup too)
             sudo screen -S testnet -d -m local-ic start ibc-testnet --api-address=0.0.0.0 --api-port=${{ env.LOCALIC_PORT }} --auth-key=${{ env.LOCALIC_AUTH_KEY }}
 

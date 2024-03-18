@@ -21,12 +21,6 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: 'Setup jq'
-        uses: dcarbone/install-jq-action@v2
-        with:
-          version: '1.7'
-          force: false
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
