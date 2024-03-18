@@ -2,7 +2,7 @@ name: self-hosted testnet
 
 #
 # Setup a runner on your own hardware or in a public cloud like GCP, Hetzner, etc.
-# This is require if your chain is closed source but you want a dev/semi-public testnet
+# This is required if your chain is closed source but you want a dev/semi-public testnet
 # - https://github.com/<org>/<repo>/settings/actions/runners/new?arch=x64&os=linux
 #
 
