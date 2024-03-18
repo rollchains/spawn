@@ -2,6 +2,7 @@ name: self-hosted testnet
 
 #
 # Setup a runner on your own hardware or in a public cloud like GCP, Hetzner, etc.
+# This is require if your chain is closed source but you want a dev/semi-public testnet
 # - https://github.com/<org>/<repo>/settings/actions/runners/new?arch=x64&os=linux
 #
 
@@ -59,4 +60,6 @@ jobs:
           make local-image
 
           sudo screen -S testnet-${{ github.ref_name }} -d -m local-ic start ibc-testnet --api-address=0.0.0.0 --api-port=${{ env.LOCALIC_PORT }} --auth-key=${{ env.LOCALIC_AUTH_KEY }}
+
+          # Add other commands here you perform for setup once local-ic has started (poll on LOCALIC_PORT) such as contract upload.
 
