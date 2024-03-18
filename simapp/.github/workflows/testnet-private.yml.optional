@@ -55,6 +55,5 @@ jobs:
 
           make local-image
 
-          # TODO: service file would be 10x better :) (local-ic gen-service-file) -- (put in ictest local-ic dir for example setup too)
           sudo screen -S testnet-${{ github.ref_name }} -d -m local-ic start ibc-testnet --api-address=0.0.0.0 --api-port=${{ env.LOCALIC_PORT }} --auth-key=${{ env.LOCALIC_AUTH_KEY }}
 
