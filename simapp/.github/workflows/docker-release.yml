@@ -1,5 +1,9 @@
 name: docker image release
 
+# NOTE: For this action to work, you must enable write permissions in your github repository settings.
+# Settings -> Actions -> General. "Workflow Permissions". Select "Read and write permissions".
+# If you forget to enable, the action will fail on push with a 401 error. Just re-run the failed action after enabling.
+
 on:
   push:
     tags:
