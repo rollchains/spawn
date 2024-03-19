@@ -1,6 +1,6 @@
 name: "Release Binary"
 
-# Pairs with .goreleaser.yml file for configuration.
+# Pairs with .goreleaser.yaml file for configuration.
 
 on:
   push:
