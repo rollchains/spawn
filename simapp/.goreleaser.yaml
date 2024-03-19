@@ -1,9 +1,13 @@
 project_name: simapp
+
 release:
   github:
     owner: rollchains
     name: simapp
   name_template: '{{.Tag}}'
+
+# Only uncomment os, arch, and targets if you are NOT using cosmwasm / wasm-light-client.
+# Windows, 386 (32bit), and ARM are not Wasm compatible.
 builds:
   - id: simapp
     goos:
