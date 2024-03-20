@@ -24,7 +24,6 @@ func TestORM(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, d)
 
-	// get it
 	res, err := dt.Get(f.ctx, []byte("test_acc"))
 	require.NoError(t, err)
 	require.NotNil(t, res)
