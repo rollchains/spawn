@@ -4,9 +4,6 @@ set -e
 
 GO_MOD_PACKAGE="github.com/rollchains/simapp"
 
-# TODO: check if installed, if not, do.
-go install cosmossdk.io/orm/cmd/protoc-gen-go-cosmos-orm@latest
-
 echo "Generating gogo proto code"
 cd proto
 proto_dirs=$(find . -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)

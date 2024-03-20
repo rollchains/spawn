@@ -21,7 +21,6 @@ const (
 
 var ORMModuleSchema = ormv1alpha1.ModuleSchemaDescriptor{
 	SchemaFile: []*ormv1alpha1.ModuleSchemaDescriptor_FileEntry{
-		// TODO: rename on generate
 		{Id: 1, ProtoFileName: "example/v1/state.proto"},
 	},
 	Prefix: []byte{0},
