@@ -25,7 +25,7 @@ type Keeper struct {
 	// state management
 	Schema collections.Schema
 	Params collections.Item[types.Params]
-	OrmDB  apiv1.StateStore // spawntag:orm
+	OrmDB  apiv1.StateStore
 
 	authority string
 }
@@ -45,7 +45,6 @@ func NewKeeper(
 		authority = authtypes.NewModuleAddress(govtypes.ModuleName).String()
 	}
 
-	// <spawntag:orm
 	db, err := ormdb.NewModuleDB(&types.ORMModuleSchema, ormdb.ModuleDBOptions{KVStoreService: storeService})
 	if err != nil {
 		panic(err)
@@ -55,14 +54,13 @@ func NewKeeper(
 	if err != nil {
 		panic(err)
 	}
-	// spawntag:orm>
 
 	k := Keeper{
 		cdc:    cdc,
 		logger: logger,
 
 		Params: collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
-		OrmDB:  store, //spawntag:orm
+		OrmDB:  store,
 
 		authority: authority,
 	}
