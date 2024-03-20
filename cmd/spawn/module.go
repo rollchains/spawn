@@ -17,11 +17,17 @@ import (
 	lang "golang.org/x/text/language"
 )
 
-const FlagIsIBCMiddleware = "ibc-middleware"
+const (
+	FlagIsIBCMiddleware = "ibc-middleware"
+)
+
+type features struct {
+	ibcMiddleware bool
+}
 
 func normalizeModuleFlags(f *pflag.FlagSet, name string) pflag.NormalizedName {
 	switch name {
-	case "ibc", "ibcmiddleware", "middleware":
+	case "ibcmiddleware", "middleware":
 		name = FlagIsIBCMiddleware
 	}
 
@@ -80,20 +86,24 @@ func NewCmd() *cobra.Command {
 				return
 			}
 
+			feats := &features{
+				ibcMiddleware: isIBCMiddleware,
+			}
+
 			// Setup Proto files to match the new x/ cosmos module name & go.mod module namespace (i.e. github org).
-			if err := SetupModuleProtoBase(GetLogger(), extName, isIBCMiddleware); err != nil {
+			if err := SetupModuleProtoBase(GetLogger(), extName, feats); err != nil {
 				logger.Error("Error setting up proto for module", err)
 				return
 			}
 
 			// sets up the files in x/
-			if err := SetupModuleExtensionFiles(GetLogger(), extName, isIBCMiddleware); err != nil {
+			if err := SetupModuleExtensionFiles(GetLogger(), extName, feats); err != nil {
 				logger.Error("Error setting up x/ module files", err)
 				return
 			}
 
 			// Import the files to app.go
-			if err := AddModuleToAppGo(GetLogger(), extName, isIBCMiddleware); err != nil {
+			if err := AddModuleToAppGo(GetLogger(), extName, feats); err != nil {
 				logger.Error("Error adding new x/ module to app.go", err)
 				return
 			}
@@ -114,7 +124,7 @@ func NewCmd() *cobra.Command {
 
 // SetupModuleProtoBase iterates through the proto embedded fs and replaces the paths and goMod names to match
 // the new desired module.
-func SetupModuleProtoBase(logger *slog.Logger, extName string, ibcMiddleware bool) error {
+func SetupModuleProtoBase(logger *slog.Logger, extName string, feats *features) error {
 	protoFS := simapp.ProtoModuleFS
 
 	if err := os.MkdirAll("proto", 0755); err != nil {
@@ -131,7 +141,7 @@ func SetupModuleProtoBase(logger *slog.Logger, extName string, ibcMiddleware boo
 	protoNamespace := convertGoModuleNameToProtoNamespace(goModName)
 
 	moduleName := "example"
-	if ibcMiddleware {
+	if feats.ibcMiddleware {
 		moduleName = "ibcmiddleware"
 	}
 
@@ -177,7 +187,7 @@ func SetupModuleProtoBase(logger *slog.Logger, extName string, ibcMiddleware boo
 
 // SetupModuleExtensionFiles iterates through the x/example embedded fs and replaces the paths and goMod names to match
 // the new desired module.
-func SetupModuleExtensionFiles(logger *slog.Logger, extName string, ibcMiddleware bool) error {
+func SetupModuleExtensionFiles(logger *slog.Logger, extName string, feats *features) error {
 	extFS := simapp.ExtensionFS
 
 	if err := os.MkdirAll(path.Join("x", extName), 0755); err != nil {
@@ -191,7 +201,7 @@ func SetupModuleExtensionFiles(logger *slog.Logger, extName string, ibcMiddlewar
 	}
 
 	moduleName := "example"
-	if ibcMiddleware {
+	if feats.ibcMiddleware {
 		moduleName = "ibcmiddleware"
 	}
 
@@ -238,7 +248,7 @@ func SetupModuleExtensionFiles(logger *slog.Logger, extName string, ibcMiddlewar
 }
 
 // AddModuleToAppGo adds the new module to the app.go file.
-func AddModuleToAppGo(logger *slog.Logger, extName string, ibcMiddleware bool) error {
+func AddModuleToAppGo(logger *slog.Logger, extName string, feats *features) error {
 	extNameTitle := textcases.Title(lang.AmericanEnglish).String(extName)
 
 	cwd, err := os.Getwd()
@@ -289,7 +299,7 @@ func AddModuleToAppGo(logger *slog.Logger, extName string, ibcMiddleware bool) e
 	logger.Debug("evidence keeper", "extName", extName, "line", evidenceTextLine)
 
 	var keeperText string
-	if ibcMiddleware {
+	if feats.ibcMiddleware {
 		keeperText = fmt.Sprintf(`	// Create the %s Middleware Keeper
 	app.%sKeeper = %skeeper.NewKeeper(
 		appCodec,
@@ -313,7 +323,7 @@ func AddModuleToAppGo(logger *slog.Logger, extName string, ibcMiddleware bool) e
 	logger.Debug("module manager", "extName", extName, "start", start, "end", end)
 
 	var newAppModuleText string
-	if ibcMiddleware {
+	if feats.ibcMiddleware {
 		newAppModuleText = fmt.Sprintf(`		%s.NewAppModule(app.%sKeeper),`+"\n", extName, extNameTitle)
 	} else {
 		newAppModuleText = fmt.Sprintf(`		%s.NewAppModule(appCodec, app.%sKeeper),`+"\n", extName, extNameTitle)
