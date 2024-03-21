@@ -1,6 +1,6 @@
 # Spawn Demo
 
-[Spawn Introduction Article](http://TODO)
+[Spawn Introduction Article](https://x.com/rollchains/status/1767218100242427952?s=20)
 
 Introducing spawn, the developer tool that gets your cosmos chain up and running quickly. Allowing you to focus on what matters: your product.
 
