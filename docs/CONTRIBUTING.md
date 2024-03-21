@@ -33,7 +33,7 @@ To get started, follow these steps:
    git clone https://github.com/<Username>/spawn.git
    ```
 
-3. Crate a new branch on your fork
+3. Create a new branch on your fork
 
     ```sh
     git checkout -b name/broad-description-of-feature
@@ -74,7 +74,7 @@ We welcome bug reports, feature requests, and other contributions to our project
 
 ## Pull requests
 
-In almost all cases, you should target branch `main` with your work. In the event it spans multiple releases, we will backport to the previous release branch as well. This can be found in our [READMEs maintained branches](./README.md#maintained-branches).
+In almost all cases, you should target the default branch with your work. In the event it spans multiple releases, we will backport to the previous release branch as well.
 
 For internal branches, branch names should be prefixed with the author's name followed by a short description of the feature, eg. `name/feature-x`.
 

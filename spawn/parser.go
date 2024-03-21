@@ -132,7 +132,7 @@ func (fc *FileContent) RemoveModuleFromText(removeText string, pathSuffix ...str
 		}
 
 		// if we are in a batch delete, then we need to continue until we find the close parenthesis or bracket
-		// (i.e. NewKeeper in app.go is a good example fo this)
+		// (i.e. NewKeeper in app.go is a good example of this)
 		if startBatchDelete {
 			fc.Logger.Debug("rm", "idx", idx, "line", line)
 
