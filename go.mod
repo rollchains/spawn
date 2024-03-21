@@ -1,4 +1,4 @@
-module gitub.com/rollchains/spawn
+module github.com/rollchains/spawn
 
 go 1.21.0
 

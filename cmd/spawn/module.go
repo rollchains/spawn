@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"github.com/rollchains/simapp"
+	"github.com/rollchains/spawn/spawn"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"gitub.com/rollchains/spawn/spawn"
 
 	textcases "golang.org/x/text/cases"
 	lang "golang.org/x/text/language"
