@@ -12,7 +12,7 @@ import (
 )
 
 type FileContent struct {
-	// The path from within the embeded FileSystem
+	// The path from within the embedded FileSystem
 	RelativePath string
 	// The new location of the file
 	NewPath string

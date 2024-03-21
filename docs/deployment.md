@@ -10,7 +10,7 @@ The simplest deployment is a single node. This is the easiest to set up and is t
 - No scalability
 - Insecure IBC
 
-TODO: Add some options for easy deployment for single node deployments. If theres some GH action thing to deploy to a cloud that would be ideal.
+TODO: Add some options for easy deployment for single node deployments. If there's some GH action thing to deploy to a cloud that would be ideal.
 
 ## Single Node with Horcrux
 

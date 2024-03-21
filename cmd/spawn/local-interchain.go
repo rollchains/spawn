@@ -47,7 +47,7 @@ var LocalICCmd = &cobra.Command{
 			logger.Error("Error setting local-ic permissions", "err", err)
 		}
 
-		// set to use the current dir if it is not overrriden
+		// set to use the current dir if it is not overridden
 		if os.Getenv("ICTEST_HOME") == "" {
 			if err := os.Setenv("ICTEST_HOME", "."); err != nil {
 				logger.Error("Error setting ICTEST_HOME", "err", err)
