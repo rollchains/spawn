@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/rollchains/spawn/spawn"
 	"github.com/spf13/cobra"
-	"gitub.com/rollchains/spawn/spawn"
 )
 
 func ProtoServiceGenerate() *cobra.Command {

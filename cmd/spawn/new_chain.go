@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"gitub.com/rollchains/spawn/spawn"
+	"github.com/rollchains/spawn/spawn"
 )
 
 var (

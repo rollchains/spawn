@@ -13,8 +13,8 @@ import (
 
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
+	"github.com/rollchains/spawn/plugins"
 	"github.com/spf13/cobra"
-	"gitub.com/rollchains/spawn/plugins"
 )
 
 // Set in the makefile ld_flags on compile

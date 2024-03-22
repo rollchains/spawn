@@ -5,8 +5,8 @@ import (
 	"os"
 	"path"
 
+	plugins "github.com/rollchains/spawn/plugins"
 	"github.com/spf13/cobra"
-	plugins "gitub.com/rollchains/spawn/plugins"
 )
 
 // Make the plugin public
