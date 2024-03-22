@@ -26,9 +26,9 @@ import (
 
 	"cosmossdk.io/core/store"
 
-	module "github.com/rollchains/simapp/x/example"
-	"github.com/rollchains/simapp/x/example/keeper"
-	"github.com/rollchains/simapp/x/example/types"
+	module "github.com/rollchains/spawn/simapp/x/example"
+	"github.com/rollchains/spawn/simapp/x/example/keeper"
+	"github.com/rollchains/spawn/simapp/x/example/types"
 	"github.com/strangelove-ventures/poa"
 )
 

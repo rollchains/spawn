@@ -1,4 +1,4 @@
-module github.com/rollchains/simapp
+module github.com/rollchains/spawn/simapp
 
 go 1.21
 

@@ -2,7 +2,7 @@
 
 set -e
 
-GO_MOD_PACKAGE="github.com/rollchains/simapp"
+GO_MOD_PACKAGE="github.com/rollchains/spawn/simapp"
 
 echo "Generating gogo proto code"
 cd proto

@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	"github.com/rollchains/simapp/x/example/types"
+	"github.com/rollchains/spawn/simapp/x/example/types"
 
 	"github.com/stretchr/testify/require"
 )

@@ -13,8 +13,8 @@ import (
 	"cosmossdk.io/log"
 	"cosmossdk.io/orm/model/ormdb"
 
-	apiv1 "github.com/rollchains/simapp/api/example/v1"
-	"github.com/rollchains/simapp/x/example/types"
+	apiv1 "github.com/rollchains/spawn/simapp/api/example/v1"
+	"github.com/rollchains/spawn/simapp/x/example/types"
 )
 
 type Keeper struct {

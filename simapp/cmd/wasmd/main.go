@@ -6,7 +6,7 @@ import (
 	"cosmossdk.io/log"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
-	"github.com/rollchains/simapp/app"
+	"github.com/rollchains/spawn/simapp/app"
 )
 
 func main() {

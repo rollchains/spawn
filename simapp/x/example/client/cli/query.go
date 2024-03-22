@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 
-	"github.com/rollchains/simapp/x/example/types"
+	"github.com/rollchains/spawn/simapp/x/example/types"
 )
 
 // !NOTE: Must enable in module.go (disabled in favor of autocli.go)
