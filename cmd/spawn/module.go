@@ -8,7 +8,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/rollchains/simapp"
+	"github.com/rollchains/spawn/simapp"
 	"github.com/rollchains/spawn/spawn"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -175,7 +175,7 @@ func SetupModuleProtoBase(logger *slog.Logger, extName string, feats *features) 
 			fc.NewPath = strings.ReplaceAll(fc.NewPath, exampleProtoPath, newBinPath)
 		}
 
-		fc.ReplaceAll("github.com/rollchains/simapp", goModName)
+		fc.ReplaceAll("github.com/rollchains/spawn/simapp", goModName)
 		fc.ReplaceAll("strangelove_ventures.simapp", protoNamespace)
 
 		// replace example -> the new x/ name
@@ -238,7 +238,7 @@ func SetupModuleExtensionFiles(logger *slog.Logger, extName string, feats *featu
 			fc.NewPath = strings.ReplaceAll(fc.NewPath, examplePath, newBinPath)
 		}
 
-		fc.ReplaceAll("github.com/rollchains/simapp", goModName)
+		fc.ReplaceAll("github.com/rollchains/spawn/simapp", goModName)
 		fc.ReplaceAll(fmt.Sprintf("x/%s", moduleName), fmt.Sprintf("x/%s", extName))
 		fc.ReplaceAll(fmt.Sprintf("package %s", moduleName), fmt.Sprintf("package %s", extName))
 		fc.ReplaceAll(moduleName, extName)

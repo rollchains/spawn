@@ -10,7 +10,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/rollchains/simapp"
+	"github.com/rollchains/spawn/simapp"
 	"golang.org/x/tools/imports"
 )
 
