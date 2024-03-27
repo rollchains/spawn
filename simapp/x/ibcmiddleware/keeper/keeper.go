@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/rollchains/simapp/x/ibcmiddleware/types"
+	"github.com/rollchains/spawn/simapp/x/ibcmiddleware/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"

@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/rollchains/simapp/x/example/types"
+	"github.com/rollchains/spawn/simapp/x/example/types"
 )
 
 func TestParams(t *testing.T) {

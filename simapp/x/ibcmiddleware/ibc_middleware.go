@@ -1,7 +1,7 @@
 package ibcmiddleware
 
 import (
-	"github.com/rollchains/simapp/x/ibcmiddleware/keeper"
+	"github.com/rollchains/spawn/simapp/x/ibcmiddleware/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"

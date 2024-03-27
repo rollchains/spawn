@@ -22,8 +22,8 @@ import (
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	"github.com/rollchains/simapp/app"
-	"github.com/rollchains/simapp/app/params"
+	"github.com/rollchains/spawn/simapp/app"
+	"github.com/rollchains/spawn/simapp/app/params"
 )
 
 // NewRootCmd creates a new root command for chain app. It is called once in the

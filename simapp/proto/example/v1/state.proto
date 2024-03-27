@@ -3,7 +3,7 @@ package example.v1;
 
 import "cosmos/orm/v1/orm.proto";
 
-option go_package = "github.com/rollchains/simapp/x/example/types";
+option go_package = "github.com/rollchains/spawn/simapp/x/example/types";
 
 // https://github.com/cosmos/cosmos-sdk/blob/main/orm/README.md
 

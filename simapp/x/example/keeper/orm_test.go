@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"testing"
 
-	apiv1 "github.com/rollchains/simapp/api/example/v1"
+	apiv1 "github.com/rollchains/spawn/simapp/api/example/v1"
 	"github.com/stretchr/testify/require"
 )
 

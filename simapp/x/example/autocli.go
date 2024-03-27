@@ -2,7 +2,7 @@ package module
 
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	modulev1 "github.com/rollchains/simapp/api/example/v1"
+	modulev1 "github.com/rollchains/spawn/simapp/api/example/v1"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.

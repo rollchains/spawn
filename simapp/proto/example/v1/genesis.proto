@@ -4,7 +4,7 @@ package example.v1;
 import "gogoproto/gogo.proto";
 import "amino/amino.proto";
 
-option go_package = "github.com/rollchains/simapp/x/example/types";
+option go_package = "github.com/rollchains/spawn/simapp/x/example/types";
 
 // GenesisState defines the module genesis state
 message GenesisState {
