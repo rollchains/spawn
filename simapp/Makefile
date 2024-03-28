@@ -14,6 +14,15 @@ HTTPS_GIT := github.com/rollchains/spawn/simapp.git
 
 export GO111MODULE = on
 
+# don't override user values
+ifeq (,$(VERSION))
+  VERSION := $(shell git describe --tags --always)
+  # if VERSION is empty, then populate it with branch's name and raw commit hash
+  ifeq (,$(VERSION))
+    VERSION := $(BRANCH)-$(COMMIT)
+  endif
+endif
+
 # process build tags
 
 build_tags = netgo
