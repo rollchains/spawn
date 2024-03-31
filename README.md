@@ -2,9 +2,7 @@
   <h1>Spawn</h1>
 </div>
 
-Spawn is the easiest way to build, maintain and scale a Cosmos SDK blockchain. Build without limits.
-
-Spawn solves all the key pain points engineers face when building new Cosmos-SDK networks.
+Spawn is the easiest way to build, maintain and scale a Cosmos SDK blockchain. Spawn solves all the key pain points engineers face when building new Cosmos-SDK networks.
   - **Tailor-fit**: Pick and choose modules to create a network for your needs.
   - **Commonality**: Use native Cosmos tools and standards you're already familiar with.
   - **Integrations**: Github actions and end-to-end testing are configured right from the start.
@@ -63,6 +61,7 @@ spawn new rollchain \
 ```shell
 cd rollchain
 
+# Starts an API at http://127.0.0.1:8080 by default to view endpoints.
 make testnet
 ```
 
@@ -89,7 +88,8 @@ rolld tx ibc-transfer transfer transfer channel-0 cosmos1hj5fveer5cjtn4wd6wstzug
 # Query the other side to confirm it went through
 sleep 10
 
-# interact with the other chain without installing the cosmos binary
+# Interact with the other chain without having to install the cosmos binary
+# - Endpoints found at: GET http://127.0.0.1:8080/info
 local-ic interact localcosmos-1 query 'bank balances cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr'
 ```
 
