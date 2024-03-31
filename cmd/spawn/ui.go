@@ -59,7 +59,8 @@ func selectItems(selectedPos int, allItems items, returnOpposite bool) (items, e
 	}
 
 	prompt := promptui.Select{
-		Label:        "Feature Selector",
+		Label:        "Feature Selector (( enter to toggle ))",
+		HideHelp:     true,
 		Items:        allItems,
 		Templates:    templates,
 		Size:         10,

@@ -22,7 +22,7 @@ BUILD_FLAGS = -mod=readonly -ldflags='$(LD_FLAGS)'
 install:
 	@echo ⏳ Installing Spawn...
 	go install $(BUILD_FLAGS) ./cmd/spawn
-	@echo ✅ Spawn installed to $(shell which spawn)
+	@echo ✅ Spawn installed
 
 ## build: Build to ./bin/spawn.
 build:
