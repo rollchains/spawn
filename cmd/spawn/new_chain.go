@@ -31,8 +31,8 @@ var (
 )
 
 const (
-	FlagWalletPrefix = "bech32"
-	FlagBinDaemon    = "bin"
+	FlagWalletPrefix = "wallet-prefix"
+	FlagBinDaemon    = "binary"
 	FlagDebugging    = "debug"
 	FlagTokenDenom   = "denom"
 	FlagGithubOrg    = "org"
@@ -47,7 +47,7 @@ func init() {
 		features[idx] = feat.ID
 	}
 
-	newChain.Flags().String(FlagWalletPrefix, "cosmos", "chain wallet bech32 prefix")
+	newChain.Flags().String(FlagWalletPrefix, "cosmos", "chain bech32 wallet prefix")
 	newChain.Flags().StringP(FlagBinDaemon, "b", "simd", "binary name")
 	newChain.Flags().String(FlagGithubOrg, "rollchains", "github organization")
 	newChain.Flags().String(FlagTokenDenom, "token", "bank token denomination")
@@ -63,7 +63,8 @@ var newChain = &cobra.Command{
 	Use:   "new-chain [project-name]",
 	Short: "Create a new project",
 	Example: fmt.Sprintf(
-		`spawn new rollchain --%s=cosmos --%s=simd --%s=token --%s=tokenfactory,poa,globalfee`,
+		`  - spawn new rollchain --%s=cosmos --%s=simd --%s=token
+  - spawn new rollchain --%s=tokenfactory,poa,globalfee`,
 		FlagWalletPrefix, FlagBinDaemon, FlagTokenDenom, FlagDisabled,
 	),
 	Args:    cobra.ExactArgs(1),
@@ -145,7 +146,7 @@ func CleanDisabled(disabled []string) []string {
 
 func normalizeWhitelistVarRun(f *pflag.FlagSet, name string) pflag.NormalizedName {
 	switch name {
-	case "binary":
+	case "bin", "daemon":
 		name = FlagBinDaemon
 	case "disabled", "remove":
 		name = FlagDisabled
@@ -155,6 +156,10 @@ func normalizeWhitelistVarRun(f *pflag.FlagSet, name string) pflag.NormalizedNam
 		name = FlagTokenDenom
 	case "no-git", "ignore-git":
 		name = FlagNoGit
+	case "bech32", "prefix", "wallet":
+		name = FlagWalletPrefix
+	case "organization", "namespace":
+		name = FlagGithubOrg
 	}
 
 	return pflag.NormalizedName(name)

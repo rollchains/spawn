@@ -110,9 +110,8 @@ func NewCmd() *cobra.Command {
 
 			// Announce the new module & how to code gen the proto files.
 			fmt.Printf("\n🎉 New Module '%s' generated!\n", extName)
-			fmt.Println("🏅Generate Go Code:")
-			fmt.Println("  - $ make proto-gen         # proto -> types + dependency injection API")
-			fmt.Println("  - $ spawn stub-interfaces  # proto -> MsgServer (txs) + Querier generation")
+			fmt.Println("🏅 Commands:")
+			fmt.Println("  - $ make proto-gen     # convert proto files into code")
 		},
 	}
 

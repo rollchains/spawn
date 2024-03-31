@@ -2,35 +2,44 @@
   <h1>Spawn</h1>
 </div>
 
-Spawn is the easiest way to build, maintain and scale a Cosmos SDK blockchain. Built for developers, by developers, Spawn solves all the key pain points engineers face when building new SDK networks. Pick and choose modules to create a network tailor-fit to your needs. Use the native Cosmos tools and standards you're already familiar with. Quickly test interoperability between your new chain and established networks like the Cosmos-Hub across local devnet, public testnet, and mainnet through native InterchainTest support. Take advantage of the latest innovations, such as Proof-Of-Authority consensus and Celestia Data Availability. Build without limits.
+Spawn is the easiest way to build, maintain and scale a Cosmos SDK blockchain. Spawn solves all the key pain points engineers face when building new Cosmos-SDK networks.
+  - **Tailor-fit**: Pick and choose modules to create a network for your needs.
+  - **Commonality**: Use native Cosmos tools and standards you're already familiar with.
+  - **Integrations**: Github actions and end-to-end testing are configured right from the start.
+  - **Iteration**: Quickly test between your new chain and established networks like the local Cosmos-Hub devnet.
 
 ## Spawn in Action
 
 In this 4 minute demo we:
-- Creates a new chain, customizing the modules and genesis
-- Creates a new `nameservice` module
-  - Adds the new message structure for transactions and queries
-  - Stores the new data types
-  - Adds the application logic
+- Create a new chain, customizing the modules and genesis
+- Create a new `nameservice` module
+  - Add the new message structure for transactions and queries
+  - Store the new data types
+  - Add the application logic
   - Connect it to the command line
-- Runs the `sh-testnet` to build and launch the chain locally
+- Runs `make sh-testnet` to build and launch the chain locally
 - Interacts with the chain's nameservice logic, settings a name, and retrieving it
 
 https://github.com/rollchains/spawn/assets/31943163/ecc21ce4-c42c-4ff2-8e73-897c0ede27f0
 
 ## Requirements
 
-- `go 1.21+` - [official site](https://go.dev/doc/install)
-- Docker - [official site](https://docs.docker.com/get-docker/)
+- [`go 1.21+`](https://go.dev/doc/install)
+- [`Docker`](https://docs.docker.com/get-docker/)
+
+[MacOS + Ubuntu Setup](./docs/SYSTEM_SETUP.md)
+
+---
 
 ## Getting Started
-In this tutorial, we'll create and interact with a new Cosmos-SDK blockchain called "rollchain", with the token denomination "uroll". This chain has tokenfactory, POA, and globalfee modules enabled, but we'll disable cosmwasm.
+In this tutorial, we'll create and interact with a new Cosmos-SDK blockchain called "rollchain", with the token denomination "uroll". This chain has tokenfactory and Proof of Authority, but we'll disable cosmwasm.
 
 1. Clone this repo and install
 
 ```shell
 git clone https://github.com/rollchains/spawn.git
 cd spawn
+git checkout v0.50.1
 make install
 ```
 
@@ -43,7 +52,7 @@ spawn new rollchain \
 --bech32=roll `# the prefix for addresses` \
 --denom=uroll `# the coin denomination to create` \
 --bin=rolld `# the name of the binary` \
---disabled=cosmwasm `# modules to disable. [proof-of-authority,tokenfactory,globalfee,packetforward,cosmwasm,wasm-lc,ignite]` \
+--disabled=cosmwasm,globalfee `# disable features. [proof-of-authority,tokenfactory,globalfee,packetforward,cosmwasm,wasm-lc,ignite]` \
 --org=${GITHUB_USERNAME} `# the github username or organization to use for the module imports`
 ```
 
@@ -53,6 +62,8 @@ spawn new rollchain \
 
 ```shell
 cd rollchain
+
+# Starts an API at http://127.0.0.1:8080 by default to view endpoints.
 make testnet
 ```
 
@@ -79,17 +90,18 @@ rolld tx ibc-transfer transfer transfer channel-0 cosmos1hj5fveer5cjtn4wd6wstzug
 # Query the other side to confirm it went through
 sleep 10
 
+# Interact with the other chain without having to install the cosmos binary
+# - Endpoints found at: GET http://127.0.0.1:8080/info
 local-ic interact localcosmos-1 query 'bank balances cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr'
 ```
 
 6. Push your new chain to a new repository
 
-> [Create a new repository on GitHub](https://github.com/new)
-
 ```shell
-# git init, add, and commit are all handled by default unless you add the `--no-git` flag on create
-git remote add origin https://github.com/{your_github_username}/rollchain.git
-git push -u origin master
+# Create a new repository on GitHub from the gh cli
+gh repo create rollchain --source=. --remote=upstream --push --private
 ```
+
+> You can also push it the old fashioned way with https://github.com/new
 
 In this tutorial, we configured a new custom chain, launched a testnet for it, tested a simple token transfer, and confirmed it was successful. This tutorial demonstrates just how easy it is to create a brand new custom Cosmos-SDK blockchain from scratch, saving developers time.

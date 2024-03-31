@@ -53,16 +53,15 @@ func (cfg *NewChainConfig) Validate() error {
 
 func (cfg *NewChainConfig) AnnounceSuccessfulBuild() {
 	projName := cfg.ProjectName
-	bin := cfg.BinDaemon
+	// bin := cfg.BinDaemon
 
 	// no logger here, straight to stdout
-	fmt.Printf("🎉 New blockchain '%s' generated!\n", projName)
-	fmt.Println("🏅Getting started:")
+	fmt.Printf("\n🎉 New blockchain '%s' generated!\n", projName)
+	fmt.Println("🏅 Getting started:")
 	fmt.Println("  - $ cd " + projName)
-	fmt.Println("  - $ make testnet             # build & start a testnet with IBC")
-	fmt.Println("  - $ make install             # build the " + bin + " binary")
-	fmt.Println("  - $ make local-image         # build docker image")
-	fmt.Println("  - $ spawn module new <name>  # generate a new module scaffolding")
+	fmt.Printf("  - $ gh repo create %s --source=. --remote=upstream --push --private\n", projName)
+	fmt.Println("  - $ spawn module new <name>   # generate a new module scaffolding")
+	fmt.Println("  - $ make testnet              # build & start a testnet with IBC")
 }
 
 func (cfg *NewChainConfig) GithubPath() string {
@@ -74,8 +73,8 @@ func (cfg *NewChainConfig) NewChain() {
 	disabled := cfg.DisabledModules
 	logger := cfg.Logger
 
-	logger.Info("Spawning new app", "app", NewDirName)
-	logger.Info("Disabled features", "features", disabled)
+	logger.Debug("Spawning new app", "app", NewDirName)
+	logger.Debug("Disabled features", "features", disabled)
 
 	if err := os.MkdirAll(NewDirName, 0755); err != nil {
 		panic(err)
