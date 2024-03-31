@@ -97,13 +97,11 @@ local-ic interact localcosmos-1 query 'bank balances cosmos1hj5fveer5cjtn4wd6wst
 
 6. Push your new chain to a new repository
 
-> [Create a new repository on GitHub](https://github.com/new)
-
 ```shell
-# git init, add, and commit are all handled by default unless you add the `--no-git` flag on create
-git remote add origin https://github.com/{your_github_username}/rollchain.git
-
-git push -u origin master
+# Create a new repository on GitHub from the gh cli
+gh repo create rollchain --source=. --remote=upstream --push --private
 ```
+
+> You can also push it the old fashioned way with https://github.com/new
 
 In this tutorial, we configured a new custom chain, launched a testnet for it, tested a simple token transfer, and confirmed it was successful. This tutorial demonstrates just how easy it is to create a brand new custom Cosmos-SDK blockchain from scratch, saving developers time.
