@@ -199,7 +199,7 @@ proto-gen:
 	@echo "Generating Protobuf files"
 	@$(protoImage) sh ./scripts/protocgen.sh
 # generate the stubs for the proto files from the proto directory
-	spawn stub-gen
+	@spawn stub-gen
 
 proto-format:
 	@echo "Formatting Protobuf files"
@@ -302,3 +302,22 @@ sh-testnet: mod-tidy
 	CHAIN_ID="local-1" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
 
 .PHONY: setup-testnet set-testnet-configs testnet testnet-basic sh-testnet
+
+###############################################################################
+###                                     help                                ###
+###############################################################################
+
+help:
+	@echo "Usage: make <target>"
+	@echo ""
+	@echo "Available targets:"
+	@echo "  install             : Install the binary"
+	@echo "  local-image         : Install the docker image"
+	@echo "  proto-gen           : Generate code from proto files"
+	@echo "  testnet             : Local devnet with IBC to a local CosmosHub"
+	@echo "  testnet-basic       : Standalone devnet"
+	@echo "  sh-testnet          : Shell local devnet"
+	@echo "  ictest-basic        : Basic end-to-end test"
+	@echo "  ictest-ibc          : IBC end-to-end test"
+
+.PHONY: help
