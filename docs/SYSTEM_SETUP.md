@@ -7,6 +7,7 @@ brew install gcc
 
 # Github CLI - https://github.com/cli/cli
 brew install gh
+gh auth login
 
 # Golang
 brew install go
@@ -23,6 +24,7 @@ sudo apt-get install make gcc
 
 # Github CLI - https://github.com/cli/cli
 curl -sS https://webi.sh/gh | sh
+gh auth login
 
 # Golang
 wget https://go.dev/dl/go1.22.1.linux-amd64.tar.gz

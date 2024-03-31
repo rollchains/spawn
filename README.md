@@ -22,10 +22,12 @@ In this 4 minute demo we:
 
 https://github.com/rollchains/spawn/assets/31943163/ecc21ce4-c42c-4ff2-8e73-897c0ede27f0
 
-## [Requirements](./docs/SYSTEM_SETUP.md)
+## Requirements
 
 - [`go 1.21+`](https://go.dev/doc/install)
 - [`Docker`](https://docs.docker.com/get-docker/)
+
+[MacOS + Ubuntu Setup](./docs/SYSTEM_SETUP.md)
 
 ---
 
