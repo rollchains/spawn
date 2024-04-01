@@ -93,3 +93,7 @@ git push -u origin master
 ```
 
 In this tutorial, we configured a new custom chain, launched a testnet for it, tested a simple token transfer, and confirmed it was successful. This tutorial demonstrates just how easy it is to create a brand new custom Cosmos-SDK blockchain from scratch, saving developers time.
+
+## Add a Feature
+
+If you wish to add a feature to spawn, reference the [NEW_FEATURE.md](./docs/NEW_FEATURE.md) for guidance.
