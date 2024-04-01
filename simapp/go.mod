@@ -12,7 +12,7 @@ replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 
 	// TODO: This should be temp
-	github.com/Stride-Labs/ibc-rate-limiting => github.com/Reecepbcups/ibc-rate-limiting v0.0.0-20240327232839-a5da181f1e22
+	github.com/Stride-Labs/ibc-rate-limiting => github.com/Reecepbcups/ibc-rate-limiting v0.0.0-20240401155750-e36583f75aaa
 
 	// TODO: This should be temp. DO NOT MERGE IN
 	// https://github.com/Reecepbcups/cosmos-sdk/commits/reece/fix-prometheus-version/

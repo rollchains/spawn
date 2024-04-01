@@ -824,8 +824,8 @@ github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 h1:TngWCqHvy9oXAN6lEV
 github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5/go.mod h1:lmUJ/7eu/Q8D7ML55dXQrVaamCz2vxCfdQBasLZfHKk=
 github.com/OneOfOne/xxhash v1.2.2 h1:KMrpdQIwFcEqXDklaen+P1axHaj9BSKzvpUUfnHldSE=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
-github.com/Reecepbcups/ibc-rate-limiting v0.0.0-20240327232839-a5da181f1e22 h1:sFkXEoHwRV4eUNStSlGsBsN/QpWhpdZS33oJd+GXs7Y=
-github.com/Reecepbcups/ibc-rate-limiting v0.0.0-20240327232839-a5da181f1e22/go.mod h1:zwjftG4dvhhAF4PnaIBZb/ZdhJT7oqGWjq1aSYWnkzQ=
+github.com/Reecepbcups/ibc-rate-limiting v0.0.0-20240401155750-e36583f75aaa h1:9u/LBpEijlRL+0pu/Gm3OgMbmBAKrwj6uysDqiFe+Z0=
+github.com/Reecepbcups/ibc-rate-limiting v0.0.0-20240401155750-e36583f75aaa/go.mod h1:r2Mgt9zNLQsUWlx4OhEIzvNm+JE+4fy4h4t6xBAPv5A=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
 github.com/Shopify/toxiproxy v2.1.4+incompatible/go.mod h1:OXgGpZ6Cli1/URJOF1DMxUHB2q5Ap20/P/eIdh4G0pI=
 github.com/VividCortex/gohistogram v1.0.0 h1:6+hBz+qvs0JOrrNhhmR7lFxo5sINxBCGXrdtl/UvroE=
