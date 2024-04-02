@@ -6,25 +6,38 @@ import (
 	"strings"
 )
 
+var (
+	TokenFactory  = "tokenfactory"
+	POA           = "poa"
+	GlobalFee     = "globalfee"
+	CosmWasm      = "cosmwasm"
+	WasmLC        = "wasmlc"
+	PacketForward = "packetforward"
+	IBCRateLimit  = "ibc-ratelimit"
+	Ignite        = "ignite"
+)
+
 // Given a string, return the reduced name for the module
 // e.g. "tf" and "token-factory" both return "tokenfactory"
 func AliasName(name string) string {
 	switch strings.ToLower(name) {
-	case "tokenfactory", "token-factory", "tf":
+	case TokenFactory, "token-factory", "tf":
 		return "tokenfactory"
-	case "proof-of-authority", "poa", "proofofauthority", "poauthority":
-		return "poa"
-	case "globalfee", "global-fee":
-		return "globalfee"
-	case "wasm", "cosmwasm", "cw":
-		return "cosmwasm"
-	case "wasmlc", "wasm-lc", "cwlc", "cosmwasm-lc", "wasm-light-client",
+	case POA, "proof-of-authority", "proofofauthority", "poauthority":
+		return POA
+	case GlobalFee, "global-fee":
+		return GlobalFee
+	case CosmWasm, "wasm", "cw":
+		return CosmWasm
+	case WasmLC, "wasm-lc", "cwlc", "cosmwasm-lc", "wasm-light-client",
 		"08wasm", "08-wasm", "08wasmlc", "08wasm-lc", "08-wasm-lc", "08-wasmlc":
-		return "wasmlc"
-	case "ibc-packetforward", "packetforward", "pfm":
-		return "packetforward"
-	case "ignite", "ignite-cli":
-		return "ignite"
+		return WasmLC
+	case PacketForward, "ibc-packetforward", "pfm":
+		return PacketForward
+	case Ignite, "ignite-cli":
+		return Ignite
+	case IBCRateLimit, "ibc-rate-limit":
+		return IBCRateLimit
 	default:
 		panic(fmt.Sprintf("AliasName: unknown feature to remove %s", name))
 	}
@@ -42,24 +55,24 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 	}
 
 	for _, name := range cfg.DisabledModules {
-
 		base := AliasName(name)
 
-		// must match MainAliasNames return
 		switch strings.ToLower(base) {
-		case "tokenfactory":
+		case TokenFactory:
 			fc.RemoveTokenFactory()
-		case "poa":
+		case POA:
 			fc.RemovePOA()
-		case "globalfee":
+		case GlobalFee:
 			fc.RemoveGlobalFee()
-		case "cosmwasm":
+		case CosmWasm:
 			fc.RemoveCosmWasm(isWasmLCDisabled)
-		case "wasmlc":
+		case WasmLC:
 			fc.RemoveWasmLightClient()
-		case "packetforward":
+		case PacketForward:
 			fc.RemovePacketForward()
-		case "ignite":
+		case IBCRateLimit:
+			fc.RemoveIBCRateLimit()
+		case Ignite:
 			fc.RemoveIgniteCLI()
 		default:
 			panic(fmt.Sprintf("unknown feature to remove %s", name))
@@ -186,4 +199,17 @@ func (fc *FileContent) RemovePacketForward() {
 	fc.RemoveModuleFromText("PacketForward", path.Join("app", "app.go"))
 
 	fc.DeleteContents(path.Join("interchaintest", "packetforward_test.go"))
+}
+
+func (fc *FileContent) RemoveIBCRateLimit() {
+	text := "ratelimit"
+	fc.RemoveGoModImport("github.com/Stride-Labs/ibc-rate-limiting")
+
+	fc.RemoveModuleFromText(text,
+		path.Join("app", "app.go"),
+		path.Join("workflows", "interchaintest-e2e.yml"),
+	)
+	fc.RemoveModuleFromText("RatelimitKeeper", path.Join("app", "app.go"))
+
+	// fc.DeleteContents(path.Join("interchaintest", "rate_limit_test.go"))
 }
