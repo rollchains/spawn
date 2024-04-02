@@ -11,9 +11,6 @@ replace (
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 
-	// TODO: This should be temp
-	github.com/Stride-Labs/ibc-rate-limiting => github.com/Reecepbcups/ibc-rate-limiting v0.0.0-20240401155750-e36583f75aaa
-
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.
 	// See: https://github.com/cosmos/cosmos-sdk/issues/13134
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.2
@@ -45,7 +42,7 @@ require (
 	cosmossdk.io/x/upgrade v0.1.1
 	github.com/CosmWasm/wasmd v0.50.0
 	github.com/CosmWasm/wasmvm v1.5.2
-	github.com/Stride-Labs/ibc-rate-limiting v0.50.0
+	github.com/Stride-Labs/ibc-rate-limiting v1.0.2-0.20240402205850-be547630b007
 	github.com/cometbft/cometbft v0.38.6
 	github.com/cosmos/cosmos-db v1.0.2
 	github.com/cosmos/cosmos-proto v1.0.0-beta.4
