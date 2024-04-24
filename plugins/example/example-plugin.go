@@ -16,10 +16,16 @@ var _ plugins.SpawnPlugin = &SpawnMainExamplePlugin{}
 
 const (
 	cmdName = "example"
+	version = "v0.0.1"
 )
 
 type SpawnMainExamplePlugin struct {
 	Impl plugins.SpawnPluginBase
+}
+
+// Version implements plugins.SpawnPlugin.
+func (e *SpawnMainExamplePlugin) Version() string {
+	return version
 }
 
 // Cmd implements plugins.SpawnPlugin.
