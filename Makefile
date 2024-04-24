@@ -14,7 +14,7 @@ endif
 DATE := $(shell date '+%Y-%m-%dT%H:%M:%S')
 HEAD = $(shell git rev-parse HEAD)
 LD_FLAGS = -X main.SpawnVersion=$(VERSION)
-BUILD_FLAGS = -mod=readonly -ldflags='$(LD_FLAGS)'
+BUILD_FLAGS = -mod=readonly -gcflags="all=-N -l" -trimpath -ldflags='$(LD_FLAGS)'
 
 
 

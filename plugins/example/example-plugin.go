@@ -1,67 +1,51 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"os"
-	"path"
+	"strconv"
 
-	plugins "github.com/rollchains/spawn/plugins"
 	"github.com/spf13/cobra"
 )
 
-// Make the plugin public
-var Plugin SpawnMainExamplePlugin
-
-var _ plugins.SpawnPlugin = &SpawnMainExamplePlugin{}
-
-const (
-	cmdName = "example"
-	version = "v0.0.1"
-)
-
-type SpawnMainExamplePlugin struct {
-	Impl plugins.SpawnPluginBase
+// rootCmd represents the base command when called without any subcommands
+var rootCmd = &cobra.Command{
+	Use:   "example-plugin",
+	Short: "Info About the Plugin",
+	// Uncomment the following line if your bare application
+	// has an action associated with it:
+	// Run: func(cmd *cobra.Command, args []string) {},
 }
 
-// Version implements plugins.SpawnPlugin.
-func (e *SpawnMainExamplePlugin) Version() string {
-	return version
-}
+func main() {
+	rootCmd.AddCommand(addCmd)
 
-// Cmd implements plugins.SpawnPlugin.
-func (e *SpawnMainExamplePlugin) Cmd() *cobra.Command {
-	rootCmd := &cobra.Command{
-		Use:   cmdName,
-		Short: cmdName + " plugin command",
-		Run: func(cmd *cobra.Command, args []string) {
-			if err := cmd.Help(); err != nil {
-				log.Fatal(err)
-			}
-		},
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
 	}
+}
 
-	rootCmd.AddCommand(&cobra.Command{
-		Use:   "touch-file [name]",
-		Short: "An example plugin sub command",
-		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			cwd, err := os.Getwd()
-			if err != nil {
-				log.Fatal(err)
-			}
+// addCmd represents the add command
+var addCmd = &cobra.Command{
+	Use:   "add",
+	Short: "A command you can use to perform addition of 2 numbers!",
+	Args:  cobra.ExactArgs(2),
+	Run: func(cmd *cobra.Command, args []string) {
+		num1, err := strconv.Atoi(args[0])
+		if err != nil {
+			fmt.Println("Error parsing the first number")
+			os.Exit(1)
+		}
+		num2, err := strconv.Atoi(args[1])
+		if err != nil {
+			fmt.Println("Error parsing the second number")
+			os.Exit(1)
+		}
 
-			fileName := args[0]
-
-			filePath := path.Join(cwd, fileName)
-			file, err := os.Create(filePath)
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer file.Close()
-
-			cmd.Printf("Created file: %s\n", filePath)
-		},
-	})
-
-	return rootCmd
+		fmt.Println("add called")
+		fmt.Println("Performing the addition of the following numbers: ")
+		fmt.Printf("Num1: %v\n", num1)
+		fmt.Printf("Num2: %v\n", num2)
+		fmt.Printf("Addition of those 2 numbers is: %v\n", num1+num2)
+	},
 }
