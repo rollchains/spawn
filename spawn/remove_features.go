@@ -7,14 +7,15 @@ import (
 )
 
 var (
-	TokenFactory  = "tokenfactory"
-	POA           = "poa"
-	GlobalFee     = "globalfee"
-	CosmWasm      = "cosmwasm"
-	WasmLC        = "wasmlc"
-	PacketForward = "packetforward"
-	IBCRateLimit  = "ibc-ratelimit"
-	Ignite        = "ignite"
+	TokenFactory       = "tokenfactory"
+	POA                = "poa"
+	GlobalFee          = "globalfee"
+	CosmWasm           = "cosmwasm"
+	WasmLC             = "wasmlc"
+	PacketForward      = "packetforward"
+	IBCRateLimit       = "ibc-ratelimit"
+	Ignite             = "ignite"
+	InterchainSecurity = "interchain-security"
 )
 
 // Given a string, return the reduced name for the module
@@ -38,6 +39,8 @@ func AliasName(name string) string {
 		return Ignite
 	case IBCRateLimit, "ibc-rate-limit":
 		return IBCRateLimit
+	case InterchainSecurity, "ics":
+		return InterchainSecurity
 	default:
 		panic(fmt.Sprintf("AliasName: unknown feature to remove %s", name))
 	}
@@ -74,6 +77,8 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 			fc.RemoveIBCRateLimit()
 		case Ignite:
 			fc.RemoveIgniteCLI()
+		case InterchainSecurity:
+			fc.RemoveInterchainSecurity()
 		default:
 			panic(fmt.Sprintf("unknown feature to remove %s", name))
 		}

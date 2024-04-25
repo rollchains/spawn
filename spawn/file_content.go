@@ -232,3 +232,7 @@ func (fc *FileContent) Save() error {
 func (fc *FileContent) RemoveIgniteCLI() {
 	fc.RemoveLineWithAnyMatch("starport scaffolding")
 }
+
+func (fc *FileContent) RemoveInterchainSecurity() {
+	fc.RemoveLineWithAnyMatch("ibcconsumerkeeper")
+}

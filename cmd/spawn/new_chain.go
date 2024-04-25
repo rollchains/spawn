@@ -22,12 +22,14 @@ var (
 		{ID: "ibc-ratelimit", IsSelected: false, Details: "Thresholds for outflow as a percent of total channel value"},
 		{ID: "cosmwasm", IsSelected: false, Details: "Cosmos smart contracts"},
 		{ID: "wasm-light-client", IsSelected: false, Details: "08 Wasm Light Client"},
+		{ID: "interchain-security", IsSelected: false, Details: "Cosmos Interchain Security"},
 		{ID: "ignite-cli", IsSelected: false, Details: "Ignite-CLI Support"},
 	}
 
 	// parentDeps is a map of module name to a list of module names that are disabled if the parent is disabled
 	parentDeps = map[string][]string{
 		// "cosmwasm": {spawn.AliasName("some-wasmd-child-feature")},
+		spawn.AliasName("interchain-security"): {spawn.AliasName("staking")}, // TODO: call this POA or staking? idk
 	}
 )
 
