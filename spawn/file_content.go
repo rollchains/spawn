@@ -228,11 +228,3 @@ func (fc *FileContent) Save() error {
 
 	return os.WriteFile(fc.NewPath, []byte(fc.Contents), 0644)
 }
-
-func (fc *FileContent) RemoveIgniteCLI() {
-	fc.RemoveLineWithAnyMatch("starport scaffolding")
-}
-
-func (fc *FileContent) RemoveInterchainSecurity() {
-	fc.RemoveLineWithAnyMatch("ibcconsumerkeeper")
-}

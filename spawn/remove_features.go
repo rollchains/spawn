@@ -15,7 +15,11 @@ var (
 	PacketForward      = "packetforward"
 	IBCRateLimit       = "ibc-ratelimit"
 	Ignite             = "ignite"
-	InterchainSecurity = "interchain-security"
+	InterchainSecurity = "ics"
+	Staking            = "staking" // if ICS is used, we remove staking
+
+	appGo   = path.Join("app", "app.go")
+	appAnte = path.Join("app", "ante.go")
 )
 
 // Given a string, return the reduced name for the module
@@ -39,8 +43,10 @@ func AliasName(name string) string {
 		return Ignite
 	case IBCRateLimit, "ibc-rate-limit":
 		return IBCRateLimit
-	case InterchainSecurity, "ics":
+	case InterchainSecurity, "interchain-security":
 		return InterchainSecurity
+	case Staking:
+		return Staking
 	default:
 		panic(fmt.Sprintf("AliasName: unknown feature to remove %s", name))
 	}
@@ -50,11 +56,19 @@ func AliasName(name string) string {
 func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 
 	isWasmLCDisabled := false
+	isUsingICS := true
 	for _, name := range cfg.DisabledModules {
 		if AliasName(name) == "wasmlc" {
 			isWasmLCDisabled = true
 			break
 		}
+		if AliasName(name) == InterchainSecurity {
+			isUsingICS = false
+		}
+	}
+
+	if isUsingICS {
+		cfg.DisabledModules = append(cfg.DisabledModules, Staking)
 	}
 
 	for _, name := range cfg.DisabledModules {
@@ -79,6 +93,8 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 			fc.RemoveIgniteCLI()
 		case InterchainSecurity:
 			fc.RemoveInterchainSecurity()
+		case Staking:
+			fc.RemoveStaking()
 		default:
 			panic(fmt.Sprintf("unknown feature to remove %s", name))
 		}
@@ -93,7 +109,7 @@ func (fc *FileContent) RemoveTokenFactory() {
 	fc.RemoveGoModImport("github.com/strangelove-ventures/tokenfactory")
 
 	fc.RemoveModuleFromText(text,
-		path.Join("app", "app.go"),
+		appGo,
 		path.Join("scripts", "test_node.sh"),
 		path.Join("interchaintest", "setup.go"),
 		path.Join("workflows", "interchaintest-e2e.yml"),
@@ -107,8 +123,8 @@ func (fc *FileContent) RemovePOA() {
 	fc.RemoveGoModImport("github.com/strangelove-ventures/poa")
 
 	fc.RemoveModuleFromText(text,
-		path.Join("app", "app.go"),
-		path.Join("app", "ante.go"),
+		appGo,
+		appAnte,
 		path.Join("scripts", "test_node.sh"),
 		path.Join("interchaintest", "setup.go"),
 		path.Join("workflows", "interchaintest-e2e.yml"),
@@ -126,13 +142,13 @@ func (fc *FileContent) RemoveGlobalFee() {
 	fc.RemoveTaggedLines(text, true)
 
 	fc.RemoveModuleFromText(text,
-		path.Join("app", "app.go"),
-		path.Join("app", "ante.go"),
+		appGo,
+		appAnte,
 		path.Join("scripts", "test_node.sh"),
 		path.Join("interchaintest", "setup.go"),
 	)
 
-	fc.RemoveModuleFromText("GlobalFee", path.Join("app", "app.go"))
+	fc.RemoveModuleFromText("GlobalFee", appGo)
 }
 
 func (fc *FileContent) RemoveCosmWasm(isWasmClientDisabled bool) {
@@ -153,8 +169,8 @@ func (fc *FileContent) RemoveCosmWasm(isWasmClientDisabled bool) {
 		"wasmDir", "tokenfactorybindings", "github.com/CosmWasm/wasmd",
 	} {
 		fc.RemoveModuleFromText(word,
-			path.Join("app", "app.go"),
-			path.Join("app", "ante.go"),
+			appGo,
+			appAnte,
 		)
 	}
 
@@ -166,7 +182,7 @@ func (fc *FileContent) RemoveCosmWasm(isWasmClientDisabled bool) {
 	)
 
 	fc.RemoveModuleFromText(text,
-		path.Join("app", "ante.go"),
+		appAnte,
 		path.Join("app", "sim_test.go"),
 		path.Join("app", "test_helpers.go"),
 		path.Join("app", "test_support.go"),
@@ -189,7 +205,7 @@ func (fc *FileContent) RemoveWasmLightClient() {
 	fc.RemoveTaggedLines(text, true)
 
 	fc.RemoveModuleFromText("wasmlc",
-		path.Join("app", "app.go"),
+		appGo,
 	)
 }
 
@@ -198,10 +214,10 @@ func (fc *FileContent) RemovePacketForward() {
 	fc.RemoveGoModImport("github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward")
 
 	fc.RemoveModuleFromText(text,
-		path.Join("app", "app.go"),
+		appGo,
 		path.Join("workflows", "interchaintest-e2e.yml"),
 	)
-	fc.RemoveModuleFromText("PacketForward", path.Join("app", "app.go"))
+	fc.RemoveModuleFromText("PacketForward", appGo)
 
 	fc.DeleteContents(path.Join("interchaintest", "packetforward_test.go"))
 }
@@ -211,10 +227,45 @@ func (fc *FileContent) RemoveIBCRateLimit() {
 	fc.RemoveGoModImport("github.com/Stride-Labs/ibc-rate-limiting")
 
 	fc.RemoveModuleFromText(text,
-		path.Join("app", "app.go"),
+		appGo,
 		path.Join("workflows", "interchaintest-e2e.yml"),
 	)
-	fc.RemoveModuleFromText("RatelimitKeeper", path.Join("app", "app.go"))
+	fc.RemoveModuleFromText("RatelimitKeeper", appGo)
 
 	// fc.DeleteContents(path.Join("interchaintest", "rate_limit_test.go"))
+}
+
+func (fc *FileContent) RemoveIgniteCLI() {
+	fc.RemoveLineWithAnyMatch("starport scaffolding")
+}
+
+func (fc *FileContent) RemoveInterchainSecurity() {
+	fc.RemoveLineWithAnyMatch("ibcconsumerkeeper")
+	fc.RemoveLineWithAnyMatch("ibcconsumertypes")
+	fc.RemoveGoModImport("github.com/cosmos/interchain-security")
+
+	fc.RemoveModuleFromText("ConsumerKeeper", appGo)
+}
+
+// Remove staking module if using a custom impl like the ICS Consumer
+func (fc *FileContent) RemoveStaking() {
+	fc.RemovePOA() // if we already removed we should be fine
+
+	fc.RemoveTaggedLines("staking", true)
+	fc.RemoveModuleFromText("StakingKeeper", appGo)
+	fc.RemoveModuleFromText("stakingtypes", appGo)
+
+	// for removing ICS.
+	fc.RemoveMint()
+	fc.RemoveDistribution()
+}
+
+func (fc *FileContent) RemoveMint() {
+	fc.RemoveModuleFromText("minttypes", appGo)
+	fc.RemoveModuleFromText("mint", appGo)
+	fc.RemoveModuleFromText("MintKeeper", appGo)
+}
+
+func (fc *FileContent) RemoveDistribution() {
+	fc.RemoveModuleFromText("distrtypes", appGo)
 }
