@@ -678,12 +678,24 @@ func NewChainApp(
 		app.IBCKeeper.PortKeeper, app.AccountKeeper, app.BankKeeper,
 	)
 
+	// Create the ratelimit keeper
+	app.RatelimitKeeper = *ratelimitkeeper.NewKeeper(
+		appCodec,
+		keys[ratelimittypes.StoreKey],
+		app.GetSubspace(ratelimittypes.ModuleName),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		app.BankKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.IBCFeeKeeper, // ICS4Wrapper
+	)
+
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
 		appCodec,
 		keys[ibctransfertypes.StoreKey],
 		app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCFeeKeeper, // use ics29 fee as ics4Wrapper in middleware stack
+		app.RatelimitKeeper, // ICS4Wrapper
+		//app.IBCFeeKeeper, // ?spawntag:ratelimit
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
@@ -727,17 +739,6 @@ func NewChainApp(
 		scopedICAControllerKeeper,
 		app.MsgServiceRouter(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-	)
-
-	// Create the ratelimit keeper
-	app.RatelimitKeeper = *ratelimitkeeper.NewKeeper(
-		appCodec,
-		keys[ratelimittypes.StoreKey],
-		app.GetSubspace(ratelimittypes.ModuleName),
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		app.BankKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.ChannelKeeper, // ICS4Wrapper
 	)
 
 	wasmDir := filepath.Join(homePath, "wasm")

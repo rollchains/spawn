@@ -205,11 +205,13 @@ func (fc *FileContent) RemoveIBCRateLimit() {
 	text := "ratelimit"
 	fc.RemoveGoModImport("github.com/Stride-Labs/ibc-rate-limiting")
 
+	fc.HandleCommentSwaps(text)
+
+	fc.RemoveModuleFromText("RatelimitKeeper", path.Join("app", "app.go"))
 	fc.RemoveModuleFromText(text,
 		path.Join("app", "app.go"),
 		path.Join("workflows", "interchaintest-e2e.yml"),
 	)
-	fc.RemoveModuleFromText("RatelimitKeeper", path.Join("app", "app.go"))
 
-	// fc.DeleteContents(path.Join("interchaintest", "rate_limit_test.go"))
+	fc.DeleteContents(path.Join("interchaintest", "ibc_rate_limit_test.go"))
 }
