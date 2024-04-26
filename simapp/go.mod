@@ -5,6 +5,7 @@ go 1.21
 // overrides
 replace (
 	cosmossdk.io/core => cosmossdk.io/core v0.11.0
+	github.com/cosmos/cosmos-sdk => github.com/rollchains/cosmos-sdk v0.50.6
 	github.com/spf13/viper => github.com/spf13/viper v1.17.0 // v1.18+ breaks app overrides
 )
 
@@ -61,8 +62,8 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.2
 	github.com/strangelove-ventures/globalfee v0.50.0
-	github.com/strangelove-ventures/poa v0.50.0
-	github.com/strangelove-ventures/tokenfactory v0.50.0
+	github.com/strangelove-ventures/poa v0.50.1-alpha.1
+	github.com/strangelove-ventures/tokenfactory v0.50.1-0.20240423190550-03a4e6dc955a
 	github.com/stretchr/testify v1.9.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240227224415-6ceb2ff114de
 	google.golang.org/grpc v1.63.2
@@ -128,6 +129,7 @@ require (
 	github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2 // indirect
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/gogo/status v1.1.0 // indirect
 	github.com/golang/glog v1.2.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.6.0 // indirect

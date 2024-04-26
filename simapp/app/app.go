@@ -645,6 +645,7 @@ func NewChainApp(
 	app.TokenFactoryKeeper = tokenfactorykeeper.NewKeeper(
 		appCodec,
 		app.keys[tokenfactorytypes.StoreKey],
+		maccPerms,
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.DistrKeeper,
