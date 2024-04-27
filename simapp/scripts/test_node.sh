@@ -26,10 +26,14 @@ export GRPC_WEB=${GRPC_WEB:-"9091"}
 export ROSETTA=${ROSETTA:-"8080"}
 export BLOCK_TIME=${BLOCK_TIME:-"5s"}
 
-# if which binary does not exist, exit
+# if which binary does not exist, install it
 if [ -z `which $BINARY` ]; then
-  echo "Ensure $BINARY is installed and in your PATH"
-  exit 1
+  make install
+
+  if [ -z `which $BINARY` ]; then
+    echo "Ensure $BINARY is installed and in your PATH"
+    exit 1
+  fi
 fi
 
 alias BINARY="$BINARY --home=$HOME_DIR"

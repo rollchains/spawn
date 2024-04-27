@@ -16,7 +16,13 @@ HEAD = $(shell git rev-parse HEAD)
 LD_FLAGS = -X main.SpawnVersion=$(VERSION)
 BUILD_FLAGS = -mod=readonly -ldflags='$(LD_FLAGS)'
 
-
+## alltidy: go mod tidy spawn, simapp, and interchaintest with proper go.mod suffixes
+alltidy:
+	go mod tidy
+	mv simapp/interchaintest/go.mod_ simapp/interchaintest/go.mod
+	cd simapp && go mod tidy
+	cd simapp/interchaintest && go mod tidy
+	mv simapp/interchaintest/go.mod simapp/interchaintest/go.mod_
 
 ## install: Install the binary.
 install:

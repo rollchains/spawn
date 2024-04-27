@@ -273,6 +273,10 @@ ictest-tokenfactory:
 	@echo "Running token factory interchain tests"
 	@cd interchaintest && go test -race -v -run TestTokenFactory .
 
+ictest-ratelimit:
+	@echo "Running rate limit interchain tests"
+	@cd interchaintest && go test -race -v -run TestIBCRateLimit .
+
 ###############################################################################
 ###                                    testnet                              ###
 ###############################################################################
