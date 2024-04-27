@@ -89,16 +89,14 @@ jobs:
       - name: Binary Permission
         run: chmod +x ./spawn && ls -l
 
-      - name: Build ICS Chain
-        run: ./spawn new chainconsumer --bypass-prompt --bech32=roll --bin=${{env.BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug
-
-      - name: Unit Test ICS Chain
-        run: |
-          cd chainconsumer
-          go test ./...
-
       - name: Build Normal Chain
         run: ./spawn new chain1 --bypass-prompt --bech32=roll --bin=${{env.BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug --disable=ics
+
+        # Chain installs and runs in the background
+      - name: Run Chain
+        run: |
+            cd chain1
+            HOME_DIR="~/.simapp" CHAIN_ID="local-1" BLOCK_TIME="2000ms" CLEAN=true sh scripts/test_node.sh &
 
       - name: Unit Test Normal Chain
         run: |
@@ -110,19 +108,27 @@ jobs:
           cd chain1
           make install && echo "Installed ${{env.BIN_NAME}}"
 
-      - name: Run Chain
+      - name: Build ICS Chain
+        run: ./spawn new chainconsumer --bypass-prompt --bech32=roll --bin=${{env.BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug
+
+      - name: Unit Test ICS Chain
         run: |
-            cd chain1
-            HOME_DIR="~/.simapp" CHAIN_ID="local-1" BLOCK_TIME="2000ms" CLEAN=true sh scripts/test_node.sh &
+          cd chainconsumer
+          go test ./...
 
       - name: Validate Running
         run: |
-          sleep 3
-          res=`${{env.BIN_NAME}} status --output=json | jq -r 'has("sync_info")'`
+          for ((i = 1; i <= 10; i++)); do
+            res=`${{env.BIN_NAME}} status --output=json | jq -r 'has("sync_info")'`
 
-          if [ "$res" == "true" ]; then
-            echo "Chain is running"
-          else
-            echo "Chain is not running"
-            exit 1
-          fi
+            if [ "$res" == "true" ]; then
+              echo "Chain is running"
+              exit 0
+            else
+              echo "Chain is not running"
+              # exit 1
+              sleep 5
+            fi
+          done
+
+          exit 1
