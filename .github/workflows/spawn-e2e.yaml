@@ -21,10 +21,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - id: go-cache-paths
+        run: |
+          echo "::set-output name=go-build::$(go env GOCACHE)"
+
       - name: Setup go
         uses: actions/setup-go@v4
         with:
           go-version: ${{ env.GO_VERSION }}
+
+      # Cache go build cache, used to speedup go test
+      - name: Go Build Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.go-cache-paths.outputs.go-build }}
+          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
 
       - name: Build Spawn
         run: make build
@@ -86,7 +97,6 @@ jobs:
           cd chainconsumer
           go test ./...
 
-        # TODO: matrix this with a normal chain & ICS chain (needs test framework)
       - name: Build Normal Chain
         run: ./spawn new chain1 --bypass-prompt --bech32=roll --bin=${{env.BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug --disable=ics
 
@@ -107,7 +117,7 @@ jobs:
 
       - name: Validate Running
         run: |
-          sleep 20
+          sleep 3
           res=`${{env.BIN_NAME}} status --output=json | jq -r 'has("sync_info")'`
 
           if [ "$res" == "true" ]; then
