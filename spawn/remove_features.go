@@ -58,23 +58,7 @@ func AliasName(name string) string {
 
 // Removes disabled features from the files specified
 func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
-
-	isWasmLCDisabled := false
-	isUsingICS := true
-	for _, name := range cfg.DisabledModules {
-		if AliasName(name) == "wasmlc" {
-			isWasmLCDisabled = true
-			break
-		}
-		if AliasName(name) == InterchainSecurity {
-			isUsingICS = false
-		}
-	}
-
-	if isUsingICS {
-		cfg.DisabledModules = append(cfg.DisabledModules, Staking)
-	}
-
+	// NOTE: Ensure you call `SetProperFeaturePairs` before calling this function
 	for _, name := range cfg.DisabledModules {
 		base := AliasName(name)
 
@@ -86,7 +70,7 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		case GlobalFee:
 			fc.RemoveGlobalFee()
 		case CosmWasm:
-			fc.RemoveCosmWasm(isWasmLCDisabled)
+			fc.RemoveCosmWasm(cfg.IsFeatureDisabled(WasmLC))
 		case WasmLC:
 			fc.RemoveWasmLightClient()
 		case PacketForward:
@@ -265,19 +249,39 @@ func (fc *FileContent) RemoveInterchainSecurity() {
 func (fc *FileContent) RemoveStaking() {
 	fc.RemovePOA() // if we already removed we should be fine
 
+	text := "staking"
+	fc.HandleCommentSwaps(text)
+	fc.RemoveTaggedLines(text, true)
+
 	fc.RemoveModuleFromText("StakingKeeper", appGo)
 	fc.RemoveModuleFromText("stakingtypes", appGo)
-	fc.RemoveTaggedLines("staking", true)
 
-	// This may be better suited in ICS
-	// fc.RemoveMint() // TODO: removing this breaks something with RegisterTendermintService
+	// ! This may be better suited in ICS
+	fc.RemoveMint() // TODO: removing this breaks something with RegisterTendermintService
 	fc.RemoveDistribution()
+	fc.RemoveGov()
 }
 
 func (fc *FileContent) RemoveMint() {
+	// NOTE: be careful, tenderMINT has 'mint' suffix in it. Which can match
+	text := "mint"
+	fc.HandleCommentSwaps(text)
+	fc.RemoveTaggedLines(text, true)
+
+	// TODO: Fix this so it does not break
 	fc.RemoveModuleFromText("MintKeeper", appGo)
-	fc.RemoveModuleFromText("minttypes", appGo)
-	fc.RemoveModuleFromText("mint", appGo)
+	fc.RemoveLineWithAnyMatch("minttypes.")
+}
+
+func (fc *FileContent) RemoveGov() {
+	text := "gov"
+	fc.HandleCommentSwaps(text)
+	fc.RemoveTaggedLines(text, true)
+
+	fc.RemoveModuleFromText("GovKeeper", appGo)
+
+	fc.RemoveModuleFromText("govtypes.StoreKey,", appGo)
+	fc.RemoveModuleFromText("govtypes.ModuleName,", appGo) // begin blockers, genesis, etc. note the ','
 }
 
 func (fc *FileContent) RemoveDistribution() {

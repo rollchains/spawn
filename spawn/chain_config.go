@@ -39,6 +39,32 @@ type NewChainConfig struct {
 	Logger *slog.Logger
 }
 
+// SetProperFeaturePairs ensures modules that are meant to be disabled, are.
+// ex: if ICS is enabled, disable staking if it is not already disabled
+func (cfg *NewChainConfig) SetProperFeaturePairs() {
+	isUsingICS := true
+	for _, name := range cfg.DisabledModules {
+		if AliasName(name) == InterchainSecurity {
+			isUsingICS = false
+		}
+	}
+
+	if isUsingICS && !cfg.IsFeatureDisabled(Staking) {
+		cfg.DisabledModules = append(cfg.DisabledModules, Staking)
+	}
+
+	cfg.Logger.Debug("Disabled features", "features", cfg.DisabledModules)
+}
+
+func (cfg *NewChainConfig) IsFeatureDisabled(featName string) bool {
+	for _, feat := range cfg.DisabledModules {
+		if AliasName(feat) == AliasName(featName) {
+			return true
+		}
+	}
+	return false
+}
+
 func (cfg *NewChainConfig) Validate() error {
 	if strings.ContainsAny(cfg.ProjectName, `~!@#$%^&*()_+{}|:"<>?/.,;'[]\=-`) {
 		return fmt.Errorf("project name cannot contain special characters %s", cfg.ProjectName)
@@ -70,11 +96,12 @@ func (cfg *NewChainConfig) GithubPath() string {
 
 func (cfg *NewChainConfig) NewChain() {
 	NewDirName := cfg.ProjectName
-	disabled := cfg.DisabledModules
 	logger := cfg.Logger
 
 	logger.Debug("Spawning new app", "app", NewDirName)
-	logger.Debug("Disabled features", "features", disabled)
+
+	// Set proper pairings for modules to be disabled if others are enabled
+	cfg.SetProperFeaturePairs()
 
 	if err := os.MkdirAll(NewDirName, 0755); err != nil {
 		panic(err)
