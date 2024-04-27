@@ -118,7 +118,17 @@ jobs:
 
       - name: Validate Running
         run: |
-          for ((i = 1; i <= 10; i++)); do
+          for ((i = 1; i <= 30; i++)); do
+            # chekc the binary is found & installed
+            which ${{env.BIN_NAME}}
+            found=$?
+            if [ $found -eq 0 ]; then
+              sleep 5
+              continue
+            fi
+
+
+
             res=`${{env.BIN_NAME}} status --output=json | jq -r 'has("sync_info")'`
 
             if [ "$res" == "true" ]; then
@@ -131,4 +141,5 @@ jobs:
             fi
           done
 
+          lsof -i tcp:26657 | awk 'NR!=1 {print $2}' | xargs kill || true
           exit 1
