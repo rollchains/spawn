@@ -103,7 +103,7 @@ func (fc *FileContent) RemoveTokenFactory() {
 		path.Join("workflows", "interchaintest-e2e.yml"),
 	)
 
-	fc.DeleteContents(path.Join("interchaintest", "tokenfactory_test.go"))
+	fc.DeleteFile(path.Join("interchaintest", "tokenfactory_test.go"))
 }
 
 func (fc *FileContent) RemovePOA() {
@@ -118,8 +118,8 @@ func (fc *FileContent) RemovePOA() {
 		path.Join("workflows", "interchaintest-e2e.yml"),
 	)
 
-	fc.DeleteContents(path.Join("interchaintest", "poa_test.go"))
-	fc.DeleteContents(path.Join("interchaintest", "poa.go")) // helpers
+	fc.DeleteFile(path.Join("interchaintest", "poa_test.go"))
+	fc.DeleteFile(path.Join("interchaintest", "poa.go")) // helpers
 }
 
 func (fc *FileContent) RemoveGlobalFee() {
@@ -149,7 +149,7 @@ func (fc *FileContent) RemoveCosmWasm(isWasmClientDisabled bool) {
 
 	fc.RemoveTaggedLines(text, true)
 
-	fc.DeleteContents(path.Join("app", "wasm.go"))
+	fc.DeleteFile(path.Join("app", "wasm.go"))
 
 	for _, word := range []string{
 		"WasmKeeper", "wasmtypes", "wasmStack",
@@ -181,7 +181,7 @@ func (fc *FileContent) RemoveCosmWasm(isWasmClientDisabled bool) {
 		path.Join("workflows", "interchaintest-e2e.yml"),
 	)
 
-	fc.DeleteContents(path.Join("interchaintest", "cosmwasm_test.go"))
+	fc.DeleteFile(path.Join("interchaintest", "cosmwasm_test.go"))
 	fc.DeleteDirectoryContents(path.Join("interchaintest", "contracts"))
 }
 
@@ -207,7 +207,7 @@ func (fc *FileContent) RemovePacketForward() {
 	)
 	fc.RemoveModuleFromText("PacketForward", appGo)
 
-	fc.DeleteContents(path.Join("interchaintest", "packetforward_test.go"))
+	fc.DeleteFile(path.Join("interchaintest", "packetforward_test.go"))
 }
 
 func (fc *FileContent) RemoveIBCRateLimit() {
@@ -222,7 +222,7 @@ func (fc *FileContent) RemoveIBCRateLimit() {
 		path.Join("workflows", "interchaintest-e2e.yml"),
 	)
 
-	fc.DeleteContents(path.Join("interchaintest", "ibc_rate_limit_test.go"))
+	fc.DeleteFile(path.Join("interchaintest", "ibc_rate_limit_test.go"))
 }
 
 func (fc *FileContent) RemoveIgniteCLI() {
@@ -232,12 +232,12 @@ func (fc *FileContent) RemoveIgniteCLI() {
 func (fc *FileContent) RemoveInterchainSecurity() {
 	fc.RemoveGoModImport("github.com/cosmos/interchain-security")
 
-	// fc.RemoveLineWithAnyMatch("//spawntag:ics") // wasmkeeper
 	fc.HandleCommentSwaps("ics")
 	fc.RemoveTaggedLines("ics", true)
 
 	fc.RemoveModuleFromText("ibcconsumerkeeper.NewNonZeroKeeper", appGo)
 	fc.RemoveModuleFromText("ConsumerKeeper", appGo)
+	fc.RemoveModuleFromText("ScopedIBCConsumerKeeper", appGo)
 
 	fc.RemoveLineWithAnyMatch("ibcconsumerkeeper")
 	fc.RemoveLineWithAnyMatch("ibcconsumertypes")
@@ -256,10 +256,21 @@ func (fc *FileContent) RemoveStaking() {
 	fc.RemoveModuleFromText("StakingKeeper", appGo)
 	fc.RemoveModuleFromText("stakingtypes", appGo)
 
-	// ! This may be better suited in ICS
-	fc.RemoveMint() // TODO: removing this breaks something with RegisterTendermintService
+	// TODO: depends on staking bond denom. Fix? (idk how ICS does this atm)
+	fc.RemoveModuleFromText("globalfeeante", appAnte)
+
+	// delete core modules which depend on staking
+	fc.RemoveMint()
 	fc.RemoveDistribution()
 	fc.RemoveGov()
+
+	// delete test helpers
+
+	fc.DeleteFile(path.Join("app", "sim_test.go"))
+	fc.DeleteFile(path.Join("app", "test_helpers.go"))
+	fc.DeleteFile(path.Join("app", "test_support.go"))
+	fc.DeleteFile(path.Join("app", "app_test.go"))
+	fc.DeleteFile(path.Join("cmd", "wasmd", "testnet.go")) // TODO(nit): switch this to be cfg.BinDaemon instead? (check actual path vs relative)
 }
 
 func (fc *FileContent) RemoveMint() {
@@ -270,6 +281,7 @@ func (fc *FileContent) RemoveMint() {
 
 	// TODO: Fix this so it does not break
 	fc.RemoveModuleFromText("MintKeeper", appGo)
+	fc.RemoveModuleFromText("mintkeeper", appGo)
 	fc.RemoveLineWithAnyMatch("minttypes.")
 }
 
@@ -285,5 +297,11 @@ func (fc *FileContent) RemoveGov() {
 }
 
 func (fc *FileContent) RemoveDistribution() {
+	text := "distribution"
+	fc.HandleCommentSwaps(text)
+	fc.RemoveTaggedLines(text, true)
+
 	fc.RemoveModuleFromText("distrtypes", appGo)
+	fc.RemoveModuleFromText("DistrKeeper", appGo)
+	fc.RemoveModuleFromText("distrkeeper", appGo)
 }

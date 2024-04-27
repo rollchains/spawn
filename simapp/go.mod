@@ -65,7 +65,7 @@ require (
 	github.com/spf13/viper v1.18.2
 	github.com/strangelove-ventures/globalfee v0.50.0
 	github.com/strangelove-ventures/poa v0.50.1-alpha.1
-	github.com/strangelove-ventures/tokenfactory v0.50.1-0.20240423190550-03a4e6dc955a
+	github.com/strangelove-ventures/tokenfactory v0.50.1-0.20240427023208-6e19868a9b72
 	github.com/stretchr/testify v1.9.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240227224415-6ceb2ff114de
 	google.golang.org/grpc v1.63.2

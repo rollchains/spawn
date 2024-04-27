@@ -264,13 +264,10 @@ func AddTestAddrsIncremental(app *ChainApp, ctx sdk.Context, accNum int, accAmt 
 
 func addTestAddrs(app *ChainApp, ctx sdk.Context, accNum int, accAmt sdkmath.Int, strategy simtestutil.GenerateAccountStrategy) []sdk.AccAddress {
 	testAddrs := strategy(accNum)
-	// <spawntag:staking
 	bondDenom, err := app.StakingKeeper.BondDenom(ctx)
 	if err != nil {
 		panic(err)
 	}
-	// spawntag:staking>
-	//bondDenom := sdk.DefaultBondDenom // ?spawntag:staking
 
 	initCoins := sdk.NewCoins(sdk.NewCoin(bondDenom, accAmt))
 
@@ -282,7 +279,6 @@ func addTestAddrs(app *ChainApp, ctx sdk.Context, accNum int, accAmt sdkmath.Int
 }
 
 func initAccountWithCoins(app *ChainApp, ctx sdk.Context, addr sdk.AccAddress, coins sdk.Coins) {
-	// <spawntag:mint
 	err := app.BankKeeper.MintCoins(ctx, minttypes.ModuleName, coins)
 	if err != nil {
 		panic(err)
@@ -292,7 +288,6 @@ func initAccountWithCoins(app *ChainApp, ctx sdk.Context, addr sdk.AccAddress, c
 	if err != nil {
 		panic(err)
 	}
-	// spawntag:mint>
 }
 
 var emptyWasmOptions = []wasmkeeper.Option{}

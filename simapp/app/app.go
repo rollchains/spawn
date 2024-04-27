@@ -217,7 +217,7 @@ var maccPerms = map[string][]string{
 	minttypes.ModuleName:           {authtypes.Minter},
 	stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 	stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
-	govtypes.ModuleName:            {authtypes.Burner}, // spawntag:staking
+	govtypes.ModuleName:            {authtypes.Burner},
 	nft.ModuleName:                 nil,
 	// non sdk modules
 	ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
@@ -225,8 +225,8 @@ var maccPerms = map[string][]string{
 	icatypes.ModuleName:                           nil,
 	wasmtypes.ModuleName:                          {authtypes.Burner},
 	tokenfactorytypes.ModuleName:                  {authtypes.Minter, authtypes.Burner},
-	ibcconsumertypes.ConsumerRedistributeName:     nil, // spwantag:ics
-	ibcconsumertypes.ConsumerToSendToProviderName: nil, // spwantag:ics
+	ibcconsumertypes.ConsumerRedistributeName:     nil,
+	ibcconsumertypes.ConsumerToSendToProviderName: nil,
 	// this line is used by starport scaffolding # stargate/app/maccPerms
 }
 
@@ -273,7 +273,7 @@ type ChainApp struct {
 	ICAControllerKeeper icacontrollerkeeper.Keeper
 	ICAHostKeeper       icahostkeeper.Keeper
 	TransferKeeper      ibctransferkeeper.Keeper
-	ConsumerKeeper      ibcconsumerkeeper.Keeper // spawntag:ics
+	ConsumerKeeper      ibcconsumerkeeper.Keeper
 
 	// Custom
 	WasmKeeper          wasmkeeper.Keeper
@@ -292,7 +292,7 @@ type ChainApp struct {
 	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
 	ScopedIBCFeeKeeper        capabilitykeeper.ScopedKeeper
 	ScopedWasmKeeper          capabilitykeeper.ScopedKeeper
-	ScopedIBCConsumerKeeper   capabilitykeeper.ScopedKeeper // spawntag:ics
+	ScopedIBCConsumerKeeper   capabilitykeeper.ScopedKeeper
 
 	// the module manager
 	ModuleManager      *module.Manager
@@ -458,7 +458,7 @@ func NewChainApp(
 	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
-	scopedIBCConsumerKeeper := app.CapabilityKeeper.ScopeToModule(ibcconsumertypes.ModuleName) // spawntag:ics
+	scopedIBCConsumerKeeper := app.CapabilityKeeper.ScopeToModule(ibcconsumertypes.ModuleName)
 	app.CapabilityKeeper.Seal()
 
 	// add keepers
@@ -709,12 +709,14 @@ func NewChainApp(
 		maccPerms,
 		app.AccountKeeper,
 		app.BankKeeper,
-		app.DistrKeeper,
+		// app.DistrKeeper, // ?spawntag:ics
+		nil, // spawntag:ics
 		[]string{
 			tokenfactorytypes.EnableBurnFrom,
 			tokenfactorytypes.EnableForceTransfer,
 			tokenfactorytypes.EnableSetMetadata,
 			// tokenfactorytypes.EnableSudoMint,
+			tokenfactorytypes.EnableCommunityPoolFeeFunding, // spawntag:ics
 		},
 		tokenfactorykeeper.DefaultIsSudoAdminFunc,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
@@ -771,7 +773,8 @@ func NewChainApp(
 		keys[packetforwardtypes.StoreKey],
 		app.TransferKeeper, // will be zero-value here, reference is set later on with SetTransferKeeper.
 		app.IBCKeeper.ChannelKeeper,
-		app.DistrKeeper,
+		//app.DistrKeeper, // ?spawntag:ics
+		nil, // spawntag:ics
 		app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),

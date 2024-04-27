@@ -75,7 +75,8 @@ func (fc *FileContent) HasIgnoreFile() bool {
 	return false
 }
 
-func (fc *FileContent) DeleteContents(path string) {
+// DeleteFile sets the content of the file to nothing. On save, the file is ignored if there is no content.
+func (fc *FileContent) DeleteFile(path string) {
 	if fc.IsPath(path) && !AlreadyCheckedDeletion[path] {
 		AlreadyCheckedDeletion[path] = true
 
