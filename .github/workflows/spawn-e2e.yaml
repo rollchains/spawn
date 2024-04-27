@@ -78,11 +78,19 @@ jobs:
       - name: Binary Permission
         run: chmod +x ./spawn && ls -l
 
+      - name: Build ICS Chain
+        run: ./spawn new chainconsumer --bypass-prompt --bech32=roll --bin=${{env.BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug
+
+      - name: Unit Test ICS Chain
+        run: |
+          cd chainconsumer
+          go test ./...
+
         # TODO: matrix this with a normal chain & ICS chain (needs test framework)
       - name: Build Normal Chain
         run: ./spawn new chain1 --bypass-prompt --bech32=roll --bin=${{env.BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug --disable=ics
 
-      - name: Unit Test Chain
+      - name: Unit Test Normal Chain
         run: |
           cd chain1
           go test ./...
