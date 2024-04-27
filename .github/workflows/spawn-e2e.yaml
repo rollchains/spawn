@@ -92,8 +92,7 @@ jobs:
       - name: Build Normal Chain
         run: ./spawn new chain1 --bypass-prompt --bech32=roll --bin=${{env.BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug --disable=ics
 
-        # Chain installs and runs in the background
-      - name: Run Chain
+      - name: Start Normal Chain in Background
         run: |
             cd chain1
             HOME_DIR="~/.simapp" CHAIN_ID="local-1" BLOCK_TIME="2000ms" CLEAN=true sh scripts/test_node.sh &
@@ -116,7 +115,7 @@ jobs:
           cd chainconsumer
           go test ./...
 
-      - name: Validate Running
+      - name: Validate Normal Chain is Running
         run: |
           for ((i = 1; i <= 30; i++)); do
             res=`${{env.BIN_NAME}} status --output=json | jq -r 'has("sync_info")'`
