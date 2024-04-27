@@ -11,6 +11,12 @@ import (
 	"github.com/cosmos/btcutil/bech32"
 )
 
+var (
+	// AlreadyChecked allows for better debugging to reduce fc spam
+	AlreadyCheckedDeletion      = make(map[string]bool)
+	AlreadyCheckedGoModDeletion = make(map[string]bool)
+)
+
 type FileContent struct {
 	// The path from within the embedded FileSystem
 	RelativePath string
@@ -70,14 +76,18 @@ func (fc *FileContent) HasIgnoreFile() bool {
 }
 
 func (fc *FileContent) DeleteContents(path string) {
-	if fc.IsPath(path) {
+	if fc.IsPath(path) && !AlreadyCheckedDeletion[path] {
+		AlreadyCheckedDeletion[path] = true
+
 		fc.Logger.Debug("Deleting contents for", "path", path)
 		fc.Contents = ""
 	}
 }
 
 func (fc *FileContent) DeleteDirectoryContents(path string) {
-	if fc.ContainsPath(path) {
+	if fc.ContainsPath(path) && !AlreadyCheckedDeletion[path] {
+		AlreadyCheckedDeletion[path] = true
+
 		fc.Logger.Debug("Deleting contents for", "path", path)
 		fc.Contents = ""
 	}
@@ -202,6 +212,11 @@ func (fc *FileContent) RemoveGoModImport(importPath string) {
 		return
 	}
 
+	if AlreadyCheckedGoModDeletion[fc.NewPath] {
+		return
+	}
+	AlreadyCheckedGoModDeletion[fc.NewPath] = true
+
 	fc.Logger.Debug("removing go.mod import", "path", fc.RelativePath, "import", importPath)
 
 	lines := strings.Split(fc.Contents, "\n")
@@ -214,6 +229,7 @@ func (fc *FileContent) RemoveGoModImport(importPath string) {
 	}
 
 	fc.Contents = strings.Join(newLines, "\n")
+
 }
 
 func (fc *FileContent) Save() error {

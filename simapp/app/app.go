@@ -599,8 +599,8 @@ func NewChainApp(
 	)
 
 	// pre-initialize ConsumerKeeper to satsfy ibckeeper.NewKeeper which would panic on nil or zero keeper
-	// ConsumerKeeper implements StakingKeeper but all function calls result in no-ops so this is safe
-	// communication over IBC is not affected by these changes
+	// ConsumerKeeper implements StakingKeeper but all function calls result in no-ops so this is safe.
+	// ConsumerKeeper communication over IBC is not affected by these changes
 	app.ConsumerKeeper = ibcconsumerkeeper.NewNonZeroKeeper(
 		appCodec,
 		keys[ibcconsumertypes.StoreKey],
@@ -612,13 +612,13 @@ func NewChainApp(
 		keys[ibcexported.StoreKey],
 		app.GetSubspace(ibcexported.ModuleName),
 		//app.StakingKeeper, // ?spawntag:ics
-		app.ConsumerKeeper, // spawntag:ics
+		app.ConsumerKeeper,
 		app.UpgradeKeeper,
 		scopedIBCKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
-	// initialize the actual consumer keeper
+	// initialize the actual ConsumerKeeper
 	app.ConsumerKeeper = ibcconsumerkeeper.NewKeeper(
 		appCodec,
 		keys[ibcconsumertypes.StoreKey],
@@ -817,8 +817,10 @@ func NewChainApp(
 		runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
 		app.AccountKeeper,
 		app.BankKeeper,
-		app.StakingKeeper,
-		distrkeeper.NewQuerier(app.DistrKeeper),
+		//app.StakingKeeper, // ?spawntag:ics
+		//distrkeeper.NewQuerier(app.DistrKeeper), // ?spawntag:ics
+		nil,              // spawntag:ics
+		nil,              // spawntag:ics
 		app.IBCFeeKeeper, // ISC4 Wrapper: fee IBC middleware
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
@@ -963,7 +965,7 @@ func NewChainApp(
 		packetforward.NewAppModule(app.PacketForwardKeeper, app.GetSubspace(packetforwardtypes.ModuleName)),
 		wasmlc.NewAppModule(app.WasmClientKeeper),
 		ratelimit.NewAppModule(appCodec, app.RatelimitKeeper),
-		consumerModule, // spawntag:ics
+		consumerModule, //spawntag:ics
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,

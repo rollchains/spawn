@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+// !NOTE:
+// - Always remove the ModuleKeeper before removing other types
+// - Handle ComentSwaps before removing lines
+
 var (
 	TokenFactory       = "tokenfactory"
 	POA                = "poa"
@@ -242,30 +246,38 @@ func (fc *FileContent) RemoveIgniteCLI() {
 }
 
 func (fc *FileContent) RemoveInterchainSecurity() {
-	fc.RemoveLineWithAnyMatch("ibcconsumerkeeper")
-	fc.RemoveLineWithAnyMatch("ibcconsumertypes")
 	fc.RemoveGoModImport("github.com/cosmos/interchain-security")
 
+	// fc.RemoveLineWithAnyMatch("//spawntag:ics") // wasmkeeper
+	fc.HandleCommentSwaps("ics")
+	fc.RemoveTaggedLines("ics", true)
+
+	fc.RemoveModuleFromText("ibcconsumerkeeper.NewNonZeroKeeper", appGo)
 	fc.RemoveModuleFromText("ConsumerKeeper", appGo)
+
+	fc.RemoveLineWithAnyMatch("ibcconsumerkeeper")
+	fc.RemoveLineWithAnyMatch("ibcconsumertypes")
+	fc.RemoveLineWithAnyMatch("consumerante")
+
 }
 
 // Remove staking module if using a custom impl like the ICS Consumer
 func (fc *FileContent) RemoveStaking() {
 	fc.RemovePOA() // if we already removed we should be fine
 
-	fc.RemoveTaggedLines("staking", true)
 	fc.RemoveModuleFromText("StakingKeeper", appGo)
 	fc.RemoveModuleFromText("stakingtypes", appGo)
+	fc.RemoveTaggedLines("staking", true)
 
-	// for removing ICS.
-	fc.RemoveMint()
+	// This may be better suited in ICS
+	// fc.RemoveMint() // TODO: removing this breaks something with RegisterTendermintService
 	fc.RemoveDistribution()
 }
 
 func (fc *FileContent) RemoveMint() {
+	fc.RemoveModuleFromText("MintKeeper", appGo)
 	fc.RemoveModuleFromText("minttypes", appGo)
 	fc.RemoveModuleFromText("mint", appGo)
-	fc.RemoveModuleFromText("MintKeeper", appGo)
 }
 
 func (fc *FileContent) RemoveDistribution() {

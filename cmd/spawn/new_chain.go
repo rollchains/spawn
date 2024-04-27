@@ -29,7 +29,6 @@ var (
 	// parentDeps is a map of module name to a list of module names that are disabled if the parent is disabled
 	parentDeps = map[string][]string{
 		// "cosmwasm": {spawn.AliasName("some-wasmd-child-feature")},
-		spawn.AliasName("interchain-security"): {spawn.AliasName("staking")}, // TODO: call this POA or staking? idk
 	}
 )
 

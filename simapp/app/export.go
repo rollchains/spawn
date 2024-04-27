@@ -261,7 +261,6 @@ func (app *ChainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs 
 	}
 }
 
-// <spawntag:ics
 // GetValidatorSet returns a slice of bonded validators.
 func (app *ChainApp) GetValidatorSet(ctx sdk.Context) ([]tmtypes.GenesisValidator, error) {
 	var err error
@@ -281,5 +280,3 @@ func (app *ChainApp) GetValidatorSet(ctx sdk.Context) ([]tmtypes.GenesisValidato
 	vals, err = staking.WriteValidators(ctx, app.StakingKeeper) // spawntag:staking
 	return vals, err
 }
-
-// spawntag:ics>
