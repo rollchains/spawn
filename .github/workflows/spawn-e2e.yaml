@@ -180,7 +180,6 @@ jobs:
         run: |
           cd chainconsumer
           go test ./...
-            - name: Build ICS Chain
 
       - name: Validate ICS Chain is Running
         run: |
