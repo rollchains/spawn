@@ -243,6 +243,11 @@ func (fc *FileContent) RemoveInterchainSecurity() {
 	fc.RemoveLineWithAnyMatch("ibcconsumertypes")
 	fc.RemoveLineWithAnyMatch("consumerante")
 
+	fc.DeleteFile(path.Join("cmd", "wasmd", "ics_consumer.go"))
+	fc.DeleteFile(path.Join("scripts", "test_ics_node.sh"))
+
+	// TODO: remove any ictest related
+
 }
 
 // Remove staking module if using a custom impl like the ICS Consumer
@@ -271,6 +276,9 @@ func (fc *FileContent) RemoveStaking() {
 	fc.DeleteFile(path.Join("app", "test_support.go"))
 	fc.DeleteFile(path.Join("app", "app_test.go"))
 	fc.DeleteFile(path.Join("cmd", "wasmd", "testnet.go")) // TODO(nit): switch this to be cfg.BinDaemon instead? (check actual path vs relative)
+
+	// Since we will be using ICS (test_ics_node.sh)
+	fc.DeleteFile(path.Join("scripts", "test_node.sh"))
 }
 
 func (fc *FileContent) RemoveMint() {
