@@ -111,8 +111,8 @@ from_scratch () {
   update_test_genesis '.app_state["poa"]["params"]["admins"]=["wasm10d07y265gmmuvt4z0w9aw880jnsr700js7zslc"]'
 
   # Allocate genesis accounts
-  BINARY genesis add-genesis-account $KEY 10000000$DENOM,900test --keyring-backend $KEYRING
-  BINARY genesis add-genesis-account $KEY2 10000000$DENOM,800test --keyring-backend $KEYRING
+  BINARY genesis add-genesis-account $KEY 10000000$DENOM,900test --keyring-backend $KEYRING --append
+  BINARY genesis add-genesis-account $KEY2 10000000$DENOM,800test --keyring-backend $KEYRING --append
 
   # Sign genesis transaction
   BINARY genesis gentx $KEY 1000000$DENOM --keyring-backend $KEYRING --chain-id $CHAIN_ID
