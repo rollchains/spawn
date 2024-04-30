@@ -12,7 +12,8 @@ env:
   GO_VERSION: 1.21.0
   JQ_VERSION: '1.7'
   JQ_FORCE: false
-  BIN_NAME: appd
+  BIN_NAME: appd # 26657
+  ICS_BIN_NAME: icsappd # 36657
 
 jobs:
   build-spawn:
@@ -45,10 +46,10 @@ jobs:
           name: spawn
           path: ./bin/spawn
 
-  e2e-tests:
+  normal:
     needs: build-spawn
     runs-on: ubuntu-latest
-    name: Chain E2E
+    name: Normal Chain
 
     steps:
       - id: go-cache-paths
@@ -85,7 +86,6 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: spawn
-
       - name: Binary Permission
         run: chmod +x ./spawn && ls -l
 
@@ -102,18 +102,11 @@ jobs:
           cd chain1
           go test ./...
 
-      - name: Install Chain
-        run: |
-          cd chain1
-          make install && echo "Installed ${{env.BIN_NAME}}"
-
-      - name: Build ICS Chain
-        run: ./spawn new chainconsumer --bypass-prompt --bech32=roll --bin=${{env.BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug
-
-      - name: Unit Test ICS Chain
-        run: |
-          cd chainconsumer
-          go test ./...
+      # is this required since we already build the chain in the background?
+      # - name: Install Chain
+      #   run: |
+      #     cd chain1
+      #     make install && echo "Installed ${{env.BIN_NAME}}"
 
       - name: Validate Normal Chain is Running
         run: |
@@ -130,4 +123,78 @@ jobs:
           done
 
           lsof -i tcp:26657 | awk 'NR!=1 {print $2}' | xargs kill || true
+          exit 1
+
+  ics:
+    needs: build-spawn
+    runs-on: ubuntu-latest
+    name: ICS Chain
+
+    steps:
+      - id: go-cache-paths
+        run: |
+          echo "::set-output name=go-build::$(go env GOCACHE)"
+          echo "::set-output name=go-mod::$(go env GOMODCACHE)"
+
+      - name: 'Setup jq'
+        uses: dcarbone/install-jq-action@v2
+        with:
+          version: '${{ env.JQ_VERSION }}'
+          force: '${{ env.JQ_FORCE }}'
+
+      - name: Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      # Cache go build cache, used to speedup go test
+      - name: Go Build Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.go-cache-paths.outputs.go-build }}
+          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
+
+      # Cache go mod cache, used to speedup builds
+      - name: Go Mod Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.go-cache-paths.outputs.go-mod }}
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}\
+
+      - name: Download Spawn Binary
+        uses: actions/download-artifact@master
+        with:
+          name: spawn
+      - name: Binary Permission
+        run: chmod +x ./spawn && ls -l
+
+      - name: New Consumer Chain
+        run: ./spawn new chainconsumer --bypass-prompt --bech32=roll --bin=${{env.ICS_BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug
+
+      - name: Start ICS Chain in Background
+        run: |
+            cd chainconsumer
+            HOME_DIR="~/.icsnetwork" CHAIN_ID="local-2" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_ics_node.sh
+
+      - name: Unit Test ICS Chain
+        run: |
+          cd chainconsumer
+          go test ./...
+            - name: Build ICS Chain
+
+      - name: Validate ICS Chain is Running
+        run: |
+          for ((i = 1; i <= 30; i++)); do
+            res=`${{env.ICS_BIN_NAME}} status --output=json --node=http://localhost:36657 | jq -r 'has("sync_info")'`
+            if [ "$res" == "true" ]; then
+              echo "Chain is running"
+              exit 0
+            else
+              echo "Chain is not running"
+              # exit 1
+              sleep 5
+            fi
+          done
+
+          lsof -i tcp:36657 | awk 'NR!=1 {print $2}' | xargs kill || true
           exit 1
