@@ -174,7 +174,7 @@ jobs:
       - name: Start ICS Chain in Background
         run: |
             cd chainconsumer
-            HOME_DIR="~/.icsnetwork" CHAIN_ID="local-2" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_ics_node.sh
+            HOME_DIR="~/.icsnetwork" CHAIN_ID="local-2" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_ics_node.sh &
 
       - name: Unit Test ICS Chain
         run: |
