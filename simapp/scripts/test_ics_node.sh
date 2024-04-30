@@ -110,8 +110,7 @@ from_scratch () {
     $BINARY add-consumer-section 1 provider --home $HACK_DIR
     provider=`jq '.app_state["ccvconsumer"]' $HACK_DIR/config/genesis.json`
     echo $provider
-    jq '.app_state["ccvconsumer"] = '"$provider" $genesis_json > json.tmp && mv json.tmp $genesis_json
-    sleep 0.1
+    jq '.app_state["ccvconsumer"] = '"$provider"  ${HACK_DIR}/config/genesis.json > json.tmp && mv json.tmp $genesis_json
     rm -rf $HACK_DIR
 
     update_test_genesis `printf '.app_state["ccvconsumer"]["params"]["unbonding_period"]="%s"' "240s"`
@@ -146,4 +145,4 @@ sed -i 's/address = ":8080"/address = "0.0.0.0:'$ROSETTA'"/g' $HOME_DIR/config/a
 sed -i 's/timeout_commit = "5s"/timeout_commit = "'$BLOCK_TIME'"/g' $HOME_DIR/config/config.toml
 
 # Start the daemon in the background
-$BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC"
+$BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC" --home $HOME_DIR
