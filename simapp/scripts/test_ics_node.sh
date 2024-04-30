@@ -2,8 +2,8 @@
 # Run this script to quickly install, setup, and run the current version of the network.
 #
 # Examples:
-# CHAIN_ID="local-1" HOME_DIR="~/.icsnetwork" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_ics_node.sh
-# CHAIN_ID="local-2" HOME_DIR="~/.icsnetwork" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_ics_node.sh
+# CHAIN_ID="local-1" HOME_DIR="~/.simapp" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_ics_node.sh
+# CHAIN_ID="local-2" HOME_DIR="~/.simapp" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_ics_node.sh
 
 set -eu
 
@@ -14,8 +14,8 @@ export CHAIN_ID=${CHAIN_ID:-"local-1"}
 export MONIKER="localvalidator"
 export KEYALGO="secp256k1"
 export KEYRING=${KEYRING:-"test"}
-export HOME_DIR=$(eval echo "${HOME_DIR:-"~/.icsnetwork"}")
-export BINARY=${BINARY:-simd}
+export HOME_DIR=$(eval echo "${HOME_DIR:-"~/.simapp"}")
+export BINARY=${BINARY:-wasmd}
 export DENOM=${DENOM:-token}
 
 export CLEAN=${CLEAN:-"false"}
@@ -72,16 +72,16 @@ from_scratch () {
       echo $mnemonic | $BINARY keys add $key --keyring-backend $KEYRING --algo $KEYALGO --recover
     }
 
-    update_test_genesis () {
-        cat $HOME_DIR/config/genesis.json | jq "$1" > $HOME_DIR/config/tmp_genesis.json && mv $HOME_DIR/config/tmp_genesis.json $HOME_DIR/config/genesis.json
-    }
-
     # cosmos1efd63aw40lxf3n4mhf7dzhjkr453axur6cpk92
     add_key $KEY "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry"
     # cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr
     add_key $KEY2 "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise"
 
     $BINARY init $CHAIN_ID --chain-id $CHAIN_ID --overwrite --default-denom $DENOM
+
+    update_test_genesis () {
+        cat $HOME_DIR/config/genesis.json | jq "$1" > $HOME_DIR/config/tmp_genesis.json && mv $HOME_DIR/config/tmp_genesis.json $HOME_DIR/config/genesis.json
+    }
 
     # === CORE MODULES ===
     # block

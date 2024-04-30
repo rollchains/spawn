@@ -95,7 +95,7 @@ func (fc *FileContent) DeleteDirectoryContents(path string) {
 }
 
 func (fc *FileContent) ReplaceTestNodeScript(cfg *NewChainConfig) {
-	if fc.IsPath(path.Join("scripts", "test_node.sh")) {
+	if fc.IsPath(path.Join("scripts", "test_node.sh")) || fc.IsPath(path.Join("scripts", "test_ics_node.sh")) {
 		fc.ReplaceAll("export BINARY=${BINARY:-wasmd}", fmt.Sprintf("export BINARY=${BINARY:-%s}", cfg.BinDaemon))
 		fc.ReplaceAll("export DENOM=${DENOM:-token}", fmt.Sprintf("export DENOM=${DENOM:-%s}", cfg.Denom))
 

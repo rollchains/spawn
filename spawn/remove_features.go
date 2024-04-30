@@ -99,6 +99,7 @@ func (fc *FileContent) RemoveTokenFactory() {
 	fc.RemoveModuleFromText(text,
 		appGo,
 		path.Join("scripts", "test_node.sh"),
+		path.Join("scripts", "test_ics_node.sh"),
 		path.Join("interchaintest", "setup.go"),
 		path.Join("workflows", "interchaintest-e2e.yml"),
 	)
@@ -114,6 +115,7 @@ func (fc *FileContent) RemovePOA() {
 		appGo,
 		appAnte,
 		path.Join("scripts", "test_node.sh"),
+		path.Join("scripts", "test_ics_node.sh"),
 		path.Join("interchaintest", "setup.go"),
 		path.Join("workflows", "interchaintest-e2e.yml"),
 	)
@@ -133,6 +135,7 @@ func (fc *FileContent) RemoveGlobalFee() {
 		appGo,
 		appAnte,
 		path.Join("scripts", "test_node.sh"),
+		path.Join("scripts", "test_ics_node.sh"),
 		path.Join("interchaintest", "setup.go"),
 	)
 
