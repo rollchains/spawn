@@ -169,7 +169,7 @@ jobs:
         run: chmod +x ./spawn && ls -l
 
       - name: New Consumer Chain
-        run: ./spawn new chainconsumer --bypass-prompt --bech32=roll --bin=${{env.ICS_BIN_NAME}} --no-git --org=rollchains --denom=uroll --debug
+        run: ./spawn new chainconsumer --bypass-prompt --bech32=roll  --no-git --org=rollchains --denom=uroll --debug --bin=${{env.ICS_BIN_NAME}}
 
       - name: Start ICS Chain in Background
         run: |

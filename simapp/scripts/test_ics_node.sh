@@ -103,7 +103,7 @@ from_scratch () {
     $BINARY genesis add-genesis-account $KEY2 10000000$DENOM,800test --keyring-backend $KEYRING --home $HOME_DIR --append
 
     # ICS provider genesis hack
-    HACK_DIR=`echo $HOME_DIR-1` && echo $HACK_DIR
+    HACK_DIR=icshack-1 && echo $HACK_DIR
     rm -rf $HACK_DIR
     cp -r ${HOME_DIR} $HACK_DIR
 

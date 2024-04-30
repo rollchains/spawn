@@ -48,10 +48,11 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 			return genesisMutator.AlterConsumerModuleState(cmd, func(state *GenesisData, _ map[string]json.RawMessage) error {
 				initialValset := []types1.ValidatorUpdate{}
 				genesisState := CreateMinimalConsumerTestGenesis(chainID)
-				clientCtx := client.GetClientContextFromCmd(cmd)
+				// clientCtx := client.GetClientContextFromCmd(cmd)
+				// homeDir := clientCtx.HomeDir
 				serverCtx := server.GetServerContextFromCmd(cmd)
 				config := serverCtx.Config
-				homeDir := clientCtx.HomeDir
+				homeDir := defaultNodeHome
 				for i := 1; i <= numNodes; i++ {
 					homeDir = fmt.Sprintf("%s%d", homeDir[:len(homeDir)-1], i)
 					config.SetRoot(homeDir)
