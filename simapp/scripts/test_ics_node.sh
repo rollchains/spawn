@@ -69,7 +69,7 @@ from_scratch () {
     add_key() {
       key=$1
       mnemonic=$2
-      echo $mnemonic | $BINARY keys add $key --keyring-backend $KEYRING --algo $KEYALGO --recover
+      echo $mnemonic | $BINARY keys add $key --home $HOME_DIR --keyring-backend $KEYRING --algo $KEYALGO --recover
     }
 
     # cosmos1efd63aw40lxf3n4mhf7dzhjkr453axur6cpk92
