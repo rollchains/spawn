@@ -107,10 +107,10 @@ from_scratch () {
     rm -rf $HACK_DIR
     cp -r ${HOME_DIR} $HACK_DIR
 
-    $BINARY add-consumer-section 1 provider --home $HACK_DIR
-    provider=`jq '.app_state["ccvconsumer"]' $HACK_DIR/config/genesis.json`
-    echo $provider
-    jq '.app_state["ccvconsumer"] = '"$provider"  ${HACK_DIR}/config/genesis.json > json.tmp && mv json.tmp $genesis_json
+    $BINARY add-consumer-section provider --home $HACK_DIR
+    ccvjson=`jq '.app_state["ccvconsumer"]' $HACK_DIR/config/genesis.json`
+    echo $ccvjson
+    jq '.app_state["ccvconsumer"] = '"$ccvjson"  ${HACK_DIR}/config/genesis.json > json.tmp && mv json.tmp $genesis_json
     rm -rf $HACK_DIR
 
     update_test_genesis `printf '.app_state["ccvconsumer"]["params"]["unbonding_period"]="%s"' "240s"`

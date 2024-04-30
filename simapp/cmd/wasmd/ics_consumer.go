@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
@@ -27,52 +26,48 @@ import (
 )
 
 // original credit: https://github.com/Stride-Labs/stride/blob/v22.0.0/cmd/consumer.go
-func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
+func AddConsumerSectionCmd(nodeHome string) *cobra.Command {
 	genesisMutator := NewDefaultGenesisIO()
 
 	txCmd := &cobra.Command{
-		Use:                        "add-consumer-section [num_nodes] [chainID]",
-		Args:                       cobra.ExactArgs(2),
+		Use:                        "add-consumer-section [chainID]",
+		Args:                       cobra.ExactArgs(1),
 		Short:                      "ONLY FOR TESTING PURPOSES! Modifies genesis so that chain can be started locally with one node.",
 		SuggestionsMinimumDistance: 2,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			numNodes, err := strconv.Atoi(args[0])
+			chainID := args[0]
+
+			overrideHome, err := cmd.Flags().GetString(flags.FlagHome)
 			if err != nil {
-				return errorsmod.Wrap(err, "invalid number of nodes")
-			} else if numNodes == 0 {
-				return errorsmod.Wrap(nil, "num_nodes can not be zero")
+				return err
 			}
 
-			chainID := args[1]
+			if overrideHome != "" {
+				nodeHome = overrideHome
+			}
 
-			return genesisMutator.AlterConsumerModuleState(cmd, func(state *GenesisData, _ map[string]json.RawMessage) error {
+			return genesisMutator.AlterConsumerModuleState(cmd, nodeHome, func(state *GenesisData, _ map[string]json.RawMessage) error {
 				initialValset := []types1.ValidatorUpdate{}
 				genesisState := CreateMinimalConsumerTestGenesis(chainID)
-				// clientCtx := client.GetClientContextFromCmd(cmd)
-				// homeDir := clientCtx.HomeDir
 				serverCtx := server.GetServerContextFromCmd(cmd)
 				config := serverCtx.Config
-				homeDir := defaultNodeHome
-				for i := 1; i <= numNodes; i++ {
-					homeDir = fmt.Sprintf("%s%d", homeDir[:len(homeDir)-1], i)
-					config.SetRoot(homeDir)
+				config.SetRoot(nodeHome)
 
-					privValidator := pvm.LoadFilePV(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
-					pk, err := privValidator.GetPubKey()
-					if err != nil {
-						return err
-					}
-					sdkPublicKey, err := cryptocodec.FromCmtPubKeyInterface(pk)
-					if err != nil {
-						return err
-					}
-					tmProtoPublicKey, err := cryptocodec.ToCmtProtoPublicKey(sdkPublicKey)
-					if err != nil {
-						return err
-					}
-
-					initialValset = append(initialValset, types1.ValidatorUpdate{PubKey: tmProtoPublicKey, Power: 100})
+				privValidator := pvm.LoadFilePV(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
+				pk, err := privValidator.GetPubKey()
+				if err != nil {
+					return err
 				}
+				sdkPublicKey, err := cryptocodec.FromCmtPubKeyInterface(pk)
+				if err != nil {
+					return err
+				}
+				tmProtoPublicKey, err := cryptocodec.ToCmtProtoPublicKey(sdkPublicKey)
+				if err != nil {
+					return err
+				}
+
+				initialValset = append(initialValset, types1.ValidatorUpdate{PubKey: tmProtoPublicKey, Power: 100})
 
 				vals, err := tmtypes.PB2TM.ValidatorUpdates(initialValset)
 				if err != nil {
@@ -88,7 +83,7 @@ func AddConsumerSectionCmd(defaultNodeHome string) *cobra.Command {
 		},
 	}
 
-	txCmd.Flags().String(flags.FlagHome, defaultNodeHome, "The application home directory")
+	txCmd.Flags().String(flags.FlagHome, nodeHome, "The application home directory")
 	flags.AddQueryFlagsToCmd(txCmd)
 
 	return txCmd
@@ -106,8 +101,8 @@ func NewDefaultGenesisIO() *DefaultGenesisIO {
 	return &DefaultGenesisIO{DefaultGenesisReader: DefaultGenesisReader{}}
 }
 
-func (x DefaultGenesisIO) AlterConsumerModuleState(cmd *cobra.Command, callback func(state *GenesisData, appState map[string]json.RawMessage) error) error {
-	g, err := x.ReadGenesis(cmd)
+func (x DefaultGenesisIO) AlterConsumerModuleState(cmd *cobra.Command, homeDir string, callback func(state *GenesisData, appState map[string]json.RawMessage) error) error {
+	g, err := x.ReadGenesis(cmd, homeDir)
 	if err != nil {
 		return err
 	}
@@ -135,11 +130,10 @@ func (x DefaultGenesisIO) AlterConsumerModuleState(cmd *cobra.Command, callback 
 
 type DefaultGenesisReader struct{}
 
-func (d DefaultGenesisReader) ReadGenesis(cmd *cobra.Command) (*GenesisData, error) {
-	clientCtx := client.GetClientContextFromCmd(cmd)
+func (d DefaultGenesisReader) ReadGenesis(cmd *cobra.Command, homeDir string) (*GenesisData, error) {
 	serverCtx := server.GetServerContextFromCmd(cmd)
 	config := serverCtx.Config
-	config.SetRoot(clientCtx.HomeDir)
+	config.SetRoot(homeDir)
 
 	genFile := config.GenesisFile()
 	appState, genDoc, err := genutiltypes.GenesisStateFromGenFile(genFile)

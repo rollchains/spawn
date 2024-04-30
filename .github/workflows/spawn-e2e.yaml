@@ -179,7 +179,7 @@ jobs:
       - name: Start ICS Chain
         run: |
             cd chainconsumer
-            HOME_DIR="~/.icsnetwork" CHAIN_ID="local-2" CLEAN=true BLOCK_TIME="500ms" sh scripts/test_ics_node.sh
+            HOME_DIR="~/.icsnetwork" CHAIN_ID="local-2" CLEAN=true BLOCK_TIME="500ms" sh scripts/test_ics_node.sh &
 
       - name: Validate ICS Chain is Running
         run: |
