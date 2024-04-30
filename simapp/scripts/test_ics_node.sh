@@ -77,7 +77,7 @@ from_scratch () {
     # cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr
     add_key $KEY2 "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise"
 
-    $BINARY init $CHAIN_ID --chain-id $CHAIN_ID --overwrite --default-denom $DENOM
+    $BINARY init $CHAIN_ID --chain-id $CHAIN_ID --overwrite --default-denom $DENOM --home $HOME_DIR
 
     update_test_genesis () {
         cat $HOME_DIR/config/genesis.json | jq "$1" > $HOME_DIR/config/tmp_genesis.json && mv $HOME_DIR/config/tmp_genesis.json $HOME_DIR/config/genesis.json
