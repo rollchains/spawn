@@ -67,15 +67,13 @@ jobs:
         run: chmod +x ./spawn && ls -l
 
       # === Chain Creation & Validation ===
-      - name: Spawn Create ${{inputs.id}}
+      - name: Spawn Gen - '${{inputs.id}}'
         run: ${{ inputs.spawn-create-cmd }}
 
-      - name: Build and Run '${{inputs.id}}''
-        run: |
-            cd chain1
-            ${{ inputs.start-chain-cmd }}
+      - name: Build and Run '${{inputs.id}}'
+        run: cd mychain && ${{ inputs.start-chain-cmd }}
 
-      - name: Unit Test '${{inputs.id}}'
+      - name: Unit Test - '${{inputs.id}}'
         run: cd mychain && go test ./...
 
       - name: Validate '${{inputs.id}}' is Running
