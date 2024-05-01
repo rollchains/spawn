@@ -1,8 +1,6 @@
 module github.com/rollchains/spawn/simapp
 
-go 1.21.1
-
-toolchain go1.21.9
+go 1.21.9
 
 // overrides
 replace (
