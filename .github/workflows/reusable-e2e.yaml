@@ -71,7 +71,9 @@ jobs:
         run: ${{ inputs.spawn-create-cmd }}
 
       - name: Build and Run '${{inputs.id}}'
-        run: cd mychain && ${{ inputs.start-chain-cmd }}
+        run: |
+          cd mychain
+          ${{ inputs.start-chain-cmd }}
 
       - name: Unit Test - '${{inputs.id}}'
         run: |
