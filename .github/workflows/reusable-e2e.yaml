@@ -19,13 +19,13 @@ on:
         description: 'The command which runs the chain via the shell'
 
 env:
-  GO_VERSION: 1.21.0
+  GO_VERSION: 1.21.9
   JQ_VERSION: '1.7'
   JQ_FORCE: false
 
 
 jobs:
-  setup_e2e:
+  run:
     runs-on: ubuntu-latest
     steps:
       # === BASE SETUP ===
@@ -58,22 +58,27 @@ jobs:
           key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
 
       # === SETUP SPAWN ===
-      - name: Download Spawn Binary
+      - name: Download Spawn Bin
         uses: actions/download-artifact@master
         with:
           name: spawn
 
-      - name: Binary Permission
+      - name: Spawn Permission
         run: chmod +x ./spawn && ls -l
 
       # === Chain Creation & Validation ===
-      - name: Spawn ${{inputs.id}}
+      - name: Spawn Create ${{inputs.id}}
         run: ${{ inputs.spawn-create-cmd }}
 
-      - name: Unit Test ${{inputs.id}}
+      - name: Build and Run '${{inputs.id}}''
+        run: |
+            cd chain1
+            ${{ inputs.start-chain-cmd }}
+
+      - name: Unit Test '${{inputs.id}}'
         run: cd mychain && go test ./...
 
-      - name: Validate ${{inputs.id}} is Running
+      - name: Validate '${{inputs.id}}' is Running
         run: |
           for ((i = 1; i <= 30; i++)); do
             res=`appd status --output=json | jq -r 'has("sync_info")'`

@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  GO_VERSION: 1.21.0
+  GO_VERSION: 1.21.9
   JQ_VERSION: '1.7'
   JQ_FORCE: false
 
@@ -50,6 +50,6 @@ jobs:
     needs: build-spawn
     uses: ./.github/workflows/reusable-e2e.yaml
     with:
-      id: normal staking
+      id: Normal Staking
       spawn-create-cmd: ./spawn new mychain --bypass-prompt --bech32=roll --bin=appd --no-git --org=rollchains --denom=uroll --debug --disable=ics
       start-chain-cmd: HOME_DIR="~/.simapp" CHAIN_ID="local-1" BLOCK_TIME="2000ms" CLEAN=true sh scripts/test_node.sh &
