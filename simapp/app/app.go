@@ -183,7 +183,9 @@ var (
 
 	capabilities = strings.Join(
 		[]string{
-			"iterator", "staking", "stargate",
+			"iterator",
+			"staking", // spawntag:staking
+			"stargate",
 			"cosmwasm_1_1", "cosmwasm_1_2", "cosmwasm_1_3", "cosmwasm_1_4",
 			"token_factory", // spawntag:tokenfactory
 		}, ",")
@@ -526,12 +528,21 @@ func NewChainApp(
 	)
 	// spawntag:staking>
 
+	// pre-initialize ConsumerKeeper to satsfy ibckeeper.NewKeeper which would panic on nil or zero keeper
+	// ConsumerKeeper implements StakingKeeper but all function calls result in no-ops so this is safe.
+	// ConsumerKeeper communication over IBC is not affected by these changes
+	app.ConsumerKeeper = ibcconsumerkeeper.NewNonZeroKeeper(
+		appCodec,
+		keys[ibcconsumertypes.StoreKey],
+		app.GetSubspace(ibcconsumertypes.ModuleName),
+	)
+
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
 		appCodec,
 		legacyAmino,
 		runtime.NewKVStoreService(keys[slashingtypes.StoreKey]),
 		//app.StakingKeeper, // ?spawntag:ics
-		&app.ConsumerKeeper, // spawntag:ics
+		app.ConsumerKeeper, // spawntag:ics
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
@@ -596,15 +607,6 @@ func NewChainApp(
 		homePath,
 		app.BaseApp,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-	)
-
-	// pre-initialize ConsumerKeeper to satsfy ibckeeper.NewKeeper which would panic on nil or zero keeper
-	// ConsumerKeeper implements StakingKeeper but all function calls result in no-ops so this is safe.
-	// ConsumerKeeper communication over IBC is not affected by these changes
-	app.ConsumerKeeper = ibcconsumerkeeper.NewNonZeroKeeper(
-		appCodec,
-		keys[ibcconsumertypes.StoreKey],
-		app.GetSubspace(ibcconsumertypes.ModuleName),
 	)
 
 	app.IBCKeeper = ibckeeper.NewKeeper(

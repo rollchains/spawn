@@ -16,6 +16,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	wasm "github.com/CosmWasm/wasmd/x/wasm/types"
+	ibcconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 	globalfee "github.com/strangelove-ventures/globalfee/x/globalfee/types"
 	poa "github.com/strangelove-ventures/poa"
 	tokenfactory "github.com/strangelove-ventures/tokenfactory/x/tokenfactory/types"
@@ -58,17 +59,9 @@ var (
 		Images: []ibc.DockerImage{
 			ChainImage,
 		},
-		GasAdjustment: 1.5,
-		ModifyGenesis: cosmos.ModifyGenesis(DefaultGenesis),
-		EncodingConfig: func() *moduletestutil.TestEncodingConfig {
-			cfg := cosmos.DefaultEncoding()
-			// TODO: add encoding types here for the modules you want to use
-			wasm.RegisterInterfaces(cfg.InterfaceRegistry)
-			tokenfactory.RegisterInterfaces(cfg.InterfaceRegistry)
-			globalfee.RegisterInterfaces(cfg.InterfaceRegistry)
-			poa.RegisterInterfaces(cfg.InterfaceRegistry)
-			return &cfg
-		}(),
+		GasAdjustment:  1.5,
+		ModifyGenesis:  cosmos.ModifyGenesis(DefaultGenesis), //spawntag:staking
+		EncodingConfig: GetEncodingConfig(),
 		Type:           "cosmos",
 		Name:           Name,
 		ChainID:        ChainID,
@@ -96,6 +89,17 @@ var (
 	RelayerRepo    = "ghcr.io/cosmos/relayer"
 	RelayerVersion = "main"
 )
+
+func GetEncodingConfig() *moduletestutil.TestEncodingConfig {
+	cfg := cosmos.DefaultEncoding()
+	// TODO: add encoding types here for the modules you want to use
+	wasm.RegisterInterfaces(cfg.InterfaceRegistry)
+	tokenfactory.RegisterInterfaces(cfg.InterfaceRegistry)
+	globalfee.RegisterInterfaces(cfg.InterfaceRegistry)
+	poa.RegisterInterfaces(cfg.InterfaceRegistry)
+	ibcconsumertypes.RegisterInterfaces(cfg.InterfaceRegistry)
+	return &cfg
+}
 
 // Other Helpers
 func ExecuteQuery(ctx context.Context, chain *cosmos.CosmosChain, cmd []string, i interface{}, extraFlags ...string) {
