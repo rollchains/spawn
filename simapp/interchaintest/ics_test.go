@@ -36,13 +36,6 @@ func TestICS(t *testing.T) {
 			NumValidators: &vals, NumFullNodes: &fNodes,
 			ChainConfig: ibc.ChainConfig{
 				GasAdjustment: 1.5,
-				Images: []ibc.DockerImage{
-					{
-						Repository: "ghcr.io/strangelove-ventures/heighliner/ics",
-						Version:    "v5.0.0-provider-rc1",
-						UidGid:     "1025:1025",
-					},
-				},
 			},
 		},
 		{
