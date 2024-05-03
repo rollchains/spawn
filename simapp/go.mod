@@ -61,7 +61,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.2
-	github.com/strangelove-ventures/globalfee v0.50.0
+	github.com/strangelove-ventures/globalfee v0.50.1-0.20240503235307-e55e074e01a5
 	github.com/strangelove-ventures/poa v0.50.1-alpha.1
 	github.com/strangelove-ventures/tokenfactory v0.50.1-0.20240427023208-6e19868a9b72
 	github.com/stretchr/testify v1.9.0

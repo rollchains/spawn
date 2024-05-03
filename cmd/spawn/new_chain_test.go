@@ -18,12 +18,6 @@ import (
 
 var Logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-type DisabledCase struct {
-	Name          string
-	Disabled      []string
-	NotContainAny []string
-}
-
 func TestDisabledGeneration(t *testing.T) {
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
@@ -35,23 +29,38 @@ func TestDisabledGeneration(t *testing.T) {
 		}
 	}
 
+	type disabledCase struct {
+		Name          string
+		Disabled      []string
+		NotContainAny []string
+	}
+
 	// custom cases
-	disabledCases := []DisabledCase{
+	disabledCases := []disabledCase{
 		{
-			Name:     "onlystaking",
+			// by default ICS is used
+			Name:          "default",
+			Disabled:      []string{},
+			NotContainAny: []string{"StakingKeeper", "POAKeeper"},
+		},
+		{
+			Name:     "everything but staking",
 			Disabled: allButStaking,
 		},
 		{
-			Name:     "stdmix1",
-			Disabled: []string{spawn.GlobalFee, spawn.Ignite, spawn.TokenFactory},
+			Name:          "noibcaddons",
+			Disabled:      []string{spawn.PacketForward, spawn.IBCRateLimit},
+			NotContainAny: []string{"packetforward", "RatelimitKeeper"},
 		},
 		{
-			Name:     "noibcaddons",
-			Disabled: []string{spawn.PacketForward, spawn.IBCRateLimit},
+			Name:          "stdmix1",
+			Disabled:      []string{spawn.GlobalFee, spawn.Ignite, spawn.TokenFactory},
+			NotContainAny: []string{"TokenFactoryKeeper", "GlobalFeeKeeper"},
 		},
 		{
-			Name:     "nocw",
-			Disabled: []string{spawn.CosmWasm, spawn.WasmLC},
+			Name:          "nocw",
+			Disabled:      []string{spawn.CosmWasm, spawn.WasmLC},
+			NotContainAny: []string{"wasmkeeper", "wasmtypes"},
 		},
 	}
 
@@ -59,7 +68,7 @@ func TestDisabledGeneration(t *testing.T) {
 	for _, f := range spawn.AllFeatures {
 		normalizedName := strings.ReplaceAll("remove"+f, "-", "")
 
-		disabledCases = append(disabledCases, DisabledCase{
+		disabledCases = append(disabledCases, disabledCase{
 			Name:     normalizedName,
 			Disabled: []string{f},
 		})
@@ -123,7 +132,8 @@ func AssertValidGeneration(t *testing.T, dirPath string, dc []string, notContain
 
 			// ensure no disabled modules are present
 			for _, text := range notContainAny {
-				require.NotContains(t, string(f), text, fmt.Sprintf("disabled module %s found in %s", text, base))
+				text := text
+				require.NotContains(t, string(f), text, fmt.Sprintf("disabled module %s found in %s (%s)", text, base, p))
 			}
 
 			_, err = format.Source(f)

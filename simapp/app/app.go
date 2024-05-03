@@ -1161,7 +1161,6 @@ func NewChainApp(
 
 			GlobalFeeKeeper:      app.GlobalFeeKeeper,
 			BypassMinFeeMsgTypes: GetDefaultBypassFeeMessages(), //spawntag:globalfee
-			StakingKeeper:        app.StakingKeeper,             //spawntag:globalfee
 			ConsumerKeeper:       app.ConsumerKeeper,
 		},
 	)

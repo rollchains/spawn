@@ -63,7 +63,7 @@ func NewCmd() *cobra.Command {
 			extName := strings.ToLower(args[0])
 
 			// breaks proto-gen regex searches
-			if strings.HasPrefix(extName, "module") {
+			if strings.Contains(extName, "module") {
 				logger.Error("Module names cannot start with 'module'")
 				return
 			}
