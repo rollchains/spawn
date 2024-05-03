@@ -23,7 +23,8 @@ type NewChainConfig struct {
 	ProjectName string
 	// Bech32Prefix is the new wallet prefix
 	Bech32Prefix string
-	// The home directory of the new chain (e.g. .simapp/)
+	// The home directory of the new chain (e.g. .simapp) within the binary
+	// This should typically be prefixed with a period.
 	HomeDir string
 	// BinDaemon is the name of the binary. (e.g. appd)
 	BinDaemon string
@@ -37,6 +38,18 @@ type NewChainConfig struct {
 	DisabledModules []string
 
 	Logger *slog.Logger
+}
+
+func (cfg NewChainConfig) Run(doAnnounce bool) {
+	if err := cfg.Validate(); err != nil {
+		cfg.Logger.Error("Error validating config", "err", err)
+		return
+	}
+
+	cfg.NewChain()
+	if doAnnounce {
+		cfg.AnnounceSuccessfulBuild()
+	}
 }
 
 // SetProperFeaturePairs ensures modules that are meant to be disabled, are.

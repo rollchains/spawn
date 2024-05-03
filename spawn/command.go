@@ -25,4 +25,7 @@ func (cfg *NewChainConfig) GitInitNewProjectRepo() {
 	if err := ExecCommand("git", "commit", "-m", "initial commit", "--quiet"); err != nil {
 		cfg.Logger.Error("Error committing initial files", "err", err)
 	}
+	if err := os.Chdir(".."); err != nil {
+		cfg.Logger.Error("Error changing back to original directory", "err", err)
+	}
 }

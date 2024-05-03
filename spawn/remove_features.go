@@ -26,6 +26,12 @@ var (
 	appAnte = path.Join("app", "ante.go")
 )
 
+// used for fuzz testing
+var AllFeatures = []string{
+	TokenFactory, POA, GlobalFee, CosmWasm, WasmLC,
+	PacketForward, IBCRateLimit, Ignite, InterchainSecurity, Staking,
+}
+
 // Given a string, return the reduced name for the module
 // e.g. "tf" and "token-factory" both return "tokenfactory"
 func AliasName(name string) string {

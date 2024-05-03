@@ -1,10 +1,94 @@
 package main
 
 import (
+	"fmt"
+	"go/format"
+	"io/fs"
+	"log/slog"
+	"os"
+	"path"
+	"path/filepath"
+	"strings"
 	"testing"
 
+	"github.com/rollchains/spawn/spawn"
 	"github.com/stretchr/testify/require"
 )
+
+type DisabledCase struct {
+	Name          string
+	Disabled      []string
+	NotContainAny []string
+}
+
+func TestDisabledGeneration(t *testing.T) {
+	cwd, err := os.Getwd()
+	require.NoError(t, err)
+
+	// proof-of-authority,tokenfactory,globalfee,ibc-packetforward,ibc-ratelimit,cosmwasm,wasm-light-client,interchain-security,ignite-cli
+
+	disabledCases := []DisabledCase{
+		// {
+		// 	Name:     "mix1",
+		// 	Disabled: []string{"globalfee", "wasmlc", "ignite"},
+		// },
+		// {
+		// 	Name:     "ibcmix",
+		// 	Disabled: []string{"packetforward", "ibc-rate-limit"},
+		// },
+		// {
+		// 	Name:     "cwmix",
+		// 	Disabled: []string{"cosmwasm", "cosmwasm", "wasm-light-client"},
+		// },
+	}
+
+	for _, f := range spawn.AllFeatures {
+		normalizedName := strings.ReplaceAll("remove"+f, "-", "")
+
+		disabledCases = append(disabledCases, DisabledCase{
+			Name:     normalizedName,
+			Disabled: []string{f},
+		})
+	}
+
+	for _, c := range disabledCases {
+		name := "spawnunittest" + c.Name
+		dc := c.Disabled
+
+		fmt.Println("=====\ndisabled cases", name, dc)
+
+		t.Run(name, func(t *testing.T) {
+			dirPath := path.Join(cwd, name)
+
+			require.NoError(t, os.RemoveAll(name))
+
+			cfg := spawn.NewChainConfig{
+				ProjectName:     name,
+				Bech32Prefix:    "cosmos",
+				HomeDir:         ".projName",
+				BinDaemon:       "simd",
+				Denom:           "token",
+				GithubOrg:       "rollchains",
+				IgnoreGitInit:   false,
+				DisabledModules: dc,
+				Logger:          slog.New(slog.NewJSONHandler(os.Stdout, nil)),
+			}
+			cfg.Run(false)
+
+			assetValidGeneration(t, dirPath, dc, c.NotContainAny)
+
+			require.NoError(t, os.RemoveAll(name))
+		})
+	}
+}
+
+func TestDisabledFuzzer(t *testing.T) {
+	cwd, err := os.Getwd()
+	require.NoError(t, err)
+
+	fmt.Println("=====\ndisabled fuzzer", cwd)
+
+}
 
 func TestDisabled(t *testing.T) {
 	type tcase struct {
@@ -71,4 +155,34 @@ func TestDisabled(t *testing.T) {
 			}
 		})
 	}
+}
+
+func assetValidGeneration(t *testing.T, dirPath string, dc []string, notContainAny []string) {
+	fileCount := 0
+	err := filepath.WalkDir(dirPath, func(p string, file fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		fileCount++
+
+		if filepath.Ext(p) == ".go" {
+			base := path.Base(p)
+
+			f, err := os.ReadFile(p)
+			require.NoError(t, err, fmt.Sprintf("can't read %s", base))
+
+			// ensure no disabled modules are present
+			for _, text := range notContainAny {
+				require.NotContains(t, string(f), text, fmt.Sprintf("disabled module %s found in %s", text, base))
+			}
+
+			_, err = format.Source(f)
+			require.NoError(t, err, fmt.Sprintf("format issue: %v. using disabled: %v", base, dc))
+		}
+
+		return nil
+	})
+	require.NoError(t, err, fmt.Sprintf("error walking directory for disabled: %v", dc))
+	require.Greater(t, fileCount, 1, fmt.Sprintf("no files found in %s", dirPath))
 }

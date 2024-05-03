@@ -108,13 +108,9 @@ var newChain = &cobra.Command{
 			DisabledModules: disabled,
 			Logger:          logger,
 		}
-		if err := cfg.Validate(); err != nil {
-			logger.Error("Error validating config", "err", err)
-			return
-		}
 
-		cfg.NewChain()
-		cfg.AnnounceSuccessfulBuild()
+		// Validate, Build, and Announce
+		cfg.Run(true)
 	},
 }
 
