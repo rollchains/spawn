@@ -58,13 +58,13 @@ func AliasName(name string) string {
 	case Staking:
 		return Staking
 	default:
-		panic(fmt.Sprintf("AliasName: unknown feature to remove %s", name))
+		panic(fmt.Sprintf("AliasName: unknown feature to remove: %s", name))
 	}
 }
 
 // Removes disabled features from the files specified
+// NOTE: Ensure you call `SetProperFeaturePairs` before calling this function
 func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
-	// NOTE: Ensure you call `SetProperFeaturePairs` before calling this function
 	for _, name := range cfg.DisabledModules {
 		base := AliasName(name)
 

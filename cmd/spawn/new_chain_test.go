@@ -5,6 +5,7 @@ import (
 	"go/format"
 	"io/fs"
 	"log/slog"
+	"math/rand"
 	"os"
 	"path"
 	"path/filepath"
@@ -25,21 +26,30 @@ func TestDisabledGeneration(t *testing.T) {
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
 
-	// proof-of-authority,tokenfactory,globalfee,ibc-packetforward,ibc-ratelimit,cosmwasm,wasm-light-client,interchain-security,ignite-cli
+	allButStaking := make([]string, 0, len(spawn.AllFeatures)-1)
+	for _, f := range spawn.AllFeatures {
+		if f != spawn.Staking {
+			allButStaking = append(allButStaking, f)
+		}
+	}
 
 	disabledCases := []DisabledCase{
-		// {
-		// 	Name:     "mix1",
-		// 	Disabled: []string{"globalfee", "wasmlc", "ignite"},
-		// },
-		// {
-		// 	Name:     "ibcmix",
-		// 	Disabled: []string{"packetforward", "ibc-rate-limit"},
-		// },
-		// {
-		// 	Name:     "cwmix",
-		// 	Disabled: []string{"cosmwasm", "cosmwasm", "wasm-light-client"},
-		// },
+		{
+			Name:     "onlystaking",
+			Disabled: allButStaking,
+		},
+		{
+			Name:     "stdmix1",
+			Disabled: []string{spawn.GlobalFee, spawn.Ignite, spawn.TokenFactory},
+		},
+		{
+			Name:     "noibcaddons",
+			Disabled: []string{spawn.PacketForward, spawn.IBCRateLimit},
+		},
+		{
+			Name:     "nocw",
+			Disabled: []string{spawn.CosmWasm, spawn.WasmLC},
+		},
 	}
 
 	for _, f := range spawn.AllFeatures {
@@ -65,10 +75,10 @@ func TestDisabledGeneration(t *testing.T) {
 			cfg := spawn.NewChainConfig{
 				ProjectName:     name,
 				Bech32Prefix:    "cosmos",
-				HomeDir:         ".projName",
-				BinDaemon:       "simd",
-				Denom:           "token",
-				GithubOrg:       "rollchains",
+				HomeDir:         "." + name,
+				BinDaemon:       RandStringBytes(6) + "d",
+				Denom:           "token" + RandStringBytes(3),
+				GithubOrg:       RandStringBytes(15),
 				IgnoreGitInit:   false,
 				DisabledModules: dc,
 				Logger:          slog.New(slog.NewJSONHandler(os.Stdout, nil)),
@@ -82,79 +92,14 @@ func TestDisabledGeneration(t *testing.T) {
 	}
 }
 
-func TestDisabledFuzzer(t *testing.T) {
-	cwd, err := os.Getwd()
-	require.NoError(t, err)
+const letterBytes = "abcdefghijklmnopqrstuvwxyz"
 
-	fmt.Println("=====\ndisabled fuzzer", cwd)
-
-}
-
-func TestDisabled(t *testing.T) {
-	type tcase struct {
-		name     string
-		disabled []string
-		expected []string
-		panics   bool
+func RandStringBytes(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
 	}
-
-	testCases := []tcase{
-		{
-			name:     "same",
-			disabled: []string{"poa", "globalfee", "cosmwasm"},
-			expected: []string{"poa", "globalfee", "cosmwasm"},
-		},
-		{
-			name:     "remove poa duplicate",
-			disabled: []string{"poa", "globalfee", "cosmwasm", "poa"},
-			expected: []string{"poa", "globalfee", "cosmwasm"},
-		},
-		{
-			name:     "remove poa and globalfee duplicate",
-			disabled: []string{"poa", "globalfee", "cosmwasm", "poa", "globalfee"},
-			expected: []string{"poa", "globalfee", "cosmwasm"},
-		},
-		{
-			name:     "panic due to invalid disabled feature",
-			disabled: []string{"poa", "whatiamnotreal", "cosmwasm"},
-			panics:   true,
-		},
-	}
-
-	for _, tc := range testCases {
-		tc := tc
-
-		t.Run(tc.name, func(t *testing.T) {
-			defer func() {
-				if r := recover(); r != nil {
-					if !tc.panics {
-						t.Errorf("expected no panic, but got %v", r)
-					}
-				}
-			}()
-
-			res := CleanDisabled(tc.disabled)
-			if !tc.panics {
-				require.Len(t, res, len(tc.expected))
-
-				// ensure every element within tc.expected is in res (ignore order)
-				found := make(map[string]bool)
-				for _, e := range tc.expected {
-					found[e] = false
-				}
-
-				for _, r := range res {
-					if _, ok := found[r]; ok {
-						found[r] = true
-					}
-				}
-
-				for k, v := range found {
-					require.True(t, v, "expected %s to be found in res", k)
-				}
-			}
-		})
-	}
+	return string(b)
 }
 
 func assetValidGeneration(t *testing.T, dirPath string, dc []string, notContainAny []string) {

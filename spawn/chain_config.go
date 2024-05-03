@@ -54,19 +54,57 @@ func (cfg NewChainConfig) Run(doAnnounce bool) {
 
 // SetProperFeaturePairs ensures modules that are meant to be disabled, are.
 // ex: if ICS is enabled, disable staking if it is not already disabled
+// Normalizes the names, removes any parent dependencies, and removes duplicates
 func (cfg *NewChainConfig) SetProperFeaturePairs() {
+	d := RemoveDuplicates(cfg.DisabledModules)
+
 	isUsingICS := true
-	for _, name := range cfg.DisabledModules {
+	for _, name := range d {
 		if AliasName(name) == InterchainSecurity {
 			isUsingICS = false
 		}
 	}
 
+	// TODO: maybe we allow so democratic consumers are allowed?
+	// Remove staking if ICS is in use
 	if isUsingICS && !cfg.IsFeatureDisabled(Staking) {
-		cfg.DisabledModules = append(cfg.DisabledModules, Staking)
+		d = append(d, Staking)
 	}
 
+	cfg.DisabledModules = d
 	cfg.Logger.Debug("Disabled features", "features", cfg.DisabledModules)
+}
+
+func RemoveDuplicates(disabled []string) []string {
+	names := make(map[string]bool)
+	for _, d := range disabled {
+		names[d] = true
+	}
+
+	newDisabled := []string{}
+	for d := range names {
+		newDisabled = append(newDisabled, d)
+	}
+
+	return newDisabled
+}
+
+// NormalizeDisabledNames normalizes the names, removes any parent dependencies, and removes duplicates.
+// It then returns the cleaned list of disabled modules.
+func NormalizeDisabledNames(disabled []string, improperPairs map[string][]string) []string {
+	for i, name := range disabled {
+		// normalize disabled to standard aliases
+		alias := AliasName(name)
+		disabled[i] = alias
+
+		// if we disable a feature which has disabled dependency, we need to disable those too
+		if deps, ok := improperPairs[alias]; ok {
+			// duplicates will arise, removed in the next step
+			disabled = append(disabled, deps...)
+		}
+	}
+
+	return RemoveDuplicates(disabled)
 }
 
 func (cfg *NewChainConfig) IsFeatureDisabled(featName string) bool {

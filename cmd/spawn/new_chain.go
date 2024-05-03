@@ -26,9 +26,10 @@ var (
 		{ID: "ignite-cli", IsSelected: false, Details: "Ignite-CLI Support"},
 	}
 
-	// parentDeps is a map of module name to a list of module names that are disabled if the parent is disabled
+	// parentDeps is a list of modules that are disabled if a parent module is disabled.
+	// i.e. Without staking, POA is not possible as it depends on staking.
 	parentDeps = map[string][]string{
-		// "cosmwasm": {spawn.AliasName("some-wasmd-child-feature")},
+		spawn.Staking: {spawn.POA},
 	}
 )
 
@@ -95,7 +96,7 @@ var newChain = &cobra.Command{
 			disabled = items.NOTSlice()
 		}
 
-		disabled = CleanDisabled(disabled)
+		disabled = spawn.NormalizeDisabledNames(disabled, parentDeps)
 
 		cfg := &spawn.NewChainConfig{
 			ProjectName:     projName,
@@ -109,37 +110,8 @@ var newChain = &cobra.Command{
 			Logger:          logger,
 		}
 
-		// Validate, Build, and Announce
 		cfg.Run(true)
 	},
-}
-
-// CleanDisabled normalizes the names, removes any parent dependencies, and removes duplicates
-func CleanDisabled(disabled []string) []string {
-	for i, name := range disabled {
-		// normalize disabled to standard aliases
-		alias := spawn.AliasName(name)
-		disabled[i] = alias
-
-		// if we disable a feature which has disabled dependency, we need to disable those too
-		if deps, ok := parentDeps[alias]; ok {
-			// duplicates will arise, removed in the next step
-			disabled = append(disabled, deps...)
-		}
-	}
-
-	// remove duplicates
-	dups := make(map[string]bool)
-	for _, d := range disabled {
-		dups[d] = true
-	}
-
-	disabled = []string{}
-	for d := range dups {
-		disabled = append(disabled, d)
-	}
-
-	return disabled
 }
 
 func normalizeWhitelistVarRun(f *pflag.FlagSet, name string) pflag.NormalizedName {
