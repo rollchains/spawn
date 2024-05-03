@@ -30,7 +30,7 @@ type Keeper struct {
 	authority string
 }
 
-// NewKeeper creates a new poa Keeper instance
+// NewKeeper creates a new Keeper instance
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeService storetypes.KVStoreService,
