@@ -26,6 +26,12 @@ var (
 	appAnte = path.Join("app", "ante.go")
 )
 
+// used for fuzz testing
+var AllFeatures = []string{
+	TokenFactory, POA, GlobalFee, CosmWasm, WasmLC,
+	PacketForward, IBCRateLimit, Ignite, InterchainSecurity, Staking,
+}
+
 // Given a string, return the reduced name for the module
 // e.g. "tf" and "token-factory" both return "tokenfactory"
 func AliasName(name string) string {
@@ -52,13 +58,13 @@ func AliasName(name string) string {
 	case Staking:
 		return Staking
 	default:
-		panic(fmt.Sprintf("AliasName: unknown feature to remove %s", name))
+		panic(fmt.Sprintf("AliasName: unknown feature to remove: %s", name))
 	}
 }
 
 // Removes disabled features from the files specified
+// NOTE: Ensure you call `SetProperFeaturePairs` before calling this function
 func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
-	// NOTE: Ensure you call `SetProperFeaturePairs` before calling this function
 	for _, name := range cfg.DisabledModules {
 		base := AliasName(name)
 
