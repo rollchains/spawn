@@ -16,6 +16,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var Logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
 type DisabledCase struct {
 	Name          string
 	Disabled      []string
@@ -33,6 +35,7 @@ func TestDisabledGeneration(t *testing.T) {
 		}
 	}
 
+	// custom cases
 	disabledCases := []DisabledCase{
 		{
 			Name:     "onlystaking",
@@ -52,6 +55,7 @@ func TestDisabledGeneration(t *testing.T) {
 		},
 	}
 
+	// single module removal
 	for _, f := range spawn.AllFeatures {
 		normalizedName := strings.ReplaceAll("remove"+f, "-", "")
 
@@ -81,11 +85,11 @@ func TestDisabledGeneration(t *testing.T) {
 				GithubOrg:       RandStringBytes(15),
 				IgnoreGitInit:   false,
 				DisabledModules: dc,
-				Logger:          slog.New(slog.NewJSONHandler(os.Stdout, nil)),
+				Logger:          Logger,
 			}
 			cfg.Run(false)
 
-			assetValidGeneration(t, dirPath, dc, c.NotContainAny)
+			AssertValidGeneration(t, dirPath, dc, c.NotContainAny)
 
 			require.NoError(t, os.RemoveAll(name))
 		})
@@ -102,7 +106,7 @@ func RandStringBytes(n int) string {
 	return string(b)
 }
 
-func assetValidGeneration(t *testing.T, dirPath string, dc []string, notContainAny []string) {
+func AssertValidGeneration(t *testing.T, dirPath string, dc []string, notContainAny []string) {
 	fileCount := 0
 	err := filepath.WalkDir(dirPath, func(p string, file fs.DirEntry, err error) error {
 		if err != nil {
