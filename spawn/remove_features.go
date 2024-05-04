@@ -288,6 +288,11 @@ func (fc *FileContent) RemoveStaking() {
 
 	// Since we will be using ICS (test_ics_node.sh)
 	fc.DeleteFile(path.Join("scripts", "test_node.sh"))
+
+	// fix: make sh-testnet
+	if fc.ContainsPath("Makefile") {
+		fc.ReplaceAll("test_node.sh", "test_ics_node.sh")
+	}
 }
 
 func (fc *FileContent) RemoveMint() {
