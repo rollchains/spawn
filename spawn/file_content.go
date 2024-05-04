@@ -11,6 +11,12 @@ import (
 	"github.com/cosmos/btcutil/bech32"
 )
 
+var (
+	// AlreadyChecked allows for better debugging to reduce fc spam
+	AlreadyCheckedDeletion      = make(map[string]bool)
+	AlreadyCheckedGoModDeletion = make(map[string]bool)
+)
+
 type FileContent struct {
 	// The path from within the embedded FileSystem
 	RelativePath string
@@ -69,22 +75,27 @@ func (fc *FileContent) HasIgnoreFile() bool {
 	return false
 }
 
-func (fc *FileContent) DeleteContents(path string) {
-	if fc.IsPath(path) {
+// DeleteFile sets the content of the file to nothing. On save, the file is ignored if there is no content.
+func (fc *FileContent) DeleteFile(path string) {
+	if fc.IsPath(path) && !AlreadyCheckedDeletion[path] {
+		AlreadyCheckedDeletion[path] = true
+
 		fc.Logger.Debug("Deleting contents for", "path", path)
 		fc.Contents = ""
 	}
 }
 
 func (fc *FileContent) DeleteDirectoryContents(path string) {
-	if fc.ContainsPath(path) {
+	if fc.ContainsPath(path) && !AlreadyCheckedDeletion[path] {
+		AlreadyCheckedDeletion[path] = true
+
 		fc.Logger.Debug("Deleting contents for", "path", path)
 		fc.Contents = ""
 	}
 }
 
 func (fc *FileContent) ReplaceTestNodeScript(cfg *NewChainConfig) {
-	if fc.IsPath(path.Join("scripts", "test_node.sh")) {
+	if fc.IsPath(path.Join("scripts", "test_node.sh")) || fc.IsPath(path.Join("scripts", "test_ics_node.sh")) {
 		fc.ReplaceAll("export BINARY=${BINARY:-wasmd}", fmt.Sprintf("export BINARY=${BINARY:-%s}", cfg.BinDaemon))
 		fc.ReplaceAll("export DENOM=${DENOM:-token}", fmt.Sprintf("export DENOM=${DENOM:-%s}", cfg.Denom))
 
@@ -202,6 +213,11 @@ func (fc *FileContent) RemoveGoModImport(importPath string) {
 		return
 	}
 
+	if AlreadyCheckedGoModDeletion[fc.NewPath] {
+		return
+	}
+	AlreadyCheckedGoModDeletion[fc.NewPath] = true
+
 	fc.Logger.Debug("removing go.mod import", "path", fc.RelativePath, "import", importPath)
 
 	lines := strings.Split(fc.Contents, "\n")
@@ -214,6 +230,7 @@ func (fc *FileContent) RemoveGoModImport(importPath string) {
 	}
 
 	fc.Contents = strings.Join(newLines, "\n")
+
 }
 
 func (fc *FileContent) Save() error {
@@ -227,8 +244,4 @@ func (fc *FileContent) Save() error {
 	}
 
 	return os.WriteFile(fc.NewPath, []byte(fc.Contents), 0644)
-}
-
-func (fc *FileContent) RemoveIgniteCLI() {
-	fc.RemoveLineWithAnyMatch("starport scaffolding")
 }

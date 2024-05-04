@@ -10,7 +10,6 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/suite"
 
-	app "github.com/rollchains/spawn/simapp/app"
 	"github.com/rollchains/spawn/simapp/app/decorators"
 )
 
@@ -18,13 +17,6 @@ type AnteTestSuite struct {
 	suite.Suite
 
 	ctx sdk.Context
-	app *app.ChainApp
-}
-
-func (s *AnteTestSuite) SetupTest() {
-	isCheckTx := false
-	s.app = app.Setup(s.T())
-	s.ctx = s.app.BaseApp.NewContext(isCheckTx)
 }
 
 func TestAnteTestSuite(t *testing.T) {

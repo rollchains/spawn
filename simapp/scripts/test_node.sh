@@ -23,6 +23,7 @@ export PROFF=${PROFF:-"6060"}
 export P2P=${P2P:-"26656"}
 export GRPC=${GRPC:-"9090"}
 export GRPC_WEB=${GRPC_WEB:-"9091"}
+export PROFF_LADDER=${PROFF_LADDER:-"6060"}
 export ROSETTA=${ROSETTA:-"8080"}
 export BLOCK_TIME=${BLOCK_TIME:-"5s"}
 
@@ -110,8 +111,8 @@ from_scratch () {
   update_test_genesis '.app_state["poa"]["params"]["admins"]=["wasm10d07y265gmmuvt4z0w9aw880jnsr700js7zslc"]'
 
   # Allocate genesis accounts
-  BINARY genesis add-genesis-account $KEY 10000000$DENOM,900test --keyring-backend $KEYRING
-  BINARY genesis add-genesis-account $KEY2 10000000$DENOM,800test --keyring-backend $KEYRING
+  BINARY genesis add-genesis-account $KEY 10000000$DENOM,900test --keyring-backend $KEYRING --append
+  BINARY genesis add-genesis-account $KEY2 10000000$DENOM,800test --keyring-backend $KEYRING --append
 
   # Sign genesis transaction
   BINARY genesis gentx $KEY 1000000$DENOM --keyring-backend $KEYRING --chain-id $CHAIN_ID
@@ -143,7 +144,7 @@ sed -i 's/address = "tcp:\/\/localhost:1317"/address = "tcp:\/\/0.0.0.0:'$REST'"
 sed -i 's/enable = false/enable = true/g' $HOME_DIR/config/app.toml
 
 # peer exchange
-sed -i 's/pprof_laddr = "localhost:6060"/pprof_laddr = "localhost:'$PROFF_LADDER'"/g' $HOME_DIR/config/config.toml
+sed -i 's/pprof_laddr = "localhost:6060"/pprof_laddr = "localhost:'$PROFF'"/g' $HOME_DIR/config/config.toml
 sed -i 's/laddr = "tcp:\/\/0.0.0.0:26656"/laddr = "tcp:\/\/0.0.0.0:'$P2P'"/g' $HOME_DIR/config/config.toml
 
 # GRPC

@@ -29,7 +29,6 @@ import (
 	module "github.com/rollchains/spawn/simapp/x/example"
 	"github.com/rollchains/spawn/simapp/x/example/keeper"
 	"github.com/rollchains/spawn/simapp/x/example/types"
-	"github.com/strangelove-ventures/poa"
 )
 
 var maccPerms = map[string][]string{
@@ -70,7 +69,7 @@ func SetupTest(t *testing.T) *testFixture {
 	f.govModAddr = authtypes.NewModuleAddress(govtypes.ModuleName).String()
 	f.addrs = simtestutil.CreateIncrementalAccounts(3)
 
-	key := storetypes.NewKVStoreKey(poa.ModuleName)
+	key := storetypes.NewKVStoreKey(types.ModuleName)
 	storeService := runtime.NewKVStoreService(key)
 	testCtx := testutil.DefaultContextWithDB(t, key, storetypes.NewTransientStoreKey("transient_test"))
 
@@ -79,7 +78,7 @@ func SetupTest(t *testing.T) *testFixture {
 	// Register SDK modules.
 	registerBaseSDKModules(f, encCfg, storeService, logger, require)
 
-	// Setup POA Keeper.
+	// Setup Keeper.
 	f.k = keeper.NewKeeper(encCfg.Codec, storeService, logger, f.govModAddr)
 	f.msgServer = keeper.NewMsgServerImpl(f.k)
 	f.queryServer = keeper.NewQuerier(f.k)
