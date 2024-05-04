@@ -1,61 +1,68 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"os"
-	"path"
+	"strconv"
 
-	plugins "github.com/rollchains/spawn/plugins"
 	"github.com/spf13/cobra"
 )
 
-// Make the plugin public
-var Plugin SpawnMainExamplePlugin
-
-var _ plugins.SpawnPlugin = &SpawnMainExamplePlugin{}
-
-const (
-	cmdName = "example"
-)
-
-type SpawnMainExamplePlugin struct {
-	Impl plugins.SpawnPluginBase
+var rootCmd = &cobra.Command{
+	Use:   "example-plugin",
+	Short: "Info About the spawn example-plugin",
 }
 
-// Cmd implements plugins.SpawnPlugin.
-func (e *SpawnMainExamplePlugin) Cmd() *cobra.Command {
-	rootCmd := &cobra.Command{
-		Use:   cmdName,
-		Short: cmdName + " plugin command",
+func main() {
+	rootCmd.AddCommand(AddCmd(), FlagTestCmd())
+
+	// hides 'completion' command
+	rootCmd.Root().CompletionOptions.DisableDefaultCmd = true
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
+}
+
+func FlagTestCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "flags-test",
+		Short:   "Test using flags with a plugin",
+		Example: `spawn plugin example-plugin flags-test -- --value 7`,
+		Args:    cobra.ExactArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
-			if err := cmd.Help(); err != nil {
-				log.Fatal(err)
-			}
+			myValue, _ := cmd.Flags().GetInt("value")
+			fmt.Printf("my-value: %v", myValue)
 		},
 	}
 
-	rootCmd.AddCommand(&cobra.Command{
-		Use:   "touch-file [name]",
-		Short: "An example plugin sub command",
-		Args:  cobra.ExactArgs(1),
+	cmd.Flags().Int("value", 0, "A value you can set")
+
+	return cmd
+}
+
+func AddCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:     "add",
+		Short:   "A command you can use to perform addition of 2 numbers!",
+		Example: `spawn plugin example-plugin add 1 2`,
+		Args:    cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			cwd, err := os.Getwd()
+			num1, err := strconv.Atoi(args[0])
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println("Error parsing the first number")
+				os.Exit(1)
+			}
+			num2, err := strconv.Atoi(args[1])
+			if err != nil {
+				fmt.Println("Error parsing the second number")
+				os.Exit(1)
 			}
 
-			fileName := args[0]
-
-			filePath := path.Join(cwd, fileName)
-			file, err := os.Create(filePath)
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer file.Close()
-
-			cmd.Printf("Created file: %s\n", filePath)
+			fmt.Println("add called")
+			fmt.Println("Performing the addition of the following numbers: ")
+			fmt.Printf("Num1: %v\n", num1)
+			fmt.Printf("Num2: %v\n", num2)
+			fmt.Printf("Addition of those 2 numbers is: %v\n", num1+num2)
 		},
-	})
-
-	return rootCmd
+	}
 }

@@ -6,14 +6,14 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"os/exec"
 	"path"
-	"plugin"
 	"strings"
 	"time"
 
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
-	"github.com/rollchains/spawn/plugins"
+	"github.com/rollchains/spawn/spawn"
 	"github.com/spf13/cobra"
 )
 
@@ -58,27 +58,48 @@ func GetLogger() *slog.Logger {
 	return slog.Default()
 }
 
-func applyPluginCmds() {
-	plugins := &cobra.Command{
-		Use:     "plugins",
-		Short:   "Manage plugins",
-		Aliases: []string{"plugin", "plug", "pl"},
-		Run: func(cmd *cobra.Command, args []string) {
-			if err := cmd.Help(); err != nil {
-				log.Fatal(err)
-			}
-		},
-	}
-
-	for _, plugin := range loadPlugins() {
-		plugins.AddCommand(plugin.Cmd())
-	}
-
-	rootCmd.AddCommand(plugins)
+var PluginsCmd = &cobra.Command{
+	Use:     "plugins",
+	Short:   "Spawn Plugins",
+	Aliases: []string{"plugin", "plug", "pl"},
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := cmd.Help(); err != nil {
+			log.Fatal(err)
+		}
+	},
 }
 
-func loadPlugins() map[string]*plugins.SpawnPluginBase {
-	p := make(map[string]*plugins.SpawnPluginBase)
+func applyPluginCmds() {
+	for name, abspath := range loadPlugins() {
+		name := name
+		abspath := abspath
+
+		info, err := spawn.ParseCobraCLICmd(abspath)
+		if err != nil {
+			GetLogger().Warn("error parsing the CLI commands from the plugin", "name", name, "error", err)
+			continue
+		}
+
+		execCmd := &cobra.Command{
+			Use:   name,
+			Short: info.Description,
+			Run: func(cmd *cobra.Command, args []string) {
+				output, err := exec.Command(abspath, args...).CombinedOutput()
+				if err != nil {
+					fmt.Println(err.Error())
+				}
+				fmt.Println(string(output))
+			},
+		}
+		PluginsCmd.AddCommand(execCmd)
+	}
+
+	rootCmd.AddCommand(PluginsCmd)
+}
+
+// returns name and path
+func loadPlugins() map[string]string {
+	p := make(map[string]string)
 
 	logger := GetLogger()
 
@@ -105,33 +126,17 @@ func loadPlugins() map[string]*plugins.SpawnPluginBase {
 			return nil
 		}
 
-		if !strings.Contains(relPath, ".so") {
-			return nil
-		}
-
+		// /home/username/.spawn/plugins/myplugin
 		absPath := path.Join(pluginsDir, relPath)
 
-		// read the absolute path
-		plug, err := plugin.Open(absPath)
-		if err != nil {
-			logger.Error(fmt.Sprintf("Error opening plugin: %v", err))
+		// ensure path exist
+		if _, err := os.Stat(absPath); os.IsNotExist(err) {
+			logger.Error(fmt.Sprintf("Plugin %s does not exist. Skipping", absPath))
 			return nil
 		}
 
-		base, err := plug.Lookup("Plugin")
-		if err != nil {
-			logger.Error(fmt.Sprintf("Error looking up symbol: %v", err))
-			return nil
-		}
-
-		pluginInstance, ok := base.(plugins.SpawnPlugin)
-		if !ok {
-			logger.Error(fmt.Sprintf("Plugin %s does not implement the SpawnPlugin interface. Skipping", absPath))
-			return nil
-		}
-
-		p[relPath] = plugins.NewSpawnPluginBase(pluginInstance.Cmd())
-
+		name := path.Base(absPath)
+		p[name] = absPath
 		return nil
 	})
 	if err != nil {
