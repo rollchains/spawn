@@ -71,6 +71,9 @@ var PluginsCmd = &cobra.Command{
 
 func applyPluginCmds() {
 	for name, abspath := range loadPlugins() {
+		name := name
+		abspath := abspath
+
 		info, err := spawn.ParseCobraCLICmd(abspath)
 		if err != nil {
 			GetLogger().Warn("error parsing the CLI commands from the plugin", "name", name, "error", err)
