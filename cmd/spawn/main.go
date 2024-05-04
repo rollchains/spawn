@@ -84,7 +84,6 @@ func applyPluginCmds() {
 			Use:   name,
 			Short: info.Description,
 			Run: func(cmd *cobra.Command, args []string) {
-				// TODO: atm flags are not passed to the nested CLI command.
 				output, err := exec.Command(abspath, args...).CombinedOutput()
 				if err != nil {
 					fmt.Println(err.Error())
