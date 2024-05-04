@@ -15,7 +15,7 @@ import (
 )
 
 // This tests Cosmos Interchain Security, spinning up a provider and a single consumer chain.
-func TestICS(t *testing.T) {
+func TestICSBasic(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}

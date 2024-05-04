@@ -250,32 +250,36 @@ endif
 ###############################################################################
 
 ictest-basic:
-	@echo "Running basic interchain tests"
+	@echo "Running basic e2e test"
 	@cd interchaintest && go test -race -v -run TestBasicChain .
 
 ictest-ibc:
-	@echo "Running IBC interchain tests"
+	@echo "Running IBC e2e test"
 	@cd interchaintest && go test -race -v -run TestIBC .
 
 ictest-wasm:
-	@echo "Running cosmwasm interchain tests"
+	@echo "Running cosmwasm e2e test"
 	@cd interchaintest && go test -race -v -run TestCosmWasmIntegration .
 
 ictest-packetforward:
-	@echo "Running packet forward middleware interchain tests"
+	@echo "Running packet forward middleware e2e test"
 	@cd interchaintest && go test -race -v -run TestPacketForwardMiddleware .
 
 ictest-poa:
-	@echo "Running proof of authority interchain tests"
+	@echo "Running proof of authority e2e test"
 	@cd interchaintest && go test -race -v -run TestPOA .
 
 ictest-tokenfactory:
-	@echo "Running token factory interchain tests"
+	@echo "Running token factory e2e test"
 	@cd interchaintest && go test -race -v -run TestTokenFactory .
 
 ictest-ratelimit:
-	@echo "Running rate limit interchain tests"
+	@echo "Running rate limit e2e test"
 	@cd interchaintest && go test -race -v -run TestIBCRateLimit .
+
+ictest-ics-basic:
+	@echo "Running Interchain Security e2e test"
+	@cd interchaintest && go test -race -v -run TestICSBasic .
 
 ###############################################################################
 ###                                    testnet                              ###

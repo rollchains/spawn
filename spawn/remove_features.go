@@ -239,10 +239,15 @@ func (fc *FileContent) RemoveIgniteCLI() {
 }
 
 func (fc *FileContent) RemoveInterchainSecurity() {
+	text := "ics"
+
 	fc.RemoveGoModImport("github.com/cosmos/interchain-security")
 
-	fc.HandleCommentSwaps("ics")
-	fc.RemoveTaggedLines("ics", true)
+	fc.HandleCommentSwaps(text)
+	fc.RemoveTaggedLines(text, true)
+
+	// remove from e2e
+	fc.RemoveModuleFromText(text, path.Join("workflows", "interchaintest-e2e.yml"))
 
 	fc.RemoveModuleFromText("ibcconsumerkeeper.NewNonZeroKeeper", appGo)
 	fc.RemoveModuleFromText("ConsumerKeeper", appGo)
@@ -293,6 +298,9 @@ func (fc *FileContent) RemoveStaking() {
 	if fc.ContainsPath("Makefile") {
 		fc.ReplaceAll("test_node.sh", "test_ics_node.sh")
 	}
+
+	// TODO: add ability to use # spawntag: instead of just // spawntag
+	fc.RemoveModuleFromText("ictest-basic", path.Join("workflows", "interchaintest-e2e.yml"))
 }
 
 func (fc *FileContent) RemoveMint() {
