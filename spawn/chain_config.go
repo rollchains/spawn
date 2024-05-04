@@ -149,10 +149,11 @@ func (cfg *NewChainConfig) NewChain() {
 	NewDirName := cfg.ProjectName
 	logger := cfg.Logger
 
-	logger.Debug("Spawning new app", "app", NewDirName)
-
 	// Set proper pairings for modules to be disabled if others are enabled
 	cfg.SetProperFeaturePairs()
+
+	logger.Debug("Spawning new app", "app", NewDirName)
+	logger.Debug("Disabled features", "features", cfg.DisabledModules)
 
 	if err := os.MkdirAll(NewDirName, 0755); err != nil {
 		panic(err)
