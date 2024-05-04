@@ -28,9 +28,12 @@ func (app *ChainApp) GetBankKeeper() bankkeeper.Keeper {
 	return app.BankKeeper
 }
 
+// <spawntag:staking
 func (app *ChainApp) GetStakingKeeper() *stakingkeeper.Keeper {
 	return app.StakingKeeper
 }
+
+// spawntag:staking>
 
 func (app *ChainApp) GetAccountKeeper() authkeeper.AccountKeeper {
 	return app.AccountKeeper

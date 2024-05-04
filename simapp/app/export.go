@@ -9,6 +9,7 @@ import (
 
 	storetypes "cosmossdk.io/store/types"
 
+	tmtypes "github.com/cometbft/cometbft/types" // spawn:ics
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -40,7 +41,11 @@ func (app *ChainApp) ExportAppStateAndValidators(forZeroHeight bool, jailAllowed
 		return servertypes.ExportedApp{}, err
 	}
 
-	validators, err := staking.WriteValidators(ctx, app.StakingKeeper)
+	validators, err := app.GetValidatorSet(ctx)
+	if err != nil {
+		return servertypes.ExportedApp{}, err
+	}
+
 	return servertypes.ExportedApp{
 		AppState:        appState,
 		Validators:      validators,
@@ -54,6 +59,19 @@ func (app *ChainApp) ExportAppStateAndValidators(forZeroHeight bool, jailAllowed
 //
 //	in favor of export at a block height
 func (app *ChainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []string) {
+	var err error
+
+	// Just to be safe, assert the invariants on current state.
+	app.CrisisKeeper.AssertInvariants(ctx)
+
+	// set context height to zero
+	height := ctx.BlockHeight()
+	ctx = ctx.WithBlockHeight(0)
+
+	// reset context height
+	ctx = ctx.WithBlockHeight(height)
+
+	// <spawntag:staking
 	applyAllowedAddrs := false
 
 	// check if there is a allowed address list
@@ -71,13 +89,10 @@ func (app *ChainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs 
 		allowedAddrsMap[addr] = true
 	}
 
-	// Just to be safe, assert the invariants on current state.
-	app.CrisisKeeper.AssertInvariants(ctx)
-
 	// Handle fee distribution state.
 
 	// withdraw all validator commission
-	err := app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
+	err = app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
 		valBz, err := app.StakingKeeper.ValidatorAddressCodec().StringToBytes(val.GetOperator())
 		if err != nil {
 			panic(err)
@@ -113,10 +128,6 @@ func (app *ChainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs 
 
 	// clear validator historical rewards
 	app.DistrKeeper.DeleteAllValidatorHistoricalRewards(ctx)
-
-	// set context height to zero
-	height := ctx.BlockHeight()
-	ctx = ctx.WithBlockHeight(0)
 
 	// reinitialize all validators
 	err = app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
@@ -165,9 +176,6 @@ func (app *ChainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs 
 			panic(fmt.Errorf("error while creating a new delegation period record: %w", err))
 		}
 	}
-
-	// reset context height
-	ctx = ctx.WithBlockHeight(height)
 
 	// Handle staking state.
 
@@ -233,6 +241,7 @@ func (app *ChainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs 
 	if err != nil {
 		log.Fatal(err)
 	}
+	// spawntag:staking>
 
 	// Handle slashing state.
 
@@ -250,4 +259,24 @@ func (app *ChainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs 
 	if err != nil {
 		panic(err)
 	}
+}
+
+// GetValidatorSet returns a slice of bonded validators.
+func (app *ChainApp) GetValidatorSet(ctx sdk.Context) ([]tmtypes.GenesisValidator, error) {
+	var err error
+	vals := []tmtypes.GenesisValidator{}
+
+	// <spawntag:ics
+	cVals := app.ConsumerKeeper.GetAllCCValidator(ctx)
+	if len(cVals) == 0 {
+		return nil, fmt.Errorf("empty validator set")
+	}
+
+	for _, v := range cVals {
+		vals = append(vals, tmtypes.GenesisValidator{Address: v.Address, Power: v.Power})
+	}
+	// spawntag:ics>
+
+	vals, err = staking.WriteValidators(ctx, app.StakingKeeper) // spawntag:staking
+	return vals, err
 }

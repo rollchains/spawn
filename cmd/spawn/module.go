@@ -62,6 +62,12 @@ func NewCmd() *cobra.Command {
 			// ext name is the x/ cosmos module name.
 			extName := strings.ToLower(args[0])
 
+			// breaks proto-gen regex searches
+			if strings.Contains(extName, "module") {
+				logger.Error("Module names cannot start with 'module'")
+				return
+			}
+
 			specialChars := "!@#$%^&*()_+{}|-:<>?`=[]\\;',./~"
 			for _, char := range specialChars {
 				if strings.Contains(extName, string(char)) {

@@ -16,8 +16,8 @@ HEAD = $(shell git rev-parse HEAD)
 LD_FLAGS = -X main.SpawnVersion=$(VERSION)
 BUILD_FLAGS = -mod=readonly -ldflags='$(LD_FLAGS)'
 
-## alltidy: go mod tidy spawn, simapp, and interchaintest with proper go.mod suffixes
-alltidy:
+## mod-tidy: go mod tidy spawn, simapp, and interchaintest with proper go.mod suffixes
+mod-tidy:
 	go mod tidy
 	mv simapp/interchaintest/go.mod_ simapp/interchaintest/go.mod
 	cd simapp && go mod tidy

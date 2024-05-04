@@ -1,0 +1,98 @@
+name: Run Spawn E2E
+
+# Chain name MUST be `mychain` using binary name `appd`
+
+on:
+  workflow_call:
+    inputs:
+      id:
+        type: string
+        required: true
+        description: 'ID / description of the whole thing'
+      spawn-create-cmd:
+        type: string
+        required: true
+        description: 'The spawn command to create the chain'
+      start-chain-cmd:
+        type: string
+        required: true
+        description: 'The command which runs the chain via the shell'
+
+env:
+  GO_VERSION: 1.21.9
+  JQ_VERSION: '1.7'
+  JQ_FORCE: false
+
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      # === BASE SETUP ===
+      - id: go-cache-paths
+        run: |
+          echo "::set-output name=go-build::$(go env GOCACHE)"
+          echo "::set-output name=go-mod::$(go env GOMODCACHE)"
+
+      - name: 'Setup jq'
+        uses: dcarbone/install-jq-action@v2
+        with:
+          version: '${{ env.JQ_VERSION }}'
+          force: '${{ env.JQ_FORCE }}'
+
+      - name: Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Go Build Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.go-cache-paths.outputs.go-build }}
+          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
+
+      - name: Go Mod Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.go-cache-paths.outputs.go-mod }}
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+
+      # === SETUP SPAWN ===
+      - name: Download Spawn Bin
+        uses: actions/download-artifact@master
+        with:
+          name: spawn
+
+      - name: Spawn Permission
+        run: chmod +x ./spawn && ls -l
+
+      # === Chain Creation & Validation ===
+      - name: Spawn Gen - '${{inputs.id}}'
+        run: ${{ inputs.spawn-create-cmd }}
+
+      - name: Build and Run '${{inputs.id}}'
+        run: |
+          cd mychain
+          ${{ inputs.start-chain-cmd }}
+
+      - name: Unit Test - '${{inputs.id}}'
+        run: |
+          cd mychain
+          go test ./...
+
+      - name: Validate '${{inputs.id}}' is Running
+        run: |
+          for ((i = 1; i <= 10; i++)); do
+            res=`appd status --output=json | jq -r 'has("sync_info")'`
+            if [ "$res" == "true" ]; then
+              echo "Chain is running"
+              exit 0
+            else
+              echo "Chain is not running"
+              # exit 1
+              sleep 5
+            fi
+          done
+
+          lsof -i tcp:26657 | awk 'NR!=1 {print $2}' | xargs kill || true
+          exit 1

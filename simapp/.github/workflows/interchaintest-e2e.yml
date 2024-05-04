@@ -76,6 +76,7 @@ jobs:
         # names of `make` commands to run tests
         test:
           - "ictest-basic"
+          - "ictest-ics-basic"
           - "ictest-ibc"
           - "ictest-wasm"
           - "ictest-packetforward"

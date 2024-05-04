@@ -22,12 +22,14 @@ var (
 		{ID: "ibc-ratelimit", IsSelected: false, Details: "Thresholds for outflow as a percent of total channel value"},
 		{ID: "cosmwasm", IsSelected: false, Details: "Cosmos smart contracts"},
 		{ID: "wasm-light-client", IsSelected: false, Details: "08 Wasm Light Client"},
+		{ID: "interchain-security", IsSelected: false, Details: "Cosmos Interchain Security"},
 		{ID: "ignite-cli", IsSelected: false, Details: "Ignite-CLI Support"},
 	}
 
-	// parentDeps is a map of module name to a list of module names that are disabled if the parent is disabled
+	// parentDeps is a list of modules that are disabled if a parent module is disabled.
+	// i.e. Without staking, POA is not possible as it depends on staking.
 	parentDeps = map[string][]string{
-		// "cosmwasm": {spawn.AliasName("some-wasmd-child-feature")},
+		spawn.Staking: {spawn.POA},
 	}
 )
 
@@ -94,7 +96,7 @@ var newChain = &cobra.Command{
 			disabled = items.NOTSlice()
 		}
 
-		disabled = CleanDisabled(disabled)
+		disabled = spawn.NormalizeDisabledNames(disabled, parentDeps)
 
 		cfg := &spawn.NewChainConfig{
 			ProjectName:     projName,
@@ -107,42 +109,9 @@ var newChain = &cobra.Command{
 			DisabledModules: disabled,
 			Logger:          logger,
 		}
-		if err := cfg.Validate(); err != nil {
-			logger.Error("Error validating config", "err", err)
-			return
-		}
 
-		cfg.NewChain()
-		cfg.AnnounceSuccessfulBuild()
+		cfg.Run(true)
 	},
-}
-
-// CleanDisabled normalizes the names, removes any parent dependencies, and removes duplicates
-func CleanDisabled(disabled []string) []string {
-	for i, name := range disabled {
-		// normalize disabled to standard aliases
-		alias := spawn.AliasName(name)
-		disabled[i] = alias
-
-		// if we disable a feature which has disabled dependency, we need to disable those too
-		if deps, ok := parentDeps[alias]; ok {
-			// duplicates will arise, removed in the next step
-			disabled = append(disabled, deps...)
-		}
-	}
-
-	// remove duplicates
-	dups := make(map[string]bool)
-	for _, d := range disabled {
-		dups[d] = true
-	}
-
-	disabled = []string{}
-	for d := range dups {
-		disabled = append(disabled, d)
-	}
-
-	return disabled
 }
 
 func normalizeWhitelistVarRun(f *pflag.FlagSet, name string) pflag.NormalizedName {

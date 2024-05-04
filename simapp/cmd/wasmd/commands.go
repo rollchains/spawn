@@ -106,7 +106,7 @@ func initRootCmd(
 
 	rootCmd.AddCommand(
 		genutilcli.InitCmd(basicManager, app.DefaultNodeHome),
-		NewTestnetCmd(basicManager, banktypes.GenesisBalancesIterator{}),
+		NewTestnetCmd(basicManager, banktypes.GenesisBalancesIterator{}), //spawntag:staking
 		debug.Cmd(),
 		confixcmd.ConfigCommand(),
 		pruning.Cmd(newApp, app.DefaultNodeHome),
