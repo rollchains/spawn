@@ -10,9 +10,11 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcconntypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 
+	"github.com/strangelove-ventures/interchaintest/v7/relayer"
 	interchaintest "github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
+	interchaintestrelayer "github.com/strangelove-ventures/interchaintest/v8/relayer"
 	"github.com/strangelove-ventures/interchaintest/v8/testreporter"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
@@ -39,7 +41,8 @@ func TestICSBasic(t *testing.T) {
 			Name: "ics-provider", Version: providerVer,
 			NumValidators: &vals, NumFullNodes: &fNodes,
 			ChainConfig: ibc.ChainConfig{
-				GasAdjustment: 1.5,
+				GasAdjustment:  1.5,
+				TrustingPeriod: "336h",
 			},
 		},
 		{
@@ -63,10 +66,10 @@ func TestICSBasic(t *testing.T) {
 				CoinType:       "118",
 				GasPrices:      "0" + Denom,
 				TrustingPeriod: "336h",
-				InterchainSecurityConfig: ibc.ICSConfig{
-					ProviderVerOverride: providerVer,
-					ConsumerVerOverride: "v4.1.0", // v5.0.0-rc0 & v4.1.0 are compatible
-				},
+				// InterchainSecurityConfig: ibc.ICSConfig{
+				// 	ProviderVerOverride: providerVer,
+				// 	ConsumerVerOverride: "v4.1.0",
+				// },
 			},
 		},
 	})
@@ -81,6 +84,8 @@ func TestICSBasic(t *testing.T) {
 	r := interchaintest.NewBuiltinRelayerFactory(
 		ibc.CosmosRly,
 		zaptest.NewLogger(t),
+		interchaintestrelayer.CustomDockerImage(RelayerRepo, RelayerVersion, "100:1000"),
+		relayer.StartupFlags("--block-history", "200"),
 	).Build(t, client, network)
 
 	// Prep Interchain
