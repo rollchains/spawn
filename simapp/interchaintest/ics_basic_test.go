@@ -33,7 +33,7 @@ func TestICSBasic(t *testing.T) {
 	vals := 1
 	fNodes := 0
 
-	providerVer := "v5.0.0-rc0"
+	providerVer := "v4.1.0"
 
 	// Chain Factory
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
@@ -43,6 +43,9 @@ func TestICSBasic(t *testing.T) {
 			ChainConfig: ibc.ChainConfig{
 				GasAdjustment:  1.5,
 				TrustingPeriod: "336h",
+				ModifyGenesis: cosmos.ModifyGenesis([]cosmos.GenesisKV{
+					cosmos.NewGenesisKV("app_state.provider.params.blocks_per_epoch", "1"),
+				}),
 			},
 		},
 		{
@@ -66,10 +69,6 @@ func TestICSBasic(t *testing.T) {
 				CoinType:       "118",
 				GasPrices:      "0" + Denom,
 				TrustingPeriod: "336h",
-				// InterchainSecurityConfig: ibc.ICSConfig{
-				// 	ProviderVerOverride: providerVer,
-				// 	ConsumerVerOverride: "v4.1.0",
-				// },
 			},
 		},
 	})
