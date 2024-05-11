@@ -88,6 +88,21 @@ var (
 
 	RelayerRepo    = "ghcr.io/cosmos/relayer"
 	RelayerVersion = "main"
+
+	// <spawntag:ics
+	ProviderVer   = "v4.1.0"
+	ProviderChain = *interchaintest.ChainSpec{
+		Name: "ics-provider", Version: ProviderVer,
+		NumValidators: &vals, NumFullNodes: &fNodes,
+		ChainConfig: ibc.ChainConfig{
+			GasAdjustment:  1.5,
+			TrustingPeriod: "336h",
+			ModifyGenesis: cosmos.ModifyGenesis([]cosmos.GenesisKV{
+				cosmos.NewGenesisKV("app_state.provider.params.blocks_per_epoch", "1"),
+			}),
+		},
+	}
+	// spawntag:ics>
 )
 
 func GetEncodingConfig() *moduletestutil.TestEncodingConfig {
