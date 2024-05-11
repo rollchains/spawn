@@ -89,6 +89,9 @@ var (
 	RelayerRepo    = "ghcr.io/cosmos/relayer"
 	RelayerVersion = "main"
 
+	vals   = 1
+	fNodes = 0
+
 	// <spawntag:ics
 	ProviderVer   = "v4.1.0"
 	ProviderChain = *interchaintest.ChainSpec{
