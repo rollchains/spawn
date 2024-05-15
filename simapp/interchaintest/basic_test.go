@@ -13,7 +13,6 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
 	"github.com/strangelove-ventures/interchaintest/v8/relayer"
-	interchaintestrelayer "github.com/strangelove-ventures/interchaintest/v8/relayer"
 	"github.com/strangelove-ventures/interchaintest/v8/testreporter"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
@@ -21,17 +20,15 @@ import (
 
 func TestBasicChain(t *testing.T) {
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
-		ProviderChain, // spawntag:ics
+		&ProviderChain, // spawntag:ics
 		&DefaultChainSpec,
 	})
 
 	chains, err := cf.Chains(t.Name())
 	require.NoError(t, err)
 
-	var provider *cosmos.CosmosChain // spawntag:ics
-	var chain *cosmos.CosmosChain
-	provider, chain = chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain) // spawntag:ics
-	chain = chains[0].(*cosmos.CosmosChain)
+	chain := chains[0].(*cosmos.CosmosChain)
+	provider := chains[1].(*cosmos.CosmosChain) // spawntag:ics
 
 	ctx := context.Background()
 	client, network := interchaintest.DockerSetup(t)
@@ -41,7 +38,7 @@ func TestBasicChain(t *testing.T) {
 	r := interchaintest.NewBuiltinRelayerFactory(
 		ibc.CosmosRly,
 		zaptest.NewLogger(t),
-		interchaintestrelayer.CustomDockerImage(RelayerRepo, RelayerVersion, "100:1000"),
+		relayer.CustomDockerImage(RelayerRepo, RelayerVersion, "100:1000"),
 		relayer.StartupFlags("--block-history", "200"),
 	).Build(t, client, network)
 
@@ -52,12 +49,11 @@ func TestBasicChain(t *testing.T) {
 	eRep := rep.RelayerExecReporter(t)
 	// spawntag:ics>
 
-	// TODO: instead create a func which accepts ic, then we build. This way it's just 1 for setup? (for all test)
 	ic := interchaintest.NewInterchain().
-		//AddChain(chain) //?spawntag:ics
-		// <spawntag:ics
-		AddChain(provider).
-		AddChain(chain).
+		AddChain(chain)
+
+	// <spawntag:ics
+	ic = ic.AddChain(provider).
 		AddRelayer(r, "relayer").
 		AddProviderConsumerLink(interchaintest.ProviderConsumerLink{
 			Provider: provider,
@@ -65,7 +61,7 @@ func TestBasicChain(t *testing.T) {
 			Relayer:  r,
 			Path:     ibcPath,
 		})
-		// spawntag:ics>
+	// spawntag:ics>
 
 	require.NoError(t, ic.Build(ctx, nil, interchaintest.InterchainBuildOptions{
 		TestName:         t.Name(),
@@ -87,10 +83,10 @@ func TestBasicChain(t *testing.T) {
 		provider, //spawntag:ics
 	)
 	user := users[0]
-	providerUser := users[1]
+	providerUser := users[1] // spawntag:ics
 
 	t.Run("validate funding", func(t *testing.T) {
-		bal, err := chain.BankQueryBalance(ctx, user.FormattedAddress(), user.Config().Denom)
+		bal, err := chain.BankQueryBalance(ctx, user.FormattedAddress(), chain.Config().Denom)
 		require.NoError(t, err)
 		require.EqualValues(t, amt, bal)
 

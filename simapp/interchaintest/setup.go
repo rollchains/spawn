@@ -94,7 +94,7 @@ var (
 
 	// <spawntag:ics
 	ProviderVer   = "v4.1.0"
-	ProviderChain = *interchaintest.ChainSpec{
+	ProviderChain = interchaintest.ChainSpec{
 		Name: "ics-provider", Version: ProviderVer,
 		NumValidators: &vals, NumFullNodes: &fNodes,
 		ChainConfig: ibc.ChainConfig{

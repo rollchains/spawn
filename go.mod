@@ -1,6 +1,6 @@
 module github.com/rollchains/spawn
 
-go 1.21.9
+go 1.22.3
 
 replace github.com/rollchains/spawn/simapp => ./simapp
 
