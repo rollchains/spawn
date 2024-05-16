@@ -59,7 +59,7 @@ func TestIBC(t *testing.T) {
 		ibc.CosmosRly,
 		zaptest.NewLogger(t, zaptest.Level(zapcore.DebugLevel)),
 		interchaintestrelayer.CustomDockerImage(RelayerRepo, RelayerVersion, "100:1000"),
-		interchaintestrelayer.StartupFlags("--processor", "events", "--block-history", "100"),
+		interchaintestrelayer.StartupFlags("--processor", "events", "--block-history", "200"),
 	)
 
 	r := rf.Build(t, client, network)

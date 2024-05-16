@@ -61,11 +61,14 @@ help: Makefile
 .PHONY: help
 
 # ---- Developer Templates ----
-template-default: install
-	spawn new myproject --debug --bech32=cosmos --bin=appd --disable=poa
+template-staking: install
+	spawn new myproject --debug --bech32=cosmos --bin=appd --disable=ics,poa
 
 template-poa: install
-	spawn new myproject --debug --no-git --bin=rolld --bech32=roll --denom=uroll --disable=globalfee
+	spawn new myproject --debug --no-git --bin=rolld --bech32=roll --denom=uroll --disable=ics
+
+template-ics: install
+	spawn new myproject --debug --no-git --bin=rolld --bech32=roll --denom=uroll --disable=globalfee,cosmwasm,wasm-lc,ignite,ibc-packetforward
 
 
 .DEFAULT_GOAL := install

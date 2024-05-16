@@ -277,10 +277,6 @@ ictest-ratelimit:
 	@echo "Running rate limit e2e test"
 	@cd interchaintest && go test -race -v -run TestIBCRateLimit .
 
-ictest-ics-basic:
-	@echo "Running Interchain Security e2e test"
-	@cd interchaintest && go test -race -v -run TestICSBasic .
-
 ###############################################################################
 ###                                    testnet                              ###
 ###############################################################################

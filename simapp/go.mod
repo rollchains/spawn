@@ -1,6 +1,6 @@
 module github.com/rollchains/spawn/simapp
 
-go 1.21.9
+go 1.22.3
 
 // overrides
 replace (
@@ -52,7 +52,7 @@ require (
 	github.com/cosmos/ibc-go/modules/capability v1.0.0
 	github.com/cosmos/ibc-go/modules/light-clients/08-wasm v0.1.1-0.20231213092650-57fcdb9a9a9d
 	github.com/cosmos/ibc-go/v8 v8.2.1
-	github.com/cosmos/interchain-security/v5 v5.0.0-rc0
+	github.com/cosmos/interchain-security/v5 v5.0.0
 	github.com/golang/protobuf v1.5.4
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
