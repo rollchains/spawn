@@ -181,7 +181,6 @@ func SetupModuleProtoBase(logger *slog.Logger, extName string, feats *features) 
 		}
 
 		fc.ReplaceAll("github.com/rollchains/spawn/simapp", goModName)
-		fc.ReplaceAll("strangelove_ventures.simapp", protoNamespace)
 
 		// replace example -> the new x/ name
 		fc.ReplaceAll(moduleName, extName)
@@ -378,5 +377,6 @@ func appendNewImportsToSource(filePath string, oldSource, newImports []string) [
 // i.e. github.com/rollchains/myproject -> rollchains.myproject
 func convertGoModuleNameToProtoNamespace(moduleName string) string {
 	text := strings.Replace(moduleName, "github.com/", "", 1)
+
 	return strings.Replace(text, "/", ".", -1)
 }
