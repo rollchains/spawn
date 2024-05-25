@@ -295,11 +295,7 @@ setup-testnet-keys:
 	-`echo "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry" | wasmd keys add acc0 --recover`
 	-`echo "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise" | wasmd keys add acc1 --recover`
 
-# default testnet is with IBC
 testnet: setup-testnet
-	spawn local-ic start ibc-testnet
-
-testnet-basic: setup-testnet
 	spawn local-ic start testnet
 
 sh-testnet: mod-tidy
@@ -318,8 +314,7 @@ help:
 	@echo "  install             : Install the binary"
 	@echo "  local-image         : Install the docker image"
 	@echo "  proto-gen           : Generate code from proto files"
-	@echo "  testnet             : Local devnet with IBC to a local CosmosHub"
-	@echo "  testnet-basic       : Standalone devnet"
+	@echo "  testnet             : Local devnet with IBC"
 	@echo "  sh-testnet          : Shell local devnet"
 	@echo "  ictest-basic        : Basic end-to-end test"
 	@echo "  ictest-ibc          : IBC end-to-end test"

@@ -17,7 +17,7 @@ env:
   LOCALIC_AUTH_KEY: ""
   HETZNER_SSH_KEY: "reece-hetzner"
   # HETZNER_MACHINE_TYPE: "cpx31" # shared 4vCPU ($7/Mo)
-  HETZNER_MACHINE_TYPE: "ccx23" # dedicated 4 CPU 16GB Ram ($25/Mo)
+  HETZNER_MACHINE_TYPE: "ccx23" # dedicated 4 CPU 16GB Ram ($25/Mo)z
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
