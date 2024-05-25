@@ -12,12 +12,18 @@ import (
 
 	"github.com/rollchains/spawn/simapp"
 	localictypes "github.com/strangelove-ventures/interchaintest/local-interchain/interchain/types"
+	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
 	"golang.org/x/tools/imports"
 )
 
 var (
 	IgnoredFiles = []string{"embed.go", "heighliner/"}
+
+	CosmosHubProvider = localictypes.
+				ChainCosmosHub("localcosmos-1").
+				SetDockerImage(ibc.NewDockerImage("", "v15.1.0", "1025:1025")).
+				SetDefaultSDKv47Genesis(2)
 )
 
 type NewChainConfig struct {
@@ -278,20 +284,8 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 // TODO: allow selecting for other chains to generate from (ethos, saga)
 // SetupLocalInterchainJSON sets up the local-interchain testnets configuration files.
 func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
-	var (
-		// base chain
-		c = localictypes.NewChainBuilder(cfg.ProjectName, "localchain-1", cfg.BinDaemon, cfg.Denom, cfg.Bech32Prefix)
-
-		// provider / ibc chain
-		cosmosHub = localictypes.ChainCosmosHub("localcosmos-1").
-				SetDockerImage(ibc.NewDockerImage("", "v15.1.0", "1025:1025")).
-				SetDefaultSDKv47Genesis(2)
-
-		chains = []*localictypes.Chain{c, cosmosHub}
-	)
-
-	// === testnet.json ===
-	c.SetBlockTime("1000ms").
+	c := localictypes.NewChainBuilder(cfg.ProjectName, "localchain-1", cfg.BinDaemon, cfg.Denom, cfg.Bech32Prefix).
+		SetBlockTime("1000ms").
 		SetDockerImage(ibc.NewDockerImage(strings.ToLower(cfg.ProjectName), "local", "")).
 		SetTrustingPeriod("336h").
 		SetHostPortOverride(localictypes.BaseHostPortOverride()).
@@ -299,11 +293,16 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 
 	if cfg.isUsingICS {
 		c.SetICSConsumerLink("localcosmos-1")
+
+		// ICS won't have gov, mint, staking, etc.
+		c.Genesis.Modify = []cosmos.GenesisKV{}
+		c.SetGenesis(c.Genesis)
 	} else {
-		c.SetAppendedIBCPathLink(cosmosHub)
+		// make this is an IBC testnet for POA/POS chains
+		c.SetAppendedIBCPathLink(CosmosHubProvider)
 	}
 
-	cc := localictypes.NewChainsConfig(chains...)
+	cc := localictypes.NewChainsConfig(c, CosmosHubProvider)
 	if err := cc.SaveJSON(fmt.Sprintf("%s/chains/testnet.json", cfg.ProjectName)); err != nil {
 		panic(err)
 	}

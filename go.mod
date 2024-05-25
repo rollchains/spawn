@@ -20,8 +20,8 @@ require (
 	github.com/rollchains/spawn/simapp v0.0.0-00000000-000000000000
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
-	github.com/strangelove-ventures/interchaintest/local-interchain v0.0.0-20240525185657-c15c9206a3d6
-	github.com/strangelove-ventures/interchaintest/v8 v8.3.0
+	github.com/strangelove-ventures/interchaintest/local-interchain v0.0.0-20240525231324-c0dc0bc8cf5e
+	github.com/strangelove-ventures/interchaintest/v8 v8.3.1-0.20240525231324-c0dc0bc8cf5e
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/mod v0.17.0
 	golang.org/x/text v0.14.0
