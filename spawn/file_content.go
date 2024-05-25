@@ -167,18 +167,6 @@ func (fc *FileContent) ReplaceMakeFile(cfg *NewChainConfig) {
 
 }
 
-func (fc *FileContent) ReplaceLocalInterchainJSON(cfg *NewChainConfig) {
-	if fc.IsPath("testnet.json") { // this matches testnet.json and ibc-testnet.json
-		fc.ReplaceAll(`"repository": "wasmd"`, fmt.Sprintf(`"repository": "%s"`, strings.ToLower(cfg.ProjectName)))
-		fc.ReplaceAll(`"bech32_prefix": "wasm"`, fmt.Sprintf(`"bech32_prefix": "%s"`, cfg.Bech32Prefix))
-		fc.ReplaceAll("appName", cfg.ProjectName)
-		fc.ReplaceAll("mydenom", cfg.Denom)
-		fc.ReplaceAll("wasmd", cfg.BinDaemon)
-
-		fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix)
-	}
-}
-
 // FindAndReplaceStandardWalletsBech32 finds a prefix1... address and replaces it with a new prefix1... address
 // This works for both standard wallets (38 length after prefix1) and also smart contracts (58)
 func (fc *FileContent) FindAndReplaceAddressBech32(oldPrefix, newPrefix string) {

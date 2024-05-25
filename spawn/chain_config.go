@@ -11,6 +11,8 @@ import (
 	"strings"
 
 	"github.com/rollchains/spawn/simapp"
+	localictypes "github.com/strangelove-ventures/interchaintest/local-interchain/interchain/types"
+	"github.com/strangelove-ventures/interchaintest/v8/ibc"
 	"golang.org/x/tools/imports"
 )
 
@@ -38,6 +40,8 @@ type NewChainConfig struct {
 	DisabledModules []string
 
 	Logger *slog.Logger
+
+	isUsingICS bool
 }
 
 func (cfg NewChainConfig) Run(doAnnounce bool) {
@@ -64,6 +68,7 @@ func (cfg *NewChainConfig) SetProperFeaturePairs() {
 			isUsingICS = false
 		}
 	}
+	cfg.isUsingICS = isUsingICS
 
 	// TODO: maybe we allow so democratic consumers are allowed?
 	// Remove staking if ICS is in use
@@ -167,6 +172,10 @@ func (cfg *NewChainConfig) NewChain() {
 		logger.Error("Error setting up interchain test", "err", err)
 	}
 
+	// setup local-interchain testnets
+	// *testnet.json (chains/ directory)
+	cfg.SetupLocalInterchainJSON()
+
 	if !cfg.IgnoreGitInit {
 		cfg.GitInitNewProjectRepo()
 	}
@@ -195,11 +204,8 @@ func (cfg *NewChainConfig) SetupMainChainApp() error {
 		fc.ReplaceApp(cfg)
 		// Makefile
 		fc.ReplaceMakeFile(cfg)
-		// *testnet.json (chains/ directory)
-		fc.ReplaceLocalInterchainJSON(cfg)
 		// *All Files
 		fc.ReplaceEverywhere(cfg)
-
 		// Removes any modules we care nothing about
 		fc.RemoveDisabledFeatures(cfg)
 
@@ -267,6 +273,40 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 
 		return fc.Save()
 	})
+}
+
+// TODO: allow selecting for other chains to generate from (ethos, saga)
+// SetupLocalInterchainJSON sets up the local-interchain testnets configuration files.
+func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
+	var (
+		// base chain
+		c = localictypes.NewChainBuilder(cfg.ProjectName, "localchain-1", cfg.BinDaemon, cfg.Denom, cfg.Bech32Prefix)
+
+		// provider / ibc chain
+		cosmosHub = localictypes.ChainCosmosHub("localcosmos-1").
+				SetDockerImage(ibc.NewDockerImage("", "v15.1.0", "1025:1025")).
+				SetDefaultSDKv47Genesis(2)
+
+		chains = []*localictypes.Chain{c, cosmosHub}
+	)
+
+	// === testnet.json ===
+	c.SetBlockTime("1000ms").
+		SetDockerImage(ibc.NewDockerImage(strings.ToLower(cfg.ProjectName), "local", "")).
+		SetTrustingPeriod("336h").
+		SetHostPortOverride(localictypes.BaseHostPortOverride()).
+		SetDefaultSDKv47Genesis(2)
+
+	if cfg.isUsingICS {
+		c.SetICSConsumerLink("localcosmos-1")
+	} else {
+		c.SetAppendedIBCPathLink(cosmosHub)
+	}
+
+	cc := localictypes.NewChainsConfig(chains...)
+	if err := cc.SaveJSON(fmt.Sprintf("%s/chains/testnet.json", cfg.ProjectName)); err != nil {
+		panic(err)
+	}
 }
 
 func GetFileContent(logger *slog.Logger, newFilePath string, fs embed.FS, relPath string, d fs.DirEntry) (*FileContent, error) {
