@@ -1,11 +1,17 @@
 package e2e
 
 import (
+	"context"
 	"testing"
 
 	"github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
+	"github.com/strangelove-ventures/interchaintest/v8/ibc"
+	interchaintestrelayer "github.com/strangelove-ventures/interchaintest/v8/relayer"
+	"github.com/strangelove-ventures/interchaintest/v8/testreporter"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestTokenFactory(t *testing.T) {
@@ -13,10 +19,50 @@ func TestTokenFactory(t *testing.T) {
 		t.Skip("skipping in short mode")
 	}
 
-	// setup base chain
-	chains := interchaintest.CreateChainWithConfig(t, NumberVals, NumberFullNodes, Name, ChainImage.Version, DefaultChainConfig)
+	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
+		&DefaultChainSpec,
+		&ProviderChain, // spawntag:ics
+	})
+
+	ctx := context.Background()
+	client, network := interchaintest.DockerSetup(t)
+	rep := testreporter.NewNopReporter()
+	eRep := rep.RelayerExecReporter(t)
+
+	chains, err := cf.Chains(t.Name())
+	require.NoError(t, err)
+
 	chain := chains[0].(*cosmos.CosmosChain)
-	ctx, ic, _, _ := interchaintest.BuildInitialChain(t, chains, false)
+	provider := chains[1].(*cosmos.CosmosChain) // spawntag:ics
+
+	ic := interchaintest.NewInterchain().AddChain(chain)
+
+	// <spawntag:ics
+	r := interchaintest.NewBuiltinRelayerFactory(
+		ibc.CosmosRly,
+		zaptest.NewLogger(t, zaptest.Level(zapcore.DebugLevel)),
+		interchaintestrelayer.CustomDockerImage(RelayerRepo, RelayerVersion, "100:1000"),
+		interchaintestrelayer.StartupFlags("--processor", "events", "--block-history", "200"),
+	).Build(t, client, network)
+
+	ic = ic.AddChain(provider).
+		AddRelayer(r, "relayer").
+		AddProviderConsumerLink(interchaintest.ProviderConsumerLink{
+			Consumer: chain,
+			Provider: provider,
+			Relayer:  r,
+			Path:     ibcPath,
+		})
+	// spawntag:ics>
+
+	require.NoError(t, ic.Build(ctx, eRep, interchaintest.InterchainBuildOptions{
+		TestName:         t.Name(),
+		Client:           client,
+		NetworkID:        network,
+		SkipPathCreation: false,
+	}))
+
+	require.NoError(t, provider.FinishICSProviderSetup(ctx, r, eRep, ibcPath)) // spawntag:ics
 
 	users := interchaintest.GetAndFundTestUsers(t, ctx, "default", GenesisFundsAmount, chain, chain)
 	user := users[0]

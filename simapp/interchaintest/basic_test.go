@@ -73,9 +73,7 @@ func TestBasicChain(t *testing.T) {
 		_ = ic.Close()
 	})
 
-	// <spawntag:ics
-	require.NoError(t, provider.FinishICSProviderSetup(ctx, r, eRep, ibcPath))
-	// spawntag:ics>
+	require.NoError(t, provider.FinishICSProviderSetup(ctx, r, eRep, ibcPath)) // spawntag:ics
 
 	amt := math.NewInt(10_000_000)
 	users := interchaintest.GetAndFundTestUsers(t, ctx, "default", amt,
