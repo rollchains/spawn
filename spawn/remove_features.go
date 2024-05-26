@@ -13,6 +13,7 @@ import (
 var (
 	TokenFactory       = "tokenfactory"
 	POA                = "poa"
+	POS                = "staking" // if ICS is used, we remove staking
 	GlobalFee          = "globalfee"
 	CosmWasm           = "cosmwasm"
 	WasmLC             = "wasmlc"
@@ -20,7 +21,6 @@ var (
 	IBCRateLimit       = "ibc-ratelimit"
 	Ignite             = "ignite"
 	InterchainSecurity = "ics"
-	Staking            = "staking" // if ICS is used, we remove staking
 
 	appGo   = path.Join("app", "app.go")
 	appAnte = path.Join("app", "ante.go")
@@ -29,7 +29,7 @@ var (
 // used for fuzz testing
 var AllFeatures = []string{
 	TokenFactory, POA, GlobalFee, CosmWasm, WasmLC,
-	PacketForward, IBCRateLimit, Ignite, InterchainSecurity, Staking,
+	PacketForward, IBCRateLimit, Ignite, InterchainSecurity, POS,
 }
 
 // Given a string, return the reduced name for the module
@@ -40,6 +40,8 @@ func AliasName(name string) string {
 		return "tokenfactory"
 	case POA, "proof-of-authority", "proofofauthority", "poauthority":
 		return POA
+	case POS, "proof-of-stake", "staking", "pos":
+		return POS
 	case GlobalFee, "global-fee":
 		return GlobalFee
 	case CosmWasm, "wasm", "cw":
@@ -55,8 +57,6 @@ func AliasName(name string) string {
 		return IBCRateLimit
 	case InterchainSecurity, "interchain-security":
 		return InterchainSecurity
-	case Staking:
-		return Staking
 	default:
 		panic(fmt.Sprintf("AliasName: unknown feature to remove: %s", name))
 	}
@@ -69,10 +69,16 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		base := AliasName(name)
 
 		switch strings.ToLower(base) {
-		case TokenFactory:
-			fc.RemoveTokenFactory()
+		// consensus
 		case POA:
 			fc.RemovePOA()
+		case POS:
+			fc.RemoveStaking()
+		case InterchainSecurity:
+			fc.RemoveInterchainSecurity()
+		// modules
+		case TokenFactory:
+			fc.RemoveTokenFactory()
 		case GlobalFee:
 			fc.RemoveGlobalFee()
 		case CosmWasm:
@@ -85,10 +91,6 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 			fc.RemoveIBCRateLimit()
 		case Ignite:
 			fc.RemoveIgniteCLI()
-		case InterchainSecurity:
-			fc.RemoveInterchainSecurity()
-		case Staking:
-			fc.RemoveStaking()
 		default:
 			panic(fmt.Sprintf("unknown feature to remove %s", name))
 		}

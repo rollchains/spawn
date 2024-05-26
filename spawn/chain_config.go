@@ -76,8 +76,8 @@ func (cfg *NewChainConfig) SetProperFeaturePairs() {
 
 	// TODO: maybe we allow so democratic consumers are allowed?
 	// Remove staking if ICS is in use
-	if isUsingICS && !cfg.IsFeatureDisabled(Staking) {
-		d = append(d, Staking)
+	if isUsingICS && !cfg.IsFeatureDisabled(POS) {
+		d = append(d, POS)
 	}
 
 	cfg.DisabledModules = d
@@ -139,7 +139,6 @@ func (cfg *NewChainConfig) Validate() error {
 
 func (cfg *NewChainConfig) AnnounceSuccessfulBuild() {
 	projName := cfg.ProjectName
-	// bin := cfg.BinDaemon
 
 	// no logger here, straight to stdout
 	fmt.Printf("\n🎉 New blockchain '%s' generated!\n", projName)
