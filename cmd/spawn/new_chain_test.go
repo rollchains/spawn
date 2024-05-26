@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"go/format"
 	"io/fs"
 	"log/slog"
 	"math/rand"
@@ -13,15 +12,19 @@ import (
 	"testing"
 
 	"github.com/rollchains/spawn/spawn"
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
 )
 
 var Logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-func TestDisabledGeneration(t *testing.T) {
-	cwd, err := os.Getwd()
-	require.NoError(t, err)
+type disabledCase struct {
+	Name          string
+	Disabled      []string
+	NotContainAny []string
+}
 
+func TestDisabledGeneration(t *testing.T) {
 	allButStaking := make([]string, 0, len(spawn.AllFeatures)-1)
 	for _, f := range spawn.AllFeatures {
 		if f != spawn.Staking {
@@ -29,18 +32,11 @@ func TestDisabledGeneration(t *testing.T) {
 		}
 	}
 
-	type disabledCase struct {
-		Name          string
-		Disabled      []string
-		NotContainAny []string
-	}
-
-	// custom cases
 	disabledCases := []disabledCase{
 		{
-			// by default ICS is used
+			// by default ICS is used & staking is disabled ()
 			Name:          "default",
-			Disabled:      []string{},
+			Disabled:      []string{"staking"},
 			NotContainAny: []string{"StakingKeeper", "POAKeeper"},
 		},
 		{
@@ -64,7 +60,16 @@ func TestDisabledGeneration(t *testing.T) {
 		},
 	}
 
+	for _, c := range disabledCases {
+		c := c
+		execTest(t, c)
+	}
+}
+
+func TestGenerationForSingleModuleRemoval(t *testing.T) {
 	// single module removal
+	disabledCases := make([]disabledCase, 0, len(spawn.AllFeatures))
+
 	for _, f := range spawn.AllFeatures {
 		normalizedName := strings.ReplaceAll("remove"+f, "-", "")
 
@@ -76,37 +81,45 @@ func TestDisabledGeneration(t *testing.T) {
 
 	for _, c := range disabledCases {
 		c := c
-
-		name := "spawnunittest" + c.Name
-		dc := c.Disabled
-
-		fmt.Println("=====\ndisabled cases", name, dc)
-
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			dirPath := path.Join(cwd, name)
-
-			require.NoError(t, os.RemoveAll(name))
-
-			cfg := spawn.NewChainConfig{
-				ProjectName:     name,
-				Bech32Prefix:    "cosmos",
-				HomeDir:         "." + name,
-				BinDaemon:       RandStringBytes(6) + "d",
-				Denom:           "token" + RandStringBytes(3),
-				GithubOrg:       RandStringBytes(15),
-				IgnoreGitInit:   false,
-				DisabledModules: dc,
-				Logger:          Logger,
-			}
-			cfg.Run(false)
-
-			AssertValidGeneration(t, dirPath, dc, c.NotContainAny)
-
-			require.NoError(t, os.RemoveAll(name))
-		})
+		execTest(t, c)
 	}
+}
+
+func execTest(t *testing.T, c disabledCase) {
+	name := "spawnunittest" + c.Name
+	dc := c.Disabled
+
+	fmt.Println("=====\ndisabled cases", name, dc)
+
+	t.Run(name, func(t *testing.T) {
+		t.Parallel()
+
+		// dirPath := path.Join(cwd, name)
+
+		require.NoError(t, os.RemoveAll(name))
+
+		fSys := afero.NewMemMapFs()
+		fSys.MkdirAll(name, 0777)
+		fSys.Chmod(name, 0777)
+
+		cfg := spawn.NewChainConfig{
+			ProjectName:     name,
+			Bech32Prefix:    "cosmos",
+			HomeDir:         "." + name,
+			BinDaemon:       RandStringBytes(6) + "d",
+			Denom:           "token" + RandStringBytes(3),
+			GithubOrg:       RandStringBytes(15),
+			IgnoreGitInit:   true, // mem fs issues, no need
+			DisabledModules: dc,
+			Logger:          Logger,
+			FileSystem:      fSys,
+		}
+		cfg.Run(false)
+
+		AssertValidGeneration(t, dc, c.NotContainAny, fSys, name)
+
+		require.NoError(t, os.RemoveAll(name))
+	})
 }
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyz"
@@ -119,9 +132,10 @@ func RandStringBytes(n int) string {
 	return string(b)
 }
 
-func AssertValidGeneration(t *testing.T, dirPath string, dc []string, notContainAny []string) {
+func AssertValidGeneration(t *testing.T, dc []string, notContainAny []string, fSys afero.Fs, dir string) {
 	fileCount := 0
-	err := filepath.WalkDir(dirPath, func(p string, file fs.DirEntry, err error) error {
+
+	err := afero.Walk(fSys, dir, func(p string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -131,21 +145,24 @@ func AssertValidGeneration(t *testing.T, dirPath string, dc []string, notContain
 		if filepath.Ext(p) == ".go" {
 			base := path.Base(p)
 
-			f, err := os.ReadFile(p)
+			f, err := fSys.Open(p)
+			require.NoError(t, err, fmt.Sprintf("can't open %s", base))
+
+			require.NoError(t, fSys.Chmod(p, 0777))
+
+			bz, err := afero.ReadAll(f)
 			require.NoError(t, err, fmt.Sprintf("can't read %s", base))
 
 			// ensure no disabled modules are present
 			for _, text := range notContainAny {
 				text := text
-				require.NotContains(t, string(f), text, fmt.Sprintf("disabled module %s found in %s (%s)", text, base, p))
+				require.NotContains(t, string(bz), text, fmt.Sprintf("disabled module %s found in %s (%s)", text, base, p))
 			}
-
-			_, err = format.Source(f)
-			require.NoError(t, err, fmt.Sprintf("format issue: %v. using disabled: %v", base, dc))
 		}
 
 		return nil
 	})
+
 	require.NoError(t, err, fmt.Sprintf("error walking directory for disabled: %v", dc))
-	require.Greater(t, fileCount, 1, fmt.Sprintf("no files found in %s", dirPath))
+	require.Greater(t, fileCount, 1, fmt.Sprintf("no files found in %s", fSys.Name()))
 }

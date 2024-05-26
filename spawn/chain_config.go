@@ -2,14 +2,16 @@ package spawn
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"log/slog"
-	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/rollchains/spawn/simapp"
+	"github.com/spf13/afero"
 	localictypes "github.com/strangelove-ventures/interchaintest/local-interchain/interchain/types"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
@@ -46,6 +48,8 @@ type NewChainConfig struct {
 	Logger *slog.Logger
 
 	isUsingICS bool
+
+	FileSystem afero.Fs
 }
 
 func (cfg NewChainConfig) Run(doAnnounce bool) {
@@ -164,7 +168,7 @@ func (cfg *NewChainConfig) NewChain() {
 	logger.Debug("Spawning new app", "app", NewDirName)
 	logger.Debug("Disabled features", "features", cfg.DisabledModules)
 
-	if err := os.MkdirAll(NewDirName, 0755); err != nil {
+	if err := cfg.FileSystem.MkdirAll(NewDirName, 0755); err != nil {
 		panic(err)
 	}
 
@@ -218,7 +222,7 @@ func (cfg *NewChainConfig) SetupMainChainApp() error {
 		// 	return err
 		// }
 
-		return fc.Save()
+		return fc.Save(cfg.FileSystem)
 	})
 }
 
@@ -228,6 +232,9 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 	// Interchaintest e2e is a nested submodule. go.mod is renamed to go.mod_ to avoid conflicts
 	// It will be unwound during unpacking to properly nest it.
 	ictestFS := simapp.ICTestFS
+
+	isFormated := make(map[string]bool)
+
 	return fs.WalkDir(ictestFS, ".", func(relPath string, d fs.DirEntry, e error) error {
 		newPath := path.Join(newDirName, relPath)
 
@@ -240,6 +247,10 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 		if err != nil {
 			return err
 		} else if fc == nil {
+			return nil
+		}
+
+		if !fc.ContainsPath("interchaintest") {
 			return nil
 		}
 
@@ -263,11 +274,15 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 		// Removes any modules references after we modify interchaintest values
 		fc.RemoveDisabledFeatures(cfg)
 
-		if err := fc.FormatGoFile(); err != nil {
-			return err
+		// is key in isFormated
+		if !isFormated[fc.NewPath] {
+			if err := fc.FormatGoFile(); err != nil {
+				return err
+			}
+			isFormated[fc.NewPath] = true
 		}
 
-		return fc.Save()
+		return fc.Save(cfg.FileSystem)
 	})
 }
 
@@ -293,8 +308,35 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 	}
 
 	cc := localictypes.NewChainsConfig(c, CosmosHubProvider)
-	if err := cc.SaveJSON(fmt.Sprintf("%s/chains/testnet.json", cfg.ProjectName)); err != nil {
-		panic(err)
+
+	fPath := fmt.Sprintf("%s/chains/testnet.json", cfg.ProjectName)
+
+	// switch case on cfg.FileSystem and the type it is
+	switch cfg.FileSystem.(type) {
+	case *afero.OsFs:
+		if err := cc.SaveJSON(fPath); err != nil {
+			panic(err)
+		}
+	case *afero.MemMapFs:
+		if err := cfg.FileSystem.MkdirAll(filepath.Dir(fPath), 0777); err != nil {
+			panic(fmt.Errorf("fs testing: failed to create directory: %w", err))
+		}
+		bz, err := json.MarshalIndent(cfg, "", "    ")
+		if err != nil {
+			panic(fmt.Errorf("fs testing: failed to marshal chains config: %w", err))
+		}
+
+		f, err := cfg.FileSystem.Create(fPath)
+		if err != nil {
+			panic(fmt.Errorf("fs testing: failed to create file: %w", err))
+		}
+
+		_, err = f.Write(bz)
+		if err != nil {
+			panic(fmt.Errorf("fs testing: failed to write file: %w", err))
+		}
+	default:
+		panic(fmt.Errorf("fs testing: unknown fs type: %T", cfg.FileSystem))
 	}
 }
 

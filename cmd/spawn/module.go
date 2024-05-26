@@ -10,6 +10,7 @@ import (
 
 	"github.com/rollchains/spawn/simapp"
 	"github.com/rollchains/spawn/spawn"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -97,13 +98,13 @@ func NewCmd() *cobra.Command {
 			}
 
 			// Setup Proto files to match the new x/ cosmos module name & go.mod module namespace (i.e. github org).
-			if err := SetupModuleProtoBase(GetLogger(), extName, feats); err != nil {
+			if err := SetupModuleProtoBase(GetLogger(), extName, feats, afero.NewOsFs()); err != nil {
 				logger.Error("Error setting up proto for module", err)
 				return
 			}
 
 			// sets up the files in x/
-			if err := SetupModuleExtensionFiles(GetLogger(), extName, feats); err != nil {
+			if err := SetupModuleExtensionFiles(GetLogger(), extName, feats, afero.NewOsFs()); err != nil {
 				logger.Error("Error setting up x/ module files", err)
 				return
 			}
@@ -129,7 +130,7 @@ func NewCmd() *cobra.Command {
 
 // SetupModuleProtoBase iterates through the proto embedded fs and replaces the paths and goMod names to match
 // the new desired module.
-func SetupModuleProtoBase(logger *slog.Logger, extName string, feats *features) error {
+func SetupModuleProtoBase(logger *slog.Logger, extName string, feats *features, fSys afero.Fs) error {
 	protoFS := simapp.ProtoModuleFS
 
 	if err := os.MkdirAll("proto", 0755); err != nil {
@@ -185,13 +186,13 @@ func SetupModuleProtoBase(logger *slog.Logger, extName string, feats *features) 
 		// replace example -> the new x/ name
 		fc.ReplaceAll(moduleName, extName)
 
-		return fc.Save()
+		return fc.Save(fSys)
 	})
 }
 
 // SetupModuleExtensionFiles iterates through the x/example embedded fs and replaces the paths and goMod names to match
 // the new desired module.
-func SetupModuleExtensionFiles(logger *slog.Logger, extName string, feats *features) error {
+func SetupModuleExtensionFiles(logger *slog.Logger, extName string, feats *features, fSys afero.Fs) error {
 	extFS := simapp.ExtensionFS
 
 	if err := os.MkdirAll(path.Join("x", extName), 0755); err != nil {
@@ -247,7 +248,7 @@ func SetupModuleExtensionFiles(logger *slog.Logger, extName string, feats *featu
 		fc.ReplaceAll(fmt.Sprintf("package %s", moduleName), fmt.Sprintf("package %s", extName))
 		fc.ReplaceAll(moduleName, extName)
 
-		return fc.Save()
+		return fc.Save(fSys)
 	})
 }
 

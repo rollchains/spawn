@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"go/format"
 	"log/slog"
-	"os"
 	"path"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/cosmos/btcutil/bech32"
+	"github.com/spf13/afero"
 	"golang.org/x/tools/imports"
 )
 
@@ -228,7 +227,6 @@ func (fc *FileContent) RemoveGoModImport(importPath string) {
 func (fc *FileContent) FormatGoFile() error {
 
 	if strings.HasSuffix(fc.NewPath, ".go") && len(fc.Contents) > 0 {
-		now := time.Now()
 		newSrc, err := imports.Process(fc.NewPath, []byte(fc.Contents), nil)
 		if err != nil {
 			fc.Logger.Error("error processing imports", "err", err, "file", fc.NewPath)
@@ -242,20 +240,25 @@ func (fc *FileContent) FormatGoFile() error {
 		}
 
 		fc.Contents = string(bz)
-		fmt.Println("Formatting go file", fc.NewPath, time.Since(now))
 	}
 	return nil
 }
 
-func (fc *FileContent) Save() error {
+func (fc *FileContent) Save(fileSystem afero.Fs) error {
 	if fc.Contents == "" {
 		fc.Logger.Debug("Save() No contents for", "path", fc.NewPath)
 		return nil
 	}
 
-	if err := os.MkdirAll(path.Dir(fc.NewPath), 0755); err != nil {
+	if err := fileSystem.MkdirAll(path.Dir(fc.NewPath), 0755); err != nil {
 		return err
 	}
 
-	return os.WriteFile(fc.NewPath, []byte(fc.Contents), 0644)
+	f, err := fileSystem.Create(fc.NewPath)
+	if err != nil {
+		return err
+	}
+
+	_, err = f.Write([]byte(fc.Contents))
+	return err
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -108,6 +109,7 @@ var newChain = &cobra.Command{
 			IgnoreGitInit:   ignoreGitInit,
 			DisabledModules: disabled,
 			Logger:          logger,
+			FileSystem:      afero.NewOsFs(),
 		}
 
 		cfg.Run(true)
