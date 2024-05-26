@@ -10,7 +10,7 @@ on:
 # - SSH_PRIVATE_KEY
 
 env:
-  GO_VERSION: 1.21.0
+  GO_VERSION: 1.22.3
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   LOCALIC_PORT: 8080

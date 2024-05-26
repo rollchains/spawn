@@ -19,7 +19,7 @@ on:
         description: 'The command which runs the chain via the shell'
 
 env:
-  GO_VERSION: 1.21.9
+  GO_VERSION: 1.22.3
   JQ_VERSION: '1.7'
   JQ_FORCE: false
 
