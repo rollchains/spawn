@@ -75,6 +75,7 @@ func TestDisabledGeneration(t *testing.T) {
 	}
 
 	for _, c := range disabledCases {
+		c := c
 		name := "spawnunittest" + c.Name
 		dc := c.Disabled
 
