@@ -7,9 +7,10 @@ import (
 )
 
 type item struct {
-	ID         string
-	IsSelected bool
-	Details    string
+	ID          string
+	IsSelected  bool
+	IsConsensus bool // only 1 IsConsensus can be selected at a time
+	Details     string
 }
 
 type items []*item
@@ -36,7 +37,7 @@ func (i *items) NOTSlice() []string {
 }
 
 // selectItems() prompts user to select one or more items in the given slice
-func selectItems(selectedPos int, allItems items, returnOpposite bool) (items, error) {
+func selectItems(text string, selectedPos int, allItems items, returnOpposite bool, showConsensusOnly, onlyOne bool) (items, error) {
 	// Always prepend a "Done" item to the slice if it doesn't already exist.
 	const doneID = "Done"
 	if len(allItems) > 0 && allItems[0].ID != doneID {
@@ -46,7 +47,22 @@ func selectItems(selectedPos int, allItems items, returnOpposite bool) (items, e
 				Details: "",
 			},
 		}
-		allItems = append(items, allItems...)
+
+		for _, item := range allItems {
+			if showConsensusOnly {
+				if item.IsConsensus {
+					items = append(items, item)
+					continue
+				}
+			} else {
+				if !item.IsConsensus {
+					items = append(items, item)
+					continue
+				}
+			}
+		}
+
+		allItems = items
 	}
 
 	templates := &promptui.SelectTemplates{
@@ -59,7 +75,7 @@ func selectItems(selectedPos int, allItems items, returnOpposite bool) (items, e
 	}
 
 	prompt := promptui.Select{
-		Label:        "Feature Selector (( enter to toggle ))",
+		Label:        text,
 		HideHelp:     true,
 		Items:        allItems,
 		Templates:    templates,
@@ -76,10 +92,16 @@ func selectItems(selectedPos int, allItems items, returnOpposite bool) (items, e
 	chosenItem := allItems[selectionIdx]
 
 	if chosenItem.ID != doneID {
+		if onlyOne {
+			for _, i := range allItems {
+				i.IsSelected = false
+			}
+		}
+
 		// If the user selected something other than "Done",
 		// toggle selection on this item and run the function again.
 		chosenItem.IsSelected = !chosenItem.IsSelected
-		return selectItems(selectionIdx, allItems, returnOpposite)
+		return selectItems(text, selectionIdx, allItems, returnOpposite, showConsensusOnly, onlyOne)
 	}
 
 	// If the user selected the "Done" item, return
