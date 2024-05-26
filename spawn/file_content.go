@@ -2,13 +2,16 @@ package spawn
 
 import (
 	"fmt"
+	"go/format"
 	"log/slog"
 	"os"
 	"path"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/cosmos/btcutil/bech32"
+	"golang.org/x/tools/imports"
 )
 
 var (
@@ -219,6 +222,29 @@ func (fc *FileContent) RemoveGoModImport(importPath string) {
 
 	fc.Contents = strings.Join(newLines, "\n")
 
+}
+
+// FormatGoFile Removes unused imports & tidies up the files
+func (fc *FileContent) FormatGoFile() error {
+
+	if strings.HasSuffix(fc.NewPath, ".go") && len(fc.Contents) > 0 {
+		now := time.Now()
+		newSrc, err := imports.Process(fc.NewPath, []byte(fc.Contents), nil)
+		if err != nil {
+			fc.Logger.Error("error processing imports", "err", err, "file", fc.NewPath)
+			return err
+		}
+
+		bz, err := format.Source(newSrc)
+		if err != nil {
+			fc.Logger.Error("error formatting go file", "err", err, "file", fc.NewPath)
+			return err
+		}
+
+		fc.Contents = string(bz)
+		fmt.Println("Formatting go file", fc.NewPath, time.Since(now))
+	}
+	return nil
 }
 
 func (fc *FileContent) Save() error {

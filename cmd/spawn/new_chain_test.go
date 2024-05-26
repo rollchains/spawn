@@ -75,12 +75,16 @@ func TestDisabledGeneration(t *testing.T) {
 	}
 
 	for _, c := range disabledCases {
+		c := c
+
 		name := "spawnunittest" + c.Name
 		dc := c.Disabled
 
 		fmt.Println("=====\ndisabled cases", name, dc)
 
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			dirPath := path.Join(cwd, name)
 
 			require.NoError(t, os.RemoveAll(name))

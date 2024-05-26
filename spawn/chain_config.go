@@ -3,7 +3,6 @@ package spawn
 import (
 	"embed"
 	"fmt"
-	"go/format"
 	"io/fs"
 	"log/slog"
 	"os"
@@ -14,7 +13,6 @@ import (
 	localictypes "github.com/strangelove-ventures/interchaintest/local-interchain/interchain/types"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
-	"golang.org/x/tools/imports"
 )
 
 var (
@@ -215,22 +213,10 @@ func (cfg *NewChainConfig) SetupMainChainApp() error {
 		// Removes any modules we care nothing about
 		fc.RemoveDisabledFeatures(cfg)
 
-		// Removes unused imports & tidies up the files
-		if strings.HasSuffix(fc.NewPath, ".go") && len(fc.Contents) > 0 {
-			newSrc, err := imports.Process(fc.NewPath, []byte(fc.Contents), nil)
-			if err != nil {
-				cfg.Logger.Error("error processing imports", "err", err, "file", fc.NewPath)
-				return fc.Save()
-			}
-
-			bz, err := format.Source(newSrc)
-			if err != nil {
-				cfg.Logger.Error("error formatting go file", "err", err, "file", fc.NewPath)
-				return fc.Save()
-			}
-
-			fc.Contents = string(bz)
-		}
+		// TODO:
+		// if err := fc.FormatGoFile(); err != nil {
+		// 	return err
+		// }
 
 		return fc.Save()
 	})
@@ -276,6 +262,10 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 
 		// Removes any modules references after we modify interchaintest values
 		fc.RemoveDisabledFeatures(cfg)
+
+		if err := fc.FormatGoFile(); err != nil {
+			return err
+		}
 
 		return fc.Save()
 	})
