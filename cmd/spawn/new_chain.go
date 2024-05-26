@@ -118,16 +118,23 @@ var newChain = &cobra.Command{
 			}
 		}
 		consensus = spawn.AliasName(consensus)
-		logger.Info("Consensus selected", "consensus", consensus)
+		logger.Debug("Consensus selected", "consensus", consensus)
 
 		// Disable all consensus algorithms except the one selected.
 		disabledConsensus := make([]string, 0)
 		for _, feat := range ConsensusFeatures {
 			name := spawn.AliasName(feat.ID)
 			if name != consensus {
+				// if consensus is proof-of-authority, allow proof of stake
+				if consensus == spawn.POA && name == spawn.POS {
+					continue
+				}
+
+				fmt.Println("Disabling", name)
 				disabledConsensus = append(disabledConsensus, name)
 			}
 		}
+		logger.Debug("Disabled Consensus", "disabled", disabledConsensus)
 
 		// Disable all features not selected
 		// Show a UI if the user did not specific to bypass it, or if nothing is disabled.
@@ -139,12 +146,13 @@ var newChain = &cobra.Command{
 				return
 			}
 			disabled = items.NOTSlice()
+
 		}
 
 		disabled = append(disabled, disabledConsensus...)
 		disabled = spawn.NormalizeDisabledNames(disabled, parentDeps)
 
-		logger.Info("Disabled features", "features", disabled)
+		logger.Debug("Disabled features", "features", disabled)
 
 		cfg := &spawn.NewChainConfig{
 			ProjectName:     projName,
