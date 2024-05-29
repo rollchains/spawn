@@ -18,8 +18,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const (
-	numPOAVals = 2
+var (
+	numPOAVals int = 2
 )
 
 func TestPOA(t *testing.T) {
