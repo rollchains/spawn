@@ -17,8 +17,15 @@ import (
 )
 
 func TestIBCRateLimit(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
+
 	t.Parallel()
 	ctx := context.Background()
+	rep := testreporter.NewNopReporter()
+	eRep := rep.RelayerExecReporter(t)
+	client, network := interchaintest.DockerSetup(t)
 
 	cs := &DefaultChainSpec
 	cs.ModifyGenesis = cosmos.ModifyGenesis([]cosmos.GenesisKV{cosmos.NewGenesisKV("app_state.ratelimit.blacklisted_denoms", []string{cs.Denom})})
@@ -49,16 +56,12 @@ func TestIBCRateLimit(t *testing.T) {
 	secondary := chains[1].(*cosmos.CosmosChain)
 
 	// Relayer Factory
-	client, network := interchaintest.DockerSetup(t)
 	r := interchaintest.NewBuiltinRelayerFactory(
 		ibc.CosmosRly,
 		zaptest.NewLogger(t, zaptest.Level(zapcore.DebugLevel)),
 		interchaintestrelayer.CustomDockerImage(RelayerRepo, RelayerVersion, "100:1000"),
 		interchaintestrelayer.StartupFlags("--processor", "events", "--block-history", "200"),
 	).Build(t, client, network)
-
-	rep := testreporter.NewNopReporter()
-	eRep := rep.RelayerExecReporter(t)
 
 	ic := interchaintest.NewInterchain().
 		AddChain(chain).

@@ -40,11 +40,12 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		t.Skip()
 	}
 
+	ctx := context.Background()
+	rep := testreporter.NewNopReporter()
+	eRep := rep.RelayerExecReporter(t)
+	client, network := interchaintest.DockerSetup(t)
+
 	var (
-		ctx                             = context.Background()
-		client, network                 = interchaintest.DockerSetup(t)
-		rep                             = testreporter.NewNopReporter()
-		eRep                            = rep.RelayerExecReporter(t)
 		chainID_A, chainID_B, chainID_C = "chain-a", "chain-b", "chain-c"
 		chainA, chainB, chainC          *cosmos.CosmosChain
 	)

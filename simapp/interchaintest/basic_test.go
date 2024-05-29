@@ -18,6 +18,9 @@ import (
 
 func TestBasicChain(t *testing.T) {
 	ctx := context.Background()
+	rep := testreporter.NewNopReporter()
+	eRep := rep.RelayerExecReporter(t)
+	client, network := interchaintest.DockerSetup(t)
 
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
 		&DefaultChainSpec,
@@ -32,7 +35,6 @@ func TestBasicChain(t *testing.T) {
 
 	// <spawntag:ics
 	// Relayer Factory
-	client, network := interchaintest.DockerSetup(t)
 	r := interchaintest.NewBuiltinRelayerFactory(
 		ibc.CosmosRly,
 		zaptest.NewLogger(t),
@@ -40,8 +42,6 @@ func TestBasicChain(t *testing.T) {
 		relayer.StartupFlags("--block-history", "200"),
 	).Build(t, client, network)
 
-	rep := testreporter.NewNopReporter()
-	eRep := rep.RelayerExecReporter(t)
 	// spawntag:ics>
 
 	// Setup Interchain

@@ -24,12 +24,11 @@ type GetCountObj struct {
 }
 
 func TestCosmWasmIntegration(t *testing.T) {
-	if testing.Short() {
-		t.Skip()
-	}
-
 	t.Parallel()
 	ctx := context.Background()
+	rep := testreporter.NewNopReporter()
+	eRep := rep.RelayerExecReporter(t)
+	client, network := interchaintest.DockerSetup(t)
 
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
 		&DefaultChainSpec,
@@ -44,16 +43,12 @@ func TestCosmWasmIntegration(t *testing.T) {
 
 	// <spawntag:ics
 	// Relayer Factory
-	client, network := interchaintest.DockerSetup(t)
 	r := interchaintest.NewBuiltinRelayerFactory(
 		ibc.CosmosRly,
 		zaptest.NewLogger(t),
 		relayer.CustomDockerImage(RelayerRepo, RelayerVersion, "100:1000"),
 		relayer.StartupFlags("--block-history", "200"),
 	).Build(t, client, network)
-
-	rep := testreporter.NewNopReporter()
-	eRep := rep.RelayerExecReporter(t)
 	// spawntag:ics>
 
 	// Setup Interchain

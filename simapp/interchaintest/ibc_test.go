@@ -23,6 +23,11 @@ const (
 func TestIBCBasic(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
+	rep := testreporter.NewNopReporter()
+	eRep := rep.RelayerExecReporter(t)
+	client, network := interchaintest.DockerSetup(t)
+
 	cs := &DefaultChainSpec
 	cs.ModifyGenesis = cosmos.ModifyGenesis([]cosmos.GenesisKV{cosmos.NewGenesisKV("app_state.ratelimit.blacklisted_denoms", []string{})}) // spawntag:ratelimit
 
@@ -38,9 +43,6 @@ func TestIBCBasic(t *testing.T) {
 		// spawntag:staking>
 	})
 
-	ctx := context.Background()
-	client, network := interchaintest.DockerSetup(t)
-
 	chains, err := cf.Chains(t.Name())
 	require.NoError(t, err)
 
@@ -53,9 +55,6 @@ func TestIBCBasic(t *testing.T) {
 		interchaintestrelayer.CustomDockerImage(RelayerRepo, RelayerVersion, "100:1000"),
 		interchaintestrelayer.StartupFlags("--processor", "events", "--block-history", "200"),
 	).Build(t, client, network)
-
-	rep := testreporter.NewNopReporter()
-	eRep := rep.RelayerExecReporter(t)
 
 	ic := interchaintest.NewInterchain().
 		AddChain(chainA).

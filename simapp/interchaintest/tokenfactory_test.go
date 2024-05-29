@@ -19,15 +19,15 @@ func TestTokenFactory(t *testing.T) {
 		t.Skip("skipping in short mode")
 	}
 
+	ctx := context.Background()
+	rep := testreporter.NewNopReporter()
+	eRep := rep.RelayerExecReporter(t)
+	client, network := interchaintest.DockerSetup(t)
+
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
 		&DefaultChainSpec,
 		&ProviderChain, // spawntag:ics
 	})
-
-	ctx := context.Background()
-	client, network := interchaintest.DockerSetup(t)
-	rep := testreporter.NewNopReporter()
-	eRep := rep.RelayerExecReporter(t)
 
 	chains, err := cf.Chains(t.Name())
 	require.NoError(t, err)
@@ -45,7 +45,8 @@ func TestTokenFactory(t *testing.T) {
 		interchaintestrelayer.StartupFlags("--processor", "events", "--block-history", "200"),
 	).Build(t, client, network)
 
-	ic = ic.AddChain(provider).
+	ic = ic.
+		AddChain(provider).
 		AddRelayer(r, "relayer").
 		AddProviderConsumerLink(interchaintest.ProviderConsumerLink{
 			Consumer: chain,
@@ -77,30 +78,34 @@ func TestTokenFactory(t *testing.T) {
 	t.Log("TF Denom: ", tfDenom)
 	require.NoError(t, err)
 
-	t.Log("Mint TF Denom to user")
-	node.TokenFactoryMintDenom(ctx, user.FormattedAddress(), tfDenom, 100)
-	if balance, err := chain.GetBalance(ctx, uaddr, tfDenom); err != nil {
-		t.Fatal(err)
-	} else if balance.Int64() != 100 {
-		t.Fatal("balance not 100")
-	}
+	t.Run("Mint TF Denom to user", func(t *testing.T) {
+		node.TokenFactoryMintDenom(ctx, user.FormattedAddress(), tfDenom, 100)
+		if balance, err := chain.GetBalance(ctx, uaddr, tfDenom); err != nil {
+			t.Fatal(err)
+		} else if balance.Int64() != 100 {
+			t.Fatal("balance not 100")
+		}
+	})
 
-	t.Log("Mint TF Denom to another user")
-	node.TokenFactoryMintDenomTo(ctx, user.FormattedAddress(), tfDenom, 70, user2.FormattedAddress())
-	if balance, err := chain.GetBalance(ctx, uaddr2, tfDenom); err != nil {
-		t.Fatal(err)
-	} else if balance.Int64() != 70 {
-		t.Fatal("balance not 70")
-	}
+	t.Run("Mint TF Denom to another user", func(t *testing.T) {
+		node.TokenFactoryMintDenomTo(ctx, user.FormattedAddress(), tfDenom, 70, user2.FormattedAddress())
+		if balance, err := chain.GetBalance(ctx, uaddr2, tfDenom); err != nil {
+			t.Fatal(err)
+		} else if balance.Int64() != 70 {
+			t.Fatal("balance not 70")
+		}
+	})
 
-	t.Log("Change admin to uaddr2")
-	_, err = node.TokenFactoryChangeAdmin(ctx, user.KeyName(), tfDenom, uaddr2)
-	require.NoError(t, err)
+	t.Run("Change admin to uaddr2", func(t *testing.T) {
+		_, err = node.TokenFactoryChangeAdmin(ctx, user.KeyName(), tfDenom, uaddr2)
+		require.NoError(t, err)
+	})
 
-	// ensure the admin is the contract
-	res, err := chain.TokenFactoryQueryAdmin(ctx, tfDenom)
-	require.NoError(t, err)
-	require.EqualValues(t, res.AuthorityMetadata.Admin, uaddr2, "admin not uaddr2. Did not properly transfer.")
+	t.Run("Validate new admin address", func(t *testing.T) {
+		res, err := chain.TokenFactoryQueryAdmin(ctx, tfDenom)
+		require.NoError(t, err)
+		require.EqualValues(t, res.AuthorityMetadata.Admin, uaddr2, "admin not uaddr2. Did not properly transfer.")
+	})
 
 	t.Cleanup(func() {
 		_ = ic.Close()
