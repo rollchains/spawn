@@ -19,7 +19,7 @@ var (
 		// Consensus (only 1 per app)
 		{ID: "proof-of-authority", IsSelected: true, IsConsensus: true, Details: "Proof-of-Authority consensus algorithm (permissioned network)"},
 		{ID: "proof-of-stake", IsSelected: false, IsConsensus: true, Details: "Proof-of-Stake consensus algorithm (permissionless network)"},
-		{ID: "interchain-security", IsSelected: false, IsConsensus: true, Details: "Interchain-Security with the Cosmos Hub"},
+		{ID: "interchain-security", IsSelected: false, IsConsensus: true, Details: "Cosmos Hub Interchain Security"},
 		// {ID: "ics-ethos", IsSelected: false, IsConsensus: true, Details: "Interchain-Security with Ethos ETH restaking"},
 	}
 
@@ -30,7 +30,6 @@ var (
 		{ID: "ibc-ratelimit", IsSelected: false, Details: "Thresholds for outflow as a percent of total channel value"},
 		{ID: "cosmwasm", IsSelected: false, Details: "Cosmos smart contracts"},
 		{ID: "wasm-light-client", IsSelected: false, Details: "08 Wasm Light Client"},
-		{ID: "interchain-security", IsSelected: false, Details: "Cosmos Interchain Security"},
 		{ID: "ignite-cli", IsSelected: false, Details: "Ignite-CLI Support"},
 	}...)
 
