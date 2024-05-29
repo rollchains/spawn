@@ -183,6 +183,8 @@ func (cfg *NewChainConfig) NewChain() {
 	// *testnet.json (chains/ directory)
 	cfg.SetupLocalInterchainJSON()
 
+	cfg.MakeModTidy()
+
 	if !cfg.IgnoreGitInit {
 		cfg.GitInitNewProjectRepo()
 	}

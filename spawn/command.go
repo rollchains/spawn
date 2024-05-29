@@ -29,3 +29,15 @@ func (cfg *NewChainConfig) GitInitNewProjectRepo() {
 		cfg.Logger.Error("Error changing back to original directory", "err", err)
 	}
 }
+
+func (cfg *NewChainConfig) MakeModTidy() {
+	if err := os.Chdir(cfg.ProjectName); err != nil {
+		cfg.Logger.Error("Error changing to project directory", "err", err)
+	}
+	if err := ExecCommand("make", "mod-tidy"); err != nil {
+		cfg.Logger.Error("Error running `make mod-tidy`", "err", err)
+	}
+	if err := os.Chdir(".."); err != nil {
+		cfg.Logger.Error("Error changing back to original directory", "err", err)
+	}
+}
