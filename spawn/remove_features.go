@@ -53,7 +53,7 @@ func AliasName(name string) string {
 		return PacketForward
 	case Ignite, "ignite-cli":
 		return Ignite
-	case IBCRateLimit, "ibc-rate-limit":
+	case IBCRateLimit, "ibc-rate-limit", "ratelimit":
 		return IBCRateLimit
 	case InterchainSecurity, "interchain-security":
 		return InterchainSecurity
@@ -223,6 +223,7 @@ func (fc *FileContent) RemoveIBCRateLimit() {
 	fc.RemoveGoModImport("github.com/Stride-Labs/ibc-rate-limiting")
 
 	fc.HandleCommentSwaps(text)
+	fc.RemoveTaggedLines(text, true)
 
 	fc.RemoveModuleFromText("RatelimitKeeper", appGo)
 	fc.RemoveModuleFromText(text,

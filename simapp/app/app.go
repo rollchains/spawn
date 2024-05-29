@@ -719,7 +719,7 @@ func NewChainApp(
 			tokenfactorytypes.EnableForceTransfer,
 			tokenfactorytypes.EnableSetMetadata,
 			// tokenfactorytypes.EnableSudoMint,
-			tokenfactorytypes.EnableCommunityPoolFeeFunding, // spawntag:ics
+			tokenfactorytypes.EnableCommunityPoolFeeFunding, // spawntag:staking
 		},
 		tokenfactorykeeper.DefaultIsSudoAdminFunc,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
