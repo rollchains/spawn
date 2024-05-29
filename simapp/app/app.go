@@ -957,11 +957,13 @@ func NewChainApp(
 		circuit.NewAppModule(appCodec, app.CircuitKeeper),
 		// non sdk modules
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
+		// <spawntag:wasm
 		wasm.NewAppModule(appCodec, &app.WasmKeeper,
 			//app.StakingKeeper, // ?spawntag:ics
 			app.ConsumerKeeper, // spawntag:ics
 			app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName),
 		),
+		// spawntag:wasm>
 		ibc.NewAppModule(app.IBCKeeper),
 		transfer.NewAppModule(app.TransferKeeper),
 		ibcfee.NewAppModule(app.IBCFeeKeeper),
