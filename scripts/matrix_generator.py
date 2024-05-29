@@ -42,7 +42,7 @@ def main():
         #
         "\n# GH; Minimal generation (i.e. no features used)",
         CmdCreator(
-            "pos-minimal",
+            "posminimal",
             POS,
             SupportedFeatures,
             "minimal",
@@ -53,7 +53,7 @@ def main():
         .set_push_to_gh()
         .build(),
         CmdCreator(
-            "ics-minimal",
+            "icsminimal",
             ICS,
             SupportedFeatures,
             "minimal",
@@ -285,7 +285,8 @@ class CmdCreator:
             text += f" && cd {self.name} && make local-image && cd .."
 
         if self.push_to_gh:
-            text += f" && gh repo create {self.name} --source=. --remote=upstream --push --private"
+            # this is run after a cd .. so we set the source as that nested dir
+            text += f" && gh repo create {self.name} --source={self.name}/ --remote=upstream --push --private"
 
         return text
 
