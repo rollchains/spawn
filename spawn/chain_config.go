@@ -261,6 +261,10 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 		// Removes any modules references after we modify interchaintest values
 		fc.RemoveDisabledFeatures(cfg)
 
+		if err := fc.FormatGoFile(); err != nil {
+			return err
+		}
+
 		return fc.Save()
 	})
 }

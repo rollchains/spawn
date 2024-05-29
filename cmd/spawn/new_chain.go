@@ -129,11 +129,10 @@ var newChain = &cobra.Command{
 					continue
 				}
 
-				fmt.Println("Disabling", name)
 				disabledConsensus = append(disabledConsensus, name)
 			}
 		}
-		logger.Debug("Disabled Consensus", "disabled", disabledConsensus)
+		logger.Debug("Disabled Consensuses", "disabled", disabledConsensus, "using", consensus)
 
 		// Disable all features not selected
 		// Show a UI if the user did not specific to bypass it, or if nothing is disabled.
