@@ -1,5 +1,6 @@
 # flake8:noqa
 # Generate bash command matrixes for manual verification testing (due to the number of repos and testing required)
+# rm -rf ./matrix*/
 
 import os
 import random
@@ -28,7 +29,7 @@ def main():
     cmds: list[str] = [
         #
         #
-        "\n# GH; Base - none disabled",
+        "make install\n# rm -rf ./matrix*/\n\n# GH; Base - none disabled",
         CmdCreator("poabase", POA, [], "poa", "poad", "upoa", "strangelove")
         .set_push_to_gh()
         .build(),
