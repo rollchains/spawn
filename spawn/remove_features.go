@@ -212,13 +212,10 @@ func (fc *FileContent) RemovePacketForward() {
 	text := "packetforward"
 	fc.RemoveGoModImport("github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward")
 
-	fc.RemoveModuleFromText(text,
-		appGo,
-		path.Join("workflows", "interchaintest-e2e.yml"),
-	)
+	fc.RemoveModuleFromText(text, appGo)
 	fc.RemoveModuleFromText("PacketForward", appGo)
 
-	fc.DeleteFile(path.Join("interchaintest", "packetforward_test.go"))
+	fc.removePacketForwardTestOnly()
 }
 
 func (fc *FileContent) RemoveIBCRateLimit() {
@@ -296,6 +293,8 @@ func (fc *FileContent) RemoveStaking() {
 	// Since we will be using ICS (test_ics_node.sh)
 	fc.DeleteFile(path.Join("scripts", "test_node.sh"))
 
+	fc.removePacketForwardTestOnly()
+
 	// fix: make sh-testnet
 	if fc.ContainsPath("Makefile") {
 		fc.ReplaceAll("test_node.sh", "test_ics_node.sh")
@@ -333,4 +332,13 @@ func (fc *FileContent) RemoveDistribution() {
 	fc.RemoveModuleFromText("distrtypes", appGo)
 	fc.RemoveModuleFromText("DistrKeeper", appGo)
 	fc.RemoveModuleFromText("distrkeeper", appGo)
+}
+
+// removePacketForwardTestOnly removes the interchaintest and workflow runner for PFM
+func (fc *FileContent) removePacketForwardTestOnly() {
+	text := "packetforward"
+	fc.RemoveModuleFromText(text,
+		path.Join("workflows", "interchaintest-e2e.yml"),
+	)
+	fc.DeleteFile(path.Join("interchaintest", "packetforward_test.go"))
 }
