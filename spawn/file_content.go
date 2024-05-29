@@ -130,9 +130,9 @@ func (fc *FileContent) ReplaceDockerFile(cfg *NewChainConfig) {
 
 func (fc *FileContent) ReplaceApp(cfg *NewChainConfig) {
 	if fc.IsPath(path.Join("app", "app.go")) {
-		fc.ReplaceAll(".wasmd", cfg.HomeDir)
-		fc.ReplaceAll(`CosmWasmApp`, cfg.ProjectName)
-		fc.ReplaceAll(`Bech32Prefix = "wasm"`, fmt.Sprintf(`Bech32Prefix = "%s"`, cfg.Bech32Prefix))
+		fc.ReplaceAll(".myapplicationd", cfg.HomeDir)
+		fc.ReplaceAll(`CosmosSimApp`, cfg.ProjectName)
+		fc.ReplaceAll(`mybechprefix`, cfg.Bech32Prefix)
 	}
 }
 

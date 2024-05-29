@@ -227,7 +227,7 @@ func (fc *FileContent) RemoveIBCRateLimit() {
 
 	fc.HandleCommentSwaps(text)
 
-	fc.RemoveModuleFromText("RatelimitKeeper", path.Join("app", "app.go"))
+	fc.RemoveModuleFromText("RatelimitKeeper", appGo)
 	fc.RemoveModuleFromText(text,
 		appGo,
 		path.Join("workflows", "interchaintest-e2e.yml"),

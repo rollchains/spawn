@@ -175,12 +175,13 @@ import (
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
-const appName = "CosmWasmApp"
+const (
+	appName      = "CosmosSimApp"
+	NodeDir      = ".myapplicationd"
+	Bech32Prefix = "mybechprefix"
+)
 
 var (
-	NodeDir      = ".wasmd"
-	Bech32Prefix = "wasm"
-
 	capabilities = strings.Join(
 		[]string{
 			"iterator",
