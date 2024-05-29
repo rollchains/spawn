@@ -33,14 +33,8 @@ func TestIBCBasic(t *testing.T) {
 
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
 		cs,
-		&ProviderChain, // spawntag:ics
-		// <spawntag:staking
-		func() *interchaintest.ChainSpec {
-			SecondChainSpec := &DefaultChainSpec
-			SecondChainSpec.ChainID += "2"
-			return SecondChainSpec
-		}(),
-		// spawntag:staking>
+		&ProviderChain,          // spawntag:ics
+		&SecondDefaultChainSpec, // spawntag:staking
 	})
 
 	chains, err := cf.Chains(t.Name())

@@ -83,6 +83,14 @@ var (
 		NumFullNodes:  &NumberFullNodes,
 	}
 
+	SecondDefaultChainSpec = func() interchaintest.ChainSpec {
+		SecondChainSpec := DefaultChainSpec
+		SecondChainSpec.ChainID += "2"
+		SecondChainSpec.Name += "2"
+		SecondChainSpec.ChainName += "2"
+		return SecondChainSpec
+	}()
+
 	// cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr - test_node.sh
 	AccMnemonic  = "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry"
 	Acc1Mnemonic = "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise"

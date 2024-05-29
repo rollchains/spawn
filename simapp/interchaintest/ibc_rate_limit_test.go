@@ -32,21 +32,8 @@ func TestIBCRateLimit(t *testing.T) {
 
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
 		cs,
-		&ProviderChain, // spawntag:ics
-		// <spawntag:staking
-		func() *interchaintest.ChainSpec {
-			SecondChainSpec := &DefaultChainSpec
-			// TODO: This should not be needed
-			// blacklistedDenoms := []string{SecondChainSpec.Denom}
-			// SecondChainSpec.ModifyGenesis = cosmos.ModifyGenesis(
-			// 	append(DefaultGenesis,
-			// 		cosmos.NewGenesisKV("app_state.ratelimit.blacklisted_denoms", blacklistedDenoms),
-			// 	),
-			// )
-			SecondChainSpec.ChainID += "2"
-			return SecondChainSpec
-		}(),
-		// spawntag:staking>
+		&ProviderChain,          // spawntag:ics
+		&SecondDefaultChainSpec, // spawntag:staking
 	})
 
 	chains, err := cf.Chains(t.Name())

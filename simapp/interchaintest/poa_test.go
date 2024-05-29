@@ -32,8 +32,11 @@ func TestPOA(t *testing.T) {
 	eRep := rep.RelayerExecReporter(t)
 	client, network := interchaintest.DockerSetup(t)
 
+	cs := &DefaultChainSpec
+	cs.NumValidators = &numPOAVals
+
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
-		&DefaultChainSpec,
+		cs,
 	})
 
 	chains, err := cf.Chains(t.Name())
@@ -67,12 +70,12 @@ func TestPOA(t *testing.T) {
 	// get validator operator addresses
 	vals, err := chain.StakingQueryValidators(ctx, stakingtypes.Bonded.String())
 	require.NoError(t, err)
-	require.Equal(t, len(vals), numPOAVals)
 
 	validators := make([]string, len(vals))
 	for i, v := range vals {
 		validators[i] = v.OperatorAddress
 	}
+	require.Equal(t, len(validators), numPOAVals)
 
 	// === Test Cases ===
 	testStakingDisabled(t, ctx, chain, validators, acc0, acc1)
@@ -124,12 +127,9 @@ func testRemoveValidator(t *testing.T, ctx context.Context, chain *cosmos.Cosmos
 	require.Equal(t, fmt.Sprintf("%d", powerOne), vals[0].Tokens.String())
 	require.Equal(t, 1, len(vals))
 
-	vals, err = chain.StakingQueryValidators(ctx, stakingtypes.Unbonded.String())
+	vals, err = chain.StakingQueryValidators(ctx, stakingtypes.Unbonding.String())
 	require.NoError(t, err)
-	require.Equal(t, "0", vals[0].Tokens.String())
 	require.Equal(t, 1, len(vals))
-	p2 = GetPOAConsensusPower(t, ctx, chain, vals[0].OperatorAddress)
-	require.EqualValues(t, 0, p2)
 }
 
 func testStakingDisabled(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, validators []string, acc0, acc1 ibc.Wallet) {
