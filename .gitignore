@@ -11,3 +11,6 @@ dist/
 myproject/
 mychain/
 *.log
+
+debugging/
+scripts/matrix.sh
