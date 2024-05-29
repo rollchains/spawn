@@ -255,7 +255,7 @@ ictest-basic:
 
 ictest-ibc:
 	@echo "Running IBC e2e test"
-	@cd interchaintest && go test -race -v -run TestIBC .
+	@cd interchaintest && go test -race -v -run TestIBCBasic .
 
 ictest-wasm:
 	@echo "Running cosmwasm e2e test"

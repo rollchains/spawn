@@ -20,11 +20,14 @@ const (
 	ibcPath = "ibc-path"
 )
 
-func TestIBC(t *testing.T) {
+func TestIBCBasic(t *testing.T) {
 	t.Parallel()
 
+	cs := &DefaultChainSpec
+	cs.ModifyGenesis = cosmos.ModifyGenesis([]cosmos.GenesisKV{cosmos.NewGenesisKV("app_state.ratelimit.blacklisted_denoms", []string{})}) // spawntag:ratelimit
+
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
-		&DefaultChainSpec,
+		cs,
 		&ProviderChain, // spawntag:ics
 		// <spawntag:staking
 		func() *interchaintest.ChainSpec {
@@ -99,11 +102,13 @@ func TestIBC(t *testing.T) {
 	// Get Channel ID
 	aInfo, err := r.GetChannels(ctx, eRep, chainA.Config().ChainID)
 	require.NoError(t, err)
-	aChannelID := aInfo[0].ChannelID
+	aChannelID, err := getTransferChannel(aInfo)
+	require.NoError(t, err)
 
 	bInfo, err := r.GetChannels(ctx, eRep, chainB.Config().ChainID)
 	require.NoError(t, err)
-	bChannelID := bInfo[0].ChannelID
+	bChannelID, err := getTransferChannel(bInfo)
+	require.NoError(t, err)
 
 	// Send Transaction
 	amountToSend := math.NewInt(1_000_000)

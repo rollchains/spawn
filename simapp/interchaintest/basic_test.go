@@ -2,13 +2,11 @@ package e2e
 
 import (
 	"context"
-	"fmt"
 	"testing"
-	"time"
 
 	"cosmossdk.io/math"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	ibcconntypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
+
 	"github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
@@ -19,9 +17,11 @@ import (
 )
 
 func TestBasicChain(t *testing.T) {
+	ctx := context.Background()
+
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
-		&ProviderChain, // spawntag:ics
 		&DefaultChainSpec,
+		&ProviderChain, // spawntag:ics
 	})
 
 	chains, err := cf.Chains(t.Name())
@@ -30,11 +30,9 @@ func TestBasicChain(t *testing.T) {
 	chain := chains[0].(*cosmos.CosmosChain)
 	provider := chains[1].(*cosmos.CosmosChain) // spawntag:ics
 
-	ctx := context.Background()
-	client, network := interchaintest.DockerSetup(t)
-
 	// <spawntag:ics
 	// Relayer Factory
+	client, network := interchaintest.DockerSetup(t)
 	r := interchaintest.NewBuiltinRelayerFactory(
 		ibc.CosmosRly,
 		zaptest.NewLogger(t),
@@ -42,13 +40,11 @@ func TestBasicChain(t *testing.T) {
 		relayer.StartupFlags("--block-history", "200"),
 	).Build(t, client, network)
 
-	f, err := interchaintest.CreateLogFile(fmt.Sprintf("%d.json", time.Now().Unix()))
-	require.NoError(t, err)
-
-	rep := testreporter.NewReporter(f)
+	rep := testreporter.NewNopReporter()
 	eRep := rep.RelayerExecReporter(t)
 	// spawntag:ics>
 
+	// Setup Interchain
 	ic := interchaintest.NewInterchain().
 		AddChain(chain)
 
@@ -63,11 +59,11 @@ func TestBasicChain(t *testing.T) {
 		})
 	// spawntag:ics>
 
-	require.NoError(t, ic.Build(ctx, nil, interchaintest.InterchainBuildOptions{
+	require.NoError(t, ic.Build(ctx, eRep, interchaintest.InterchainBuildOptions{
 		TestName:         t.Name(),
 		Client:           client,
 		NetworkID:        network,
-		SkipPathCreation: true,
+		SkipPathCreation: false,
 	}))
 	t.Cleanup(func() {
 		_ = ic.Close()
@@ -132,16 +128,3 @@ func TestBasicChain(t *testing.T) {
 	})
 	// spawntag:ics>
 }
-
-// <spawntag:ics
-func getTransferChannel(channels []ibc.ChannelOutput) (string, error) {
-	for _, channel := range channels {
-		if channel.PortID == "transfer" && channel.State == ibcconntypes.OPEN.String() {
-			return channel.ChannelID, nil
-		}
-	}
-
-	return "", fmt.Errorf("no open transfer channel found")
-}
-
-// spawntag:ics>

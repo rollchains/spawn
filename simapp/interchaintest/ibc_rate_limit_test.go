@@ -18,27 +18,29 @@ import (
 
 func TestIBCRateLimit(t *testing.T) {
 	t.Parallel()
+	ctx := context.Background()
+
+	cs := &DefaultChainSpec
+	cs.ModifyGenesis = cosmos.ModifyGenesis([]cosmos.GenesisKV{cosmos.NewGenesisKV("app_state.ratelimit.blacklisted_denoms", []string{cs.Denom})})
 
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
-		&DefaultChainSpec,
+		cs,
 		&ProviderChain, // spawntag:ics
 		// <spawntag:staking
 		func() *interchaintest.ChainSpec {
 			SecondChainSpec := &DefaultChainSpec
-			blacklistedDenoms := []string{SecondChainSpec.Denom}
-			SecondChainSpec.ModifyGenesis = cosmos.ModifyGenesis(
-				append(DefaultGenesis,
-					cosmos.NewGenesisKV("app_state.ratelimit.blacklisted_denoms", blacklistedDenoms),
-				),
-			)
+			// TODO: This should not be needed
+			// blacklistedDenoms := []string{SecondChainSpec.Denom}
+			// SecondChainSpec.ModifyGenesis = cosmos.ModifyGenesis(
+			// 	append(DefaultGenesis,
+			// 		cosmos.NewGenesisKV("app_state.ratelimit.blacklisted_denoms", blacklistedDenoms),
+			// 	),
+			// )
 			SecondChainSpec.ChainID += "2"
 			return SecondChainSpec
 		}(),
 		// spawntag:staking>
 	})
-
-	ctx := context.Background()
-	client, network := interchaintest.DockerSetup(t)
 
 	chains, err := cf.Chains(t.Name())
 	require.NoError(t, err)
@@ -47,6 +49,7 @@ func TestIBCRateLimit(t *testing.T) {
 	secondary := chains[1].(*cosmos.CosmosChain)
 
 	// Relayer Factory
+	client, network := interchaintest.DockerSetup(t)
 	r := interchaintest.NewBuiltinRelayerFactory(
 		ibc.CosmosRly,
 		zaptest.NewLogger(t, zaptest.Level(zapcore.DebugLevel)),
@@ -102,7 +105,8 @@ func TestIBCRateLimit(t *testing.T) {
 	// Get Channel ID
 	aInfo, err := r.GetChannels(ctx, eRep, chain.Config().ChainID)
 	require.NoError(t, err)
-	aChannelID := aInfo[0].ChannelID
+	aChannelID, err := getTransferChannel(aInfo)
+	require.NoError(t, err)
 	fmt.Println("aChannelID", aChannelID)
 
 	// Send Transaction
