@@ -43,6 +43,17 @@ def main():
         #
         "\n# GH; Minimal generation (i.e. no features used)",
         CmdCreator(
+            "spawndefaultfeatures",
+            POA,
+            "ibc-ratelimit,cosmwasm,wasm-light-client,ignite-cli".split(","),
+            "wasmd",
+            "appd",
+            "utoken",
+            "myghorg",
+        )
+        .set_push_to_gh()
+        .build(),
+        CmdCreator(
             "posminimal",
             POS,
             SupportedFeatures,
@@ -151,7 +162,7 @@ def main():
         .set_with_local_unit_test()
         .build(),
         CmdCreator(
-            "poawithmodules",
+            "poawithmoduleslong",
             POA,
             [],
             random_string(5, True),
@@ -173,7 +184,7 @@ def main():
             f"u{random_string(5, True)}",
             random_string(10, True),
         )
-        .set_custom_modules([f"{random_string(6, True)}" for _ in range(25)])
+        .set_custom_modules([f"{random_string(6, True)}" for _ in range(10)])
         .set_with_local_unit_test()
         .build(),
     ]
