@@ -29,7 +29,7 @@ var (
 
 	Denom   = "mydenom"
 	Name    = "appName"
-	ChainID = "chainid-1"
+	ChainID = "localchain-1"
 	Binary  = "wasmd"
 
 	Bech32 = "wasm"
