@@ -28,7 +28,6 @@ builds:
       - darwin_arm64
       - windows_amd64_v1
       - windows_arm64
-      - windows_386
     dir: .
     main: ./cmd/spawn
     binary: spawn
