@@ -74,7 +74,7 @@ func TestTokenFactory(t *testing.T) {
 
 	node := chain.GetNode()
 
-	tfDenom, _, err := node.TokenFactoryCreateDenom(ctx, user, "ictestdenom", 2_500_00)
+	tfDenom, _, err := node.TokenFactoryCreateDenom(ctx, user, "ictestdenom", 5_000_000)
 	t.Log("TF Denom: ", tfDenom)
 	require.NoError(t, err)
 
