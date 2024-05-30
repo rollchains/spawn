@@ -214,5 +214,5 @@ func getTransferChannel(channels []ibc.ChannelOutput) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("no open transfer channel found")
+	return "", fmt.Errorf("no open transfer channel found: %+v", channels)
 }
