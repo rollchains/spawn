@@ -16,6 +16,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	wasm "github.com/CosmWasm/wasmd/x/wasm/types"
+	ibcconntypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 	ibcconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 	globalfee "github.com/strangelove-ventures/globalfee/x/globalfee/types"
 	poa "github.com/strangelove-ventures/poa"
@@ -28,7 +29,7 @@ var (
 
 	Denom   = "mydenom"
 	Name    = "appName"
-	ChainID = "chainid-1"
+	ChainID = "localchain-1"
 	Binary  = "wasmd"
 
 	Bech32 = "wasm"
@@ -81,6 +82,14 @@ var (
 		NumValidators: &NumberVals,
 		NumFullNodes:  &NumberFullNodes,
 	}
+
+	SecondDefaultChainSpec = func() interchaintest.ChainSpec {
+		SecondChainSpec := DefaultChainSpec
+		SecondChainSpec.ChainID += "2"
+		SecondChainSpec.Name += "2"
+		SecondChainSpec.ChainName += "2"
+		return SecondChainSpec
+	}()
 
 	// cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr - test_node.sh
 	AccMnemonic  = "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry"
@@ -196,4 +205,14 @@ func TxCommandBuilderNode(ctx context.Context, node *cosmos.ChainNode, cmd []str
 
 	command = append(command, extraFlags...)
 	return command
+}
+
+func getTransferChannel(channels []ibc.ChannelOutput) (string, error) {
+	for _, channel := range channels {
+		if channel.PortID == "transfer" && channel.State == ibcconntypes.OPEN.String() {
+			return channel.ChannelID, nil
+		}
+	}
+
+	return "", fmt.Errorf("no open transfer channel found: %+v", channels)
 }

@@ -62,13 +62,13 @@ help: Makefile
 
 # ---- Developer Templates ----
 template-staking: install
-	spawn new myproject --debug --bech32=cosmos --bin=appd --disable=ics,poa
+	spawn new myproject --consensus=proof-of-stake --debug --bech32=cosmos --bin=appd --bypass-prompt
 
 template-poa: install
-	spawn new myproject --debug --no-git --bin=rolld --bech32=roll --denom=uroll --disable=ics
+	spawn new myproject --consensus=proof-of-authority --debug --no-git --bin=rolld --bech32=roll --denom=uroll --bypass-prompt
 
 template-ics: install
-	spawn new myproject --debug --no-git --bin=rolld --bech32=roll --denom=uroll --disable=globalfee,cosmwasm,wasm-lc,ignite,ibc-packetforward
+	spawn new myproject --consensus=interchain-security --debug --no-git --bin=rolld --bech32=roll --denom=uroll --bypass-prompt
 
 
 .DEFAULT_GOAL := install

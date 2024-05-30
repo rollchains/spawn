@@ -13,6 +13,7 @@ import (
 var (
 	TokenFactory       = "tokenfactory"
 	POA                = "poa"
+	POS                = "staking" // if ICS is used, we remove staking
 	GlobalFee          = "globalfee"
 	CosmWasm           = "cosmwasm"
 	WasmLC             = "wasmlc"
@@ -20,7 +21,6 @@ var (
 	IBCRateLimit       = "ibc-ratelimit"
 	Ignite             = "ignite"
 	InterchainSecurity = "ics"
-	Staking            = "staking" // if ICS is used, we remove staking
 
 	appGo   = path.Join("app", "app.go")
 	appAnte = path.Join("app", "ante.go")
@@ -29,7 +29,7 @@ var (
 // used for fuzz testing
 var AllFeatures = []string{
 	TokenFactory, POA, GlobalFee, CosmWasm, WasmLC,
-	PacketForward, IBCRateLimit, Ignite, InterchainSecurity, Staking,
+	PacketForward, IBCRateLimit, Ignite, InterchainSecurity, POS,
 }
 
 // Given a string, return the reduced name for the module
@@ -40,6 +40,8 @@ func AliasName(name string) string {
 		return "tokenfactory"
 	case POA, "proof-of-authority", "proofofauthority", "poauthority":
 		return POA
+	case POS, "proof-of-stake", "staking", "pos":
+		return POS
 	case GlobalFee, "global-fee":
 		return GlobalFee
 	case CosmWasm, "wasm", "cw":
@@ -51,12 +53,10 @@ func AliasName(name string) string {
 		return PacketForward
 	case Ignite, "ignite-cli":
 		return Ignite
-	case IBCRateLimit, "ibc-rate-limit":
+	case IBCRateLimit, "ibc-rate-limit", "ratelimit":
 		return IBCRateLimit
 	case InterchainSecurity, "interchain-security":
 		return InterchainSecurity
-	case Staking:
-		return Staking
 	default:
 		panic(fmt.Sprintf("AliasName: unknown feature to remove: %s", name))
 	}
@@ -69,10 +69,16 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		base := AliasName(name)
 
 		switch strings.ToLower(base) {
-		case TokenFactory:
-			fc.RemoveTokenFactory()
+		// consensus
 		case POA:
 			fc.RemovePOA()
+		case POS:
+			fc.RemoveStaking()
+		case InterchainSecurity:
+			fc.RemoveInterchainSecurity()
+		// modules
+		case TokenFactory:
+			fc.RemoveTokenFactory()
 		case GlobalFee:
 			fc.RemoveGlobalFee()
 		case CosmWasm:
@@ -85,10 +91,6 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 			fc.RemoveIBCRateLimit()
 		case Ignite:
 			fc.RemoveIgniteCLI()
-		case InterchainSecurity:
-			fc.RemoveInterchainSecurity()
-		case Staking:
-			fc.RemoveStaking()
 		default:
 			panic(fmt.Sprintf("unknown feature to remove %s", name))
 		}
@@ -210,13 +212,10 @@ func (fc *FileContent) RemovePacketForward() {
 	text := "packetforward"
 	fc.RemoveGoModImport("github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward")
 
-	fc.RemoveModuleFromText(text,
-		appGo,
-		path.Join("workflows", "interchaintest-e2e.yml"),
-	)
+	fc.RemoveModuleFromText(text, appGo)
 	fc.RemoveModuleFromText("PacketForward", appGo)
 
-	fc.DeleteFile(path.Join("interchaintest", "packetforward_test.go"))
+	fc.removePacketForwardTestOnly()
 }
 
 func (fc *FileContent) RemoveIBCRateLimit() {
@@ -224,8 +223,9 @@ func (fc *FileContent) RemoveIBCRateLimit() {
 	fc.RemoveGoModImport("github.com/Stride-Labs/ibc-rate-limiting")
 
 	fc.HandleCommentSwaps(text)
+	fc.RemoveTaggedLines(text, true)
 
-	fc.RemoveModuleFromText("RatelimitKeeper", path.Join("app", "app.go"))
+	fc.RemoveModuleFromText("RatelimitKeeper", appGo)
 	fc.RemoveModuleFromText(text,
 		appGo,
 		path.Join("workflows", "interchaintest-e2e.yml"),
@@ -294,13 +294,12 @@ func (fc *FileContent) RemoveStaking() {
 	// Since we will be using ICS (test_ics_node.sh)
 	fc.DeleteFile(path.Join("scripts", "test_node.sh"))
 
+	fc.removePacketForwardTestOnly()
+
 	// fix: make sh-testnet
 	if fc.ContainsPath("Makefile") {
 		fc.ReplaceAll("test_node.sh", "test_ics_node.sh")
 	}
-
-	// TODO: add ability to use # spawntag: instead of just // spawntag
-	fc.RemoveModuleFromText("ictest-basic", path.Join("workflows", "interchaintest-e2e.yml"))
 }
 
 func (fc *FileContent) RemoveMint() {
@@ -334,4 +333,13 @@ func (fc *FileContent) RemoveDistribution() {
 	fc.RemoveModuleFromText("distrtypes", appGo)
 	fc.RemoveModuleFromText("DistrKeeper", appGo)
 	fc.RemoveModuleFromText("distrkeeper", appGo)
+}
+
+// removePacketForwardTestOnly removes the interchaintest and workflow runner for PFM
+func (fc *FileContent) removePacketForwardTestOnly() {
+	text := "packetforward"
+	fc.RemoveModuleFromText(text,
+		path.Join("workflows", "interchaintest-e2e.yml"),
+	)
+	fc.DeleteFile(path.Join("interchaintest", "packetforward_test.go"))
 }

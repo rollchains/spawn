@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  GO_VERSION: 1.21.9
+  GO_VERSION: 1.22.3
   JQ_VERSION: '1.7'
   JQ_FORCE: false
 
@@ -50,14 +50,22 @@ jobs:
     needs: build-spawn
     uses: ./.github/workflows/reusable-e2e.yaml
     with:
-      id: Normal Staking
-      spawn-create-cmd: ./spawn new mychain --bypass-prompt --bech32=roll --bin=appd --no-git --org=rollchains-org --denom=uroll --debug --disable=ics
-      start-chain-cmd: HOME_DIR="~/.simapp" CHAIN_ID="local-1" BLOCK_TIME="2000ms" CLEAN=true sh scripts/test_node.sh &
+      id: Proof of Stake
+      spawn-create-cmd: ./spawn new mychain --consensus=proof-of-stake --bypass-prompt --bech32=prefix --bin=appd --no-git --org=rollchains-org --denom=uroll --debug --log-level=debug
+      start-chain-cmd: HOME_DIR="~/.simapp" CHAIN_ID="localchain-1" BLOCK_TIME="2000ms" CLEAN=true sh scripts/test_node.sh &
+
+  proof-of-authority:
+    needs: build-spawn
+    uses: ./.github/workflows/reusable-e2e.yaml
+    with:
+      id: Proof of Authority
+      spawn-create-cmd: ./spawn new mychain --consensus=proof-of-authority --bypass-prompt --bech32=cosmos --bin=appd --no-git --org=rollchains-org --denom=uroll --debug --log-level=debug
+      start-chain-cmd: HOME_DIR="~/.simapp" CHAIN_ID="localchain-1" BLOCK_TIME="2000ms" CLEAN=true sh scripts/test_node.sh &
 
   normal-ics:
     needs: build-spawn
     uses: ./.github/workflows/reusable-e2e.yaml
     with:
-      id: ICS
-      spawn-create-cmd: ./spawn new mychain --bin=appd --bypass-prompt --bech32=roll --no-git --org=rollchains-org --denom=uroll --debug
-      start-chain-cmd: HOME_DIR="~/.icsnetwork" CHAIN_ID="local-2" CLEAN=true BLOCK_TIME="500ms" sh scripts/test_ics_node.sh &
+      id: ICS - Cosmos Hub
+      spawn-create-cmd: ./spawn new mychain --consensus=ics --bin=appd --bypass-prompt --bech32=roll --no-git --org=rollchains-org --denom=uroll --debug --log-level=debug
+      start-chain-cmd: HOME_DIR="~/.icsnetwork" CHAIN_ID="localchain-2" CLEAN=true BLOCK_TIME="2000ms" sh scripts/test_ics_node.sh &

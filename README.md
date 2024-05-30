@@ -24,7 +24,7 @@ https://github.com/rollchains/spawn/assets/31943163/ecc21ce4-c42c-4ff2-8e73-897c
 
 ## Requirements
 
-- [`go 1.21+`](https://go.dev/doc/install)
+- [`go 1.22+`](https://go.dev/doc/install)
 - [`Docker`](https://docs.docker.com/get-docker/)
 
 [MacOS + Ubuntu Setup](./docs/SYSTEM_SETUP.md)
@@ -39,7 +39,7 @@ In this tutorial, we'll create and interact with a new Cosmos-SDK blockchain cal
 ```shell
 git clone https://github.com/rollchains/spawn.git
 cd spawn
-git checkout v0.50.1
+git checkout v0.50.2
 make install
 ```
 
@@ -49,10 +49,11 @@ make install
 GITHUB_USERNAME=rollchains
 
 spawn new rollchain \
+--consensus=proof-of-authority `# proof-of-authority,proof-of-stake,interchain-security` \
 --bech32=roll `# the prefix for addresses` \
 --denom=uroll `# the coin denomination to create` \
 --bin=rolld `# the name of the binary` \
---disabled=cosmwasm,globalfee `# disable features. [proof-of-authority,tokenfactory,globalfee,packetforward,cosmwasm,wasm-lc,ignite]` \
+--disabled=cosmwasm,globalfee `# disable features. [tokenfactory,globalfee,ibc-packetforward,ibc-ratelimit,cosmwasm,wasm-light-client,ignite-cli]` \
 --org=${GITHUB_USERNAME} `# the github username or organization to use for the module imports`
 ```
 
@@ -63,7 +64,11 @@ spawn new rollchain \
 ```shell
 cd rollchain
 
-# Starts an API at http://127.0.0.1:8080 by default to view endpoints.
+# Starts 2 networks for the IBC testnet at http://127.0.0.1:8080.
+# - Builds the docker image of your chain
+# - Launches a testnet with IBC automatically connected and relayed
+#
+# Note: you can run a single node, non IBC testnet, with `make sh-testnet`.
 make testnet
 ```
 
@@ -74,7 +79,7 @@ make testnet
 rolld keys list
 
 # send a transaction from one account to another
-rolld tx bank send acc0 $(rolld keys show acc1 -a) 1337uroll --chain-id=chainid-1
+rolld tx bank send acc0 $(rolld keys show acc1 -a) 1337uroll --chain-id=localchain-1
 
 # enter "y" to confirm the transaction
 # then query your balances tfor proof the transaction executed successfully
@@ -85,17 +90,17 @@ rolld q bank balances $(rolld keys show acc1 -a)
 
 ```shell
 # submit a cross chain transfer from acc0 to the other address
-rolld tx ibc-transfer transfer transfer channel-0 cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr 7uroll --from=acc0 --chain-id=chainid-1 --yes
+rolld tx ibc-transfer transfer transfer channel-0 cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr 7uroll --from=acc0 --chain-id=localchain-1 --yes
 
 # Query the other side to confirm it went through
 sleep 10
 
 # Interact with the other chain without having to install the cosmos binary
 # - Endpoints found at: GET http://127.0.0.1:8080/info
-local-ic interact localcosmos-1 query 'bank balances cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr'
+local-ic interact localcosmos-1 query 'bank balances cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr' --api-endpoint=http://127.0.0.1:8080
 ```
 
-6. Push your new chain to a new repository
+6. Push your new chain to a github repository
 
 ```shell
 # Create a new repository on GitHub from the gh cli

@@ -2,15 +2,15 @@
 # Run this script to quickly install, setup, and run the current version of the network.
 #
 # Examples:
-# CHAIN_ID="local-1" HOME_DIR="~/.simapp" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_ics_node.sh
-# CHAIN_ID="local-2" HOME_DIR="~/.simapp" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_ics_node.sh
+# CHAIN_ID="localchain-1" HOME_DIR="~/.simapp" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_ics_node.sh
+# CHAIN_ID="localchain-2" HOME_DIR="~/.simapp" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_ics_node.sh
 
 set -eu
 
-export KEY="user1"
-export KEY2="user2"
+export KEY="acc0"
+export KEY2="acc1"
 
-export CHAIN_ID=${CHAIN_ID:-"local-1"}
+export CHAIN_ID=${CHAIN_ID:-"localchain-1"}
 export MONIKER="localvalidator"
 export KEYALGO="secp256k1"
 export KEYRING=${KEYRING:-"test"}

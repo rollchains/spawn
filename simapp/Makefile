@@ -255,7 +255,7 @@ ictest-basic:
 
 ictest-ibc:
 	@echo "Running IBC e2e test"
-	@cd interchaintest && go test -race -v -run TestIBC .
+	@cd interchaintest && go test -race -v -run TestIBCBasic .
 
 ictest-wasm:
 	@echo "Running cosmwasm e2e test"
@@ -284,9 +284,9 @@ ictest-ratelimit:
 setup-testnet: mod-tidy is-localic-installed install local-image set-testnet-configs setup-testnet-keys
 
 # Run this before testnet keys are added
-# chainid-1 is used in the testnet.json
+# localchain-1 is used in the testnet.json
 set-testnet-configs:
-	wasmd config set client chain-id chainid-1
+	wasmd config set client chain-id localchain-1
 	wasmd config set client keyring-backend test
 	wasmd config set client output text
 
@@ -299,7 +299,7 @@ testnet: setup-testnet
 	spawn local-ic start testnet
 
 sh-testnet: mod-tidy
-	CHAIN_ID="local-1" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
+	CHAIN_ID="localchain-1" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
 
 .PHONY: setup-testnet set-testnet-configs testnet testnet-basic sh-testnet
 

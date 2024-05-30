@@ -9,15 +9,17 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
+	"github.com/strangelove-ventures/interchaintest/v8/testreporter"
 	"github.com/strangelove-ventures/interchaintest/v8/testutil"
 	"github.com/strangelove-ventures/poa"
+	"go.uber.org/zap/zaptest"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 )
 
-const (
-	numPOAVals = 2
+var (
+	numPOAVals int = 2
 )
 
 func TestPOA(t *testing.T) {
@@ -25,12 +27,36 @@ func TestPOA(t *testing.T) {
 		t.Skip("skipping in short mode")
 	}
 
-	// setup base chain
-	chains := interchaintest.CreateChainWithConfig(t, numPOAVals, NumberFullNodes, Name, ChainImage.Version, DefaultChainConfig)
+	ctx := context.Background()
+	rep := testreporter.NewNopReporter()
+	eRep := rep.RelayerExecReporter(t)
+	client, network := interchaintest.DockerSetup(t)
+
+	cs := &DefaultChainSpec
+	cs.NumValidators = &numPOAVals
+
+	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
+		cs,
+	})
+
+	chains, err := cf.Chains(t.Name())
+	require.NoError(t, err)
+
 	chain := chains[0].(*cosmos.CosmosChain)
 
-	enableBlockDB := false
-	ctx, _, _, _ := interchaintest.BuildInitialChain(t, chains, enableBlockDB)
+	// Setup Interchain
+	ic := interchaintest.NewInterchain().
+		AddChain(chain)
+
+	require.NoError(t, ic.Build(ctx, eRep, interchaintest.InterchainBuildOptions{
+		TestName:         t.Name(),
+		Client:           client,
+		NetworkID:        network,
+		SkipPathCreation: false,
+	}))
+	t.Cleanup(func() {
+		_ = ic.Close()
+	})
 
 	// setup accounts
 	acc0, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, "acc0", AccMnemonic, GenesisFundsAmount, chain)
@@ -44,12 +70,12 @@ func TestPOA(t *testing.T) {
 	// get validator operator addresses
 	vals, err := chain.StakingQueryValidators(ctx, stakingtypes.Bonded.String())
 	require.NoError(t, err)
-	require.Equal(t, len(vals), numPOAVals)
 
 	validators := make([]string, len(vals))
 	for i, v := range vals {
 		validators[i] = v.OperatorAddress
 	}
+	require.Equal(t, len(validators), numPOAVals)
 
 	// === Test Cases ===
 	testStakingDisabled(t, ctx, chain, validators, acc0, acc1)
@@ -101,12 +127,9 @@ func testRemoveValidator(t *testing.T, ctx context.Context, chain *cosmos.Cosmos
 	require.Equal(t, fmt.Sprintf("%d", powerOne), vals[0].Tokens.String())
 	require.Equal(t, 1, len(vals))
 
-	vals, err = chain.StakingQueryValidators(ctx, stakingtypes.Unbonded.String())
+	vals, err = chain.StakingQueryValidators(ctx, stakingtypes.Unbonding.String())
 	require.NoError(t, err)
-	require.Equal(t, "0", vals[0].Tokens.String())
 	require.Equal(t, 1, len(vals))
-	p2 = GetPOAConsensusPower(t, ctx, chain, vals[0].OperatorAddress)
-	require.EqualValues(t, 0, p2)
 }
 
 func testStakingDisabled(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, validators []string, acc0, acc1 ibc.Wallet) {

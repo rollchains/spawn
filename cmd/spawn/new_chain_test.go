@@ -24,7 +24,7 @@ func TestDisabledGeneration(t *testing.T) {
 
 	allButStaking := make([]string, 0, len(spawn.AllFeatures)-1)
 	for _, f := range spawn.AllFeatures {
-		if f != spawn.Staking {
+		if f != spawn.POS {
 			allButStaking = append(allButStaking, f)
 		}
 	}
@@ -75,6 +75,7 @@ func TestDisabledGeneration(t *testing.T) {
 	}
 
 	for _, c := range disabledCases {
+		c := c
 		name := "spawnunittest" + c.Name
 		dc := c.Disabled
 

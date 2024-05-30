@@ -175,12 +175,13 @@ import (
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
-const appName = "CosmWasmApp"
+const (
+	appName      = "CosmosSimApp"
+	NodeDir      = ".myapplicationd"
+	Bech32Prefix = "mybechprefix"
+)
 
 var (
-	NodeDir      = ".wasmd"
-	Bech32Prefix = "wasm"
-
 	capabilities = strings.Join(
 		[]string{
 			"iterator",
@@ -718,7 +719,7 @@ func NewChainApp(
 			tokenfactorytypes.EnableForceTransfer,
 			tokenfactorytypes.EnableSetMetadata,
 			// tokenfactorytypes.EnableSudoMint,
-			tokenfactorytypes.EnableCommunityPoolFeeFunding, // spawntag:ics
+			tokenfactorytypes.EnableCommunityPoolFeeFunding, // spawntag:staking
 		},
 		tokenfactorykeeper.DefaultIsSudoAdminFunc,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
@@ -956,7 +957,13 @@ func NewChainApp(
 		circuit.NewAppModule(appCodec, app.CircuitKeeper),
 		// non sdk modules
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
-		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
+		// <spawntag:wasm
+		wasm.NewAppModule(appCodec, &app.WasmKeeper,
+			//app.StakingKeeper, // ?spawntag:ics
+			app.ConsumerKeeper, // spawntag:ics
+			app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName),
+		),
+		// spawntag:wasm>
 		ibc.NewAppModule(app.IBCKeeper),
 		transfer.NewAppModule(app.TransferKeeper),
 		ibcfee.NewAppModule(app.IBCFeeKeeper),

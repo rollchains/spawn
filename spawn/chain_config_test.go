@@ -111,18 +111,18 @@ func TestNormalizedNames(t *testing.T) {
 		},
 		{
 			name:     "remove staking and POA due to parentDeps",
-			disabled: []string{spawn.Staking},
-			expected: []string{spawn.POA, spawn.Staking},
+			disabled: []string{spawn.POS},
+			expected: []string{spawn.POA, spawn.POS},
 			parentDepPairs: map[string][]string{
-				spawn.Staking: {spawn.POA},
+				spawn.POS: {spawn.POA},
 			},
 		},
 		{
 			name:     "remove what is expected",
-			disabled: []string{spawn.POA, spawn.Staking},
-			expected: []string{spawn.POA, spawn.Staking},
+			disabled: []string{spawn.POA, spawn.POS},
+			expected: []string{spawn.POA, spawn.POS},
 			parentDepPairs: map[string][]string{
-				spawn.Staking: {spawn.POA},
+				spawn.POS: {spawn.POA},
 			},
 		},
 		{
@@ -130,7 +130,7 @@ func TestNormalizedNames(t *testing.T) {
 			disabled: []string{spawn.InterchainSecurity, spawn.POA},
 			expected: []string{spawn.InterchainSecurity, spawn.POA},
 			parentDepPairs: map[string][]string{
-				spawn.Staking: {spawn.POA},
+				spawn.POS: {spawn.POA},
 			},
 		},
 	}

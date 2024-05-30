@@ -2,6 +2,7 @@ package spawn
 
 import (
 	"fmt"
+	"go/format"
 	"log/slog"
 	"os"
 	"path"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/cosmos/btcutil/bech32"
+	"golang.org/x/tools/imports"
 )
 
 var (
@@ -128,9 +130,9 @@ func (fc *FileContent) ReplaceDockerFile(cfg *NewChainConfig) {
 
 func (fc *FileContent) ReplaceApp(cfg *NewChainConfig) {
 	if fc.IsPath(path.Join("app", "app.go")) {
-		fc.ReplaceAll(".wasmd", cfg.HomeDir)
-		fc.ReplaceAll(`CosmWasmApp`, cfg.ProjectName)
-		fc.ReplaceAll(`Bech32Prefix = "wasm"`, fmt.Sprintf(`Bech32Prefix = "%s"`, cfg.Bech32Prefix))
+		fc.ReplaceAll(".myapplicationd", cfg.HomeDir)
+		fc.ReplaceAll(`CosmosSimApp`, cfg.ProjectName)
+		fc.ReplaceAll(`mybechprefix`, cfg.Bech32Prefix)
 	}
 }
 
@@ -219,6 +221,27 @@ func (fc *FileContent) RemoveGoModImport(importPath string) {
 
 	fc.Contents = strings.Join(newLines, "\n")
 
+}
+
+func (fc *FileContent) FormatGoFile() error {
+	// Removes unused imports & tidies up the files
+	if strings.HasSuffix(fc.NewPath, ".go") && len(fc.Contents) > 0 {
+		newSrc, err := imports.Process(fc.NewPath, []byte(fc.Contents), nil)
+		if err != nil {
+			fc.Logger.Error("error processing imports", "err", err, "file", fc.NewPath)
+			return fmt.Errorf("error processing imports: %w", err)
+		}
+
+		bz, err := format.Source(newSrc)
+		if err != nil {
+			fc.Logger.Error("error formatting go file", "err", err, "file", fc.NewPath)
+			return fmt.Errorf("error formatting go file: %w", err)
+		}
+
+		fc.Contents = string(bz)
+	}
+
+	return nil
 }
 
 func (fc *FileContent) Save() error {

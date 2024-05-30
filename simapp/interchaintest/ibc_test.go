@@ -20,63 +20,57 @@ const (
 	ibcPath = "ibc-path"
 )
 
-func TestIBC(t *testing.T) {
+func TestIBCBasic(t *testing.T) {
 	t.Parallel()
+
 	ctx := context.Background()
+	rep := testreporter.NewNopReporter()
+	eRep := rep.RelayerExecReporter(t)
+	client, network := interchaintest.DockerSetup(t)
 
-	cfgA := DefaultChainConfig
-	cfgA.ChainID = cfgA.ChainID + "-1"
+	cs := &DefaultChainSpec
+	cs.ModifyGenesis = cosmos.ModifyGenesis([]cosmos.GenesisKV{cosmos.NewGenesisKV("app_state.ratelimit.blacklisted_denoms", []string{})}) // spawntag:ratelimit
 
-	cfgB := DefaultChainConfig
-	cfgB.ChainID = cfgB.ChainID + "-2"
-
-	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t, zaptest.Level(zapcore.DebugLevel)), []*interchaintest.ChainSpec{
-		{
-			Name:          DefaultChainConfig.Name,
-			Version:       ChainImage.Version,
-			ChainName:     cfgA.ChainID,
-			NumValidators: &NumberVals,
-			NumFullNodes:  &NumberFullNodes,
-			ChainConfig:   cfgA,
-		},
-		{
-			Name:          DefaultChainConfig.Name,
-			Version:       ChainImage.Version,
-			ChainName:     cfgB.ChainID,
-			NumValidators: &NumberVals,
-			NumFullNodes:  &NumberFullNodes,
-			ChainConfig:   cfgB,
-		},
+	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
+		cs,
+		&ProviderChain,          // spawntag:ics
+		&SecondDefaultChainSpec, // spawntag:staking
 	})
 
 	chains, err := cf.Chains(t.Name())
 	require.NoError(t, err)
+
 	chainA, chainB := chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain)
 
 	// Relayer Factory
-	client, network := interchaintest.DockerSetup(t)
-	rf := interchaintest.NewBuiltinRelayerFactory(
+	r := interchaintest.NewBuiltinRelayerFactory(
 		ibc.CosmosRly,
 		zaptest.NewLogger(t, zaptest.Level(zapcore.DebugLevel)),
 		interchaintestrelayer.CustomDockerImage(RelayerRepo, RelayerVersion, "100:1000"),
 		interchaintestrelayer.StartupFlags("--processor", "events", "--block-history", "200"),
-	)
-
-	r := rf.Build(t, client, network)
+	).Build(t, client, network)
 
 	ic := interchaintest.NewInterchain().
 		AddChain(chainA).
 		AddChain(chainB).
-		AddRelayer(r, "relayer").
-		AddLink(interchaintest.InterchainLink{
-			Chain1:  chainA,
-			Chain2:  chainB,
-			Relayer: r,
-			Path:    ibcPath,
-		})
+		AddRelayer(r, "relayer")
 
-	rep := testreporter.NewNopReporter()
-	eRep := rep.RelayerExecReporter(t)
+	// <spawntag:staking
+	ic = ic.AddLink(interchaintest.InterchainLink{
+		Chain1:  chainA,
+		Chain2:  chainB,
+		Relayer: r,
+		Path:    ibcPath,
+	})
+	// spawntag:staking>
+	// <spawntag:ics
+	ic = ic.AddProviderConsumerLink(interchaintest.ProviderConsumerLink{
+		Consumer: chainA,
+		Provider: chainB,
+		Relayer:  r,
+		Path:     ibcPath,
+	})
+	// spawntag:ics>
 
 	// Build interchain
 	require.NoError(t, ic.Build(ctx, eRep, interchaintest.InterchainBuildOptions{
@@ -85,6 +79,8 @@ func TestIBC(t *testing.T) {
 		NetworkID:        network,
 		SkipPathCreation: false,
 	}))
+
+	require.NoError(t, chainB.FinishICSProviderSetup(ctx, r, eRep, ibcPath)) // spawntag:ics
 
 	// Create and Fund User Wallets
 	fundAmount := math.NewInt(10_000_000)
@@ -99,11 +95,13 @@ func TestIBC(t *testing.T) {
 	// Get Channel ID
 	aInfo, err := r.GetChannels(ctx, eRep, chainA.Config().ChainID)
 	require.NoError(t, err)
-	aChannelID := aInfo[0].ChannelID
+	aChannelID, err := getTransferChannel(aInfo)
+	require.NoError(t, err)
 
 	bInfo, err := r.GetChannels(ctx, eRep, chainB.Config().ChainID)
 	require.NoError(t, err)
-	bChannelID := bInfo[0].ChannelID
+	bChannelID, err := getTransferChannel(bInfo)
+	require.NoError(t, err)
 
 	// Send Transaction
 	amountToSend := math.NewInt(1_000_000)

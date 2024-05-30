@@ -3,18 +3,17 @@ package spawn
 import (
 	"embed"
 	"fmt"
-	"go/format"
 	"io/fs"
 	"log/slog"
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/rollchains/spawn/simapp"
 	localictypes "github.com/strangelove-ventures/interchaintest/local-interchain/interchain/types"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
-	"golang.org/x/tools/imports"
 )
 
 var (
@@ -78,8 +77,8 @@ func (cfg *NewChainConfig) SetProperFeaturePairs() {
 
 	// TODO: maybe we allow so democratic consumers are allowed?
 	// Remove staking if ICS is in use
-	if isUsingICS && !cfg.IsFeatureDisabled(Staking) {
-		d = append(d, Staking)
+	if isUsingICS && !cfg.IsFeatureDisabled(POS) {
+		d = append(d, POS)
 	}
 
 	cfg.DisabledModules = d
@@ -141,7 +140,6 @@ func (cfg *NewChainConfig) Validate() error {
 
 func (cfg *NewChainConfig) AnnounceSuccessfulBuild() {
 	projName := cfg.ProjectName
-	// bin := cfg.BinDaemon
 
 	// no logger here, straight to stdout
 	fmt.Printf("\n🎉 New blockchain '%s' generated!\n", projName)
@@ -167,25 +165,33 @@ func (cfg *NewChainConfig) NewChain() {
 	logger.Debug("Disabled features", "features", cfg.DisabledModules)
 
 	if err := os.MkdirAll(NewDirName, 0755); err != nil {
-		panic(err)
+		logger.Error("Error creating directory", "err", err)
+		return
 	}
 
 	if err := cfg.SetupMainChainApp(); err != nil {
-		logger.Error("Error setting up main chain app", "err", err)
+		logger.Error("Error setting up main chain app", "err", err, "file", debugErrorFile(logger, NewDirName))
+		return
 	}
 
 	if err := cfg.SetupInterchainTest(); err != nil {
-		logger.Error("Error setting up interchain test", "err", err)
+		logger.Error("Error setting up interchain test", "err", err, "file", debugErrorFile(logger, NewDirName))
+		return
 	}
 
 	// setup local-interchain testnets
 	// *testnet.json (chains/ directory)
 	cfg.SetupLocalInterchainJSON()
 
+	cfg.MakeModTidy()
+
 	if !cfg.IgnoreGitInit {
 		cfg.GitInitNewProjectRepo()
 	}
 }
+
+// errFileText is used to store the contents of a failed file on save to help with debugging
+var errFileText = ""
 
 func (cfg *NewChainConfig) SetupMainChainApp() error {
 	newDirName := cfg.ProjectName
@@ -215,24 +221,16 @@ func (cfg *NewChainConfig) SetupMainChainApp() error {
 		// Removes any modules we care nothing about
 		fc.RemoveDisabledFeatures(cfg)
 
-		// Removes unused imports & tidies up the files
-		if strings.HasSuffix(fc.NewPath, ".go") && len(fc.Contents) > 0 {
-			newSrc, err := imports.Process(fc.NewPath, []byte(fc.Contents), nil)
-			if err != nil {
-				cfg.Logger.Error("error processing imports", "err", err, "file", fc.NewPath)
-				return fc.Save()
-			}
-
-			bz, err := format.Source(newSrc)
-			if err != nil {
-				cfg.Logger.Error("error formatting go file", "err", err, "file", fc.NewPath)
-				return fc.Save()
-			}
-
-			fc.Contents = string(bz)
+		errFileText = fc.Contents
+		if err := fc.FormatGoFile(); err != nil {
+			return err
 		}
 
-		return fc.Save()
+		if err := fc.Save(); err != nil {
+			return err
+		}
+
+		return nil
 	})
 }
 
@@ -276,6 +274,11 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 
 		// Removes any modules references after we modify interchaintest values
 		fc.RemoveDisabledFeatures(cfg)
+
+		errFileText = fc.Contents
+		if err := fc.FormatGoFile(); err != nil {
+			return err
+		}
 
 		return fc.Save()
 	})
@@ -332,4 +335,23 @@ func GetFileContent(logger *slog.Logger, newFilePath string, fs embed.FS, relPat
 	}
 
 	return fc, nil
+}
+
+// debugErrorFile saves the errored file to a debug directory for easier debugging.
+// Returning the path to the file.
+func debugErrorFile(logger *slog.Logger, newDirname string) string {
+	debugDir := "debugging"
+	fname := fmt.Sprintf("debug-error-%s-%s.go", newDirname, time.Now().Format("2006-01-02-15-04-05"))
+
+	if err := os.MkdirAll(debugDir, 0755); err != nil {
+		logger.Error("Error creating debug directory", "err", err)
+		return ""
+	}
+
+	fullPath := path.Join(debugDir, fname)
+	if err := os.WriteFile(fullPath, []byte(errFileText), 0644); err != nil {
+		logger.Error("Error saving debug file", "err", err)
+	}
+
+	return fullPath
 }
