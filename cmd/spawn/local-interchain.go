@@ -27,7 +27,7 @@ var LocalICCmd = &cobra.Command{
 	Short: "Local Interchain",
 	Long:  "Wrapper for Local Interchain. Download with `make get-localic`",
 	Example: `  - spawn local-ic chains
-  - spawn local-ic start ibc-testnet
+  - spawn local-ic start testnet
   - spawn local-ic interact localcosmos-1 query 'bank balances cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr'`,
 	Run: func(cmd *cobra.Command, args []string) {
 		debugBinaryLoc, _ := cmd.Flags().GetBool(FlagLocationPath)
