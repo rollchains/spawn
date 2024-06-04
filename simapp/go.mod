@@ -11,9 +11,6 @@ replace (
 	github.com/ethos-works/ethos-avs => /home/reece/Desktop/Programming/Go/ethos-stake/ethos-mono-repo/ethos-avs
 	github.com/ethos-works/ethos/ethos-chain => /home/reece/Desktop/Programming/Go/ethos-stake/ethos-mono-repo/ethos-chain
 	github.com/spf13/viper => github.com/spf13/viper v1.17.0 // v1.18+ breaks app overrides
-
-	// https://github.com/strangelove-ventures/tokenfactory/pull/10
-	github.com/strangelove-ventures/tokenfactory => /home/reece/Desktop/Programming/Go/tokenfactory
 )
 
 replace (
@@ -71,7 +68,7 @@ require (
 	github.com/spf13/viper v1.18.2
 	github.com/strangelove-ventures/globalfee v0.50.1
 	github.com/strangelove-ventures/poa v0.50.1
-	github.com/strangelove-ventures/tokenfactory v0.50.1
+	github.com/strangelove-ventures/tokenfactory v0.50.2-0.20240604165408-ec1c4eeb4ead
 	github.com/stretchr/testify v1.9.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240318140521-94a12d6c2237
 	google.golang.org/grpc v1.64.0
