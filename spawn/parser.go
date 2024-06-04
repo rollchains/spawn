@@ -26,6 +26,11 @@ const (
 	MultiLineEndFormat = StdFormat + ">"
 )
 
+func (fc *FileContent) HandleAllTagged(name string) {
+	fc.HandleCommentSwaps(name)
+	fc.RemoveTaggedLines(name, true)
+}
+
 // Sometimes we remove a module line and would like to swap it for another.
 func (fc *FileContent) HandleCommentSwaps(name string) {
 	splitContent := strings.Split(fc.Contents, "\n")
@@ -38,7 +43,7 @@ func (fc *FileContent) HandleCommentSwaps(name string) {
 		}
 
 		// removes the // spawntag:[name] comment from the end of the source code
-		line = RemoveSpawnTagLineComment(line, tag)
+		line = removeSpawnTagLineComment(line, tag)
 
 		// uncomments the line (to expose the source code for application usage)
 		line = uncommentLineSource(line)
@@ -89,7 +94,7 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 				continue
 			}
 
-			line = RemoveSpawnTagLineComment(line, name)
+			line = removeSpawnTagLineComment(line, name)
 		}
 
 		newContent = append(newContent, line)
@@ -99,7 +104,7 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 }
 
 // removeSpawnTagLineComment removes just the spawntag comment from a line of code.
-func RemoveSpawnTagLineComment(line string, tag string) string {
+func removeSpawnTagLineComment(line string, tag string) string {
 	// QOL for us to not tear our hair out if we have a space or not
 	// Could do this for all contents on load?
 	line = strings.ReplaceAll(line, "//spawntag:", ExpectedFormat)
