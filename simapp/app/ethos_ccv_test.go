@@ -8,12 +8,13 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	cometbfttypes "github.com/cometbft/cometbft/abci/types"
 	dbm "github.com/cosmos/cosmos-db"
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
-	providerApp "github.com/ethos-works/ethos/ethos-chain/testapps/provider"
 
+	providerApp "github.com/ethos-works/ethos/ethos-chain/testapps/provider"
 	"github.com/ethos-works/ethos/ethos-chain/tests/integration"
 	icstestingutils "github.com/ethos-works/ethos/ethos-chain/testutil/ibc_testing"
 	consumertypes "github.com/ethos-works/ethos/ethos-chain/x/ccv/consumer/types"
@@ -31,8 +32,10 @@ func init() {
 	// IMPORTANT: the concrete app types passed in as type parameters here must match the
 	// concrete app types returned by the relevant app initers.
 	ccvSuite = integration.NewCCVTestSuite[*providerApp.App, *ChainApp](
-		// Pass in ibctesting.AppIniters for gaia (provider) and consumer.
-		icstestingutils.ProviderAppIniter, SetupValSetAppIniter, []string{})
+		// Pass in ibctesting.AppIniters for ethos (provider) and consumer.
+		// TODO: add back as many test as we can
+		icstestingutils.ProviderAppIniter, SetupValSetAppIniter, []string{},
+	)
 }
 
 func TestCCVTestSuite(t *testing.T) {
@@ -54,12 +57,11 @@ func SetupTestingApp(initValUpdates []cometbfttypes.ValidatorUpdate) func() (ibc
 		testApp := NewChainApp(
 			log.NewNopLogger(), db, nil, false, emptyAppOpts,
 			[]wasmkeeper.Option{}, // spawntag:wasm
+			baseapp.SetChainID(SimAppChainID),
 		)
 		encoding := app.AppCodec()
 
-		// we need to set up a TestInitChainer where we can redefine MaxBlockGas in ConsensusParamsKeeper
 		testApp.SetInitChainer(testApp.InitChainer)
-		// and then we manually init baseapp and load states
 		testApp.LoadLatestVersion()
 
 		genesisState := app.DefaultGenesis()

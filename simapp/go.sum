@@ -1804,8 +1804,6 @@ github.com/strangelove-ventures/globalfee v0.50.1 h1:UkRoJOFNiswmbAxaTPUI1HndTxQ
 github.com/strangelove-ventures/globalfee v0.50.1/go.mod h1:PSXvznw0SrYj0M36vfnUf5+BVuPJgY58do+wU7HpC2Y=
 github.com/strangelove-ventures/poa v0.50.1 h1:84OjmMrJEvQxfNKsgUW4aCeeqTqA0dswCAF7J+017Dg=
 github.com/strangelove-ventures/poa v0.50.1/go.mod h1:Jmdk38G8DN3rrvPfQwVF60uUzVmn4Q7k2N8Q5eSRb6Y=
-github.com/strangelove-ventures/tokenfactory v0.50.1 h1:4P+wux9HEk+apmT3nrKsuCvPbWFNOHApaYYsqX5/zY8=
-github.com/strangelove-ventures/tokenfactory v0.50.1/go.mod h1:VIByIP8F8jJz8Exk8RrPwJZnyhAnvD6dD7a6tqHOcGY=
 github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
 github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
 github.com/streadway/handy v0.0.0-20190108123426-d5acb3125c2a/go.mod h1:qNTQ5P5JnDBl6z3cMAg/SywNDC5ABu5ApDIw6lUbRmI=

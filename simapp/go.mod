@@ -11,6 +11,9 @@ replace (
 	github.com/ethos-works/ethos-avs => /home/reece/Desktop/Programming/Go/ethos-stake/ethos-mono-repo/ethos-avs
 	github.com/ethos-works/ethos/ethos-chain => /home/reece/Desktop/Programming/Go/ethos-stake/ethos-mono-repo/ethos-chain
 	github.com/spf13/viper => github.com/spf13/viper v1.17.0 // v1.18+ breaks app overrides
+
+	// https://github.com/strangelove-ventures/tokenfactory/pull/10
+	github.com/strangelove-ventures/tokenfactory => /home/reece/Desktop/Programming/Go/tokenfactory
 )
 
 replace (

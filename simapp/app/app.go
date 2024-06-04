@@ -1112,9 +1112,8 @@ func NewChainApp(
 
 	app.ModuleManager.RegisterInvariants(app.CrisisKeeper)
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
-	err = app.ModuleManager.RegisterServices(app.configurator)
-	if err != nil {
-		panic(err)
+	if err = app.ModuleManager.RegisterServices(app.configurator); err != nil {
+		panic(fmt.Errorf("failed to RegisterServices: %w", err))
 	}
 
 	// RegisterUpgradeHandlers is used for registering any on-chain upgrades.
