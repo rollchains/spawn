@@ -11,26 +11,33 @@ import (
 // - Handle ComentSwaps before removing lines
 
 var (
-	TokenFactory       = "tokenfactory"
+	// Consensus
 	POA                = "poa"
 	POS                = "staking" // if ICS is used, we remove staking
-	GlobalFee          = "globalfee"
-	CosmWasm           = "cosmwasm"
-	WasmLC             = "wasmlc"
-	PacketForward      = "packetforward"
-	IBCRateLimit       = "ibc-ratelimit"
-	Ignite             = "ignite"
 	InterchainSecurity = "ics"
+	EthosICS           = "ethos-ics"
+
+	// Modules
+	TokenFactory  = "tokenfactory"
+	GlobalFee     = "globalfee"
+	CosmWasm      = "cosmwasm"
+	WasmLC        = "wasmlc"
+	PacketForward = "packetforward"
+	IBCRateLimit  = "ibc-ratelimit"
+
+	// Other
+	Ignite = "ignite"
 
 	appGo   = path.Join("app", "app.go")
 	appAnte = path.Join("app", "ante.go")
-)
 
-// used for fuzz testing
-var AllFeatures = []string{
-	TokenFactory, POA, GlobalFee, CosmWasm, WasmLC,
-	PacketForward, IBCRateLimit, Ignite, InterchainSecurity, POS,
-}
+	// TODO: modify this to have allconsensus as well? then can reduce
+	// used for fuzz testing
+	AllFeatures = []string{
+		TokenFactory, POA, GlobalFee, CosmWasm, WasmLC,
+		PacketForward, IBCRateLimit, Ignite, InterchainSecurity, POS,
+	}
+)
 
 // Given a string, return the reduced name for the module
 // e.g. "tf" and "token-factory" both return "tokenfactory"
@@ -40,6 +47,8 @@ func AliasName(name string) string {
 		return "tokenfactory"
 	case POA, "proof-of-authority", "proofofauthority", "poauthority":
 		return POA
+	case EthosICS, "ethos", "ethosics":
+		return EthosICS
 	case POS, "proof-of-stake", "staking", "pos":
 		return POS
 	case GlobalFee, "global-fee":
@@ -76,6 +85,8 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 			fc.RemoveStaking()
 		case InterchainSecurity:
 			fc.RemoveInterchainSecurity()
+		case EthosICS:
+			fc.RemoveEthosInterchainSecurity()
 		// modules
 		case TokenFactory:
 			fc.RemoveTokenFactory()
@@ -262,6 +273,29 @@ func (fc *FileContent) RemoveInterchainSecurity() {
 
 	// TODO: remove any ictest related
 
+}
+
+func (fc *FileContent) RemoveEthosInterchainSecurity() {
+	// TODO: I think this will depend on ICS, and if used we add it from comments vs subtract
+	// text := "ethos-ics"
+
+	// fc.RemoveGoModImport("github.com/cosmos/interchain-security")
+	// fc.HandleCommentSwaps(text)
+	// fc.RemoveTaggedLines(text, true)
+
+	// remove from e2e
+	// fc.RemoveModuleFromText(text, path.Join("workflows", "interchaintest-e2e.yml"))
+
+	// fc.RemoveModuleFromText("ibcconsumerkeeper.NewNonZeroKeeper", appGo)
+	// fc.RemoveModuleFromText("ConsumerKeeper", appGo)
+	// fc.RemoveModuleFromText("ScopedIBCConsumerKeeper", appGo)
+
+	// fc.RemoveLineWithAnyMatch("ibcconsumerkeeper")
+	// fc.RemoveLineWithAnyMatch("ibcconsumertypes")
+	// fc.RemoveLineWithAnyMatch("consumerante")
+
+	// fc.DeleteFile(path.Join("cmd", "wasmd", "ics_consumer.go"))
+	// fc.DeleteFile(path.Join("scripts", "test_ics_node.sh"))
 }
 
 // Remove staking module if using a custom impl like the ICS Consumer

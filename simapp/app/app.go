@@ -169,9 +169,9 @@ import (
 	ratelimitkeeper "github.com/Stride-Labs/ibc-rate-limiting/ratelimit/keeper"
 	ratelimittypes "github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
 
-	ibcconsumer "github.com/cosmos/interchain-security/v5/x/ccv/consumer"
-	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
-	ibcconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	ibcconsumer "github.com/ethos-works/ethos/ethos-chain/x/ccv/consumer"
+	ibcconsumerkeeper "github.com/ethos-works/ethos/ethos-chain/x/ccv/consumer/keeper"
+	ibcconsumertypes "github.com/ethos-works/ethos/ethos-chain/x/ccv/consumer/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
@@ -534,8 +534,10 @@ func NewChainApp(
 	// ConsumerKeeper communication over IBC is not affected by these changes
 	app.ConsumerKeeper = ibcconsumerkeeper.NewNonZeroKeeper(
 		appCodec,
-		keys[ibcconsumertypes.StoreKey],
-		app.GetSubspace(ibcconsumertypes.ModuleName),
+		// CosmosHub
+		// keys[ibcconsumertypes.StoreKey],
+		//app.GetSubspace(ibcconsumertypes.ModuleName),
+		runtime.NewKVStoreService(keys[ibcconsumertypes.StoreKey]), // ethos
 	)
 
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
@@ -624,8 +626,9 @@ func NewChainApp(
 	// initialize the actual ConsumerKeeper
 	app.ConsumerKeeper = ibcconsumerkeeper.NewKeeper(
 		appCodec,
-		keys[ibcconsumertypes.StoreKey],
-		app.GetSubspace(ibcconsumertypes.ModuleName),
+		// keys[ibcconsumertypes.StoreKey], // cosmoshub
+		runtime.NewKVStoreService(keys[ibcconsumertypes.StoreKey]), // ethos
+		// app.GetSubspace(ibcconsumertypes.ModuleName), // cosmoshub
 		scopedIBCConsumerKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
@@ -1350,6 +1353,11 @@ func (app *ChainApp) LegacyAmino() *codec.LegacyAmino {
 // for modules to register their own custom testing types.
 func (app *ChainApp) AppCodec() codec.Codec {
 	return app.appCodec
+}
+
+// GetTxConfig returns the application's tx config.
+func (app *ChainApp) GetTxConfig() client.TxConfig {
+	return app.txConfig
 }
 
 // InterfaceRegistry returns ChainApp's InterfaceRegistry

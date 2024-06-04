@@ -22,8 +22,8 @@ import (
 	globalfeeante "github.com/strangelove-ventures/globalfee/x/globalfee/ante"
 	globalfeekeeper "github.com/strangelove-ventures/globalfee/x/globalfee/keeper"
 
-	consumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"
-	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
+	consumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante" // TODO: ethos??
+	ibcconsumerkeeper "github.com/ethos-works/ethos/ethos-chain/x/ccv/consumer/keeper"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
