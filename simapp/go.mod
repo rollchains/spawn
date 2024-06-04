@@ -5,7 +5,7 @@ go 1.22.3
 // overrides
 replace (
 	cosmossdk.io/core => cosmossdk.io/core v0.11.0
-	github.com/cosmos/cosmos-sdk => github.com/rollchains/cosmos-sdk v0.50.6
+	github.com/cosmos/cosmos-sdk => github.com/rollchains/cosmos-sdk v0.50.7
 	github.com/spf13/viper => github.com/spf13/viper v1.17.0 // v1.18+ breaks app overrides
 )
 
@@ -23,7 +23,7 @@ replace (
 )
 
 require (
-	cosmossdk.io/api v0.7.4
+	cosmossdk.io/api v0.7.5
 	cosmossdk.io/client/v2 v2.0.0-beta.1
 	cosmossdk.io/collections v0.4.0
 	cosmossdk.io/core v0.12.0
@@ -38,7 +38,7 @@ require (
 	cosmossdk.io/x/evidence v0.1.0
 	cosmossdk.io/x/feegrant v0.1.0
 	cosmossdk.io/x/nft v0.1.0
-	cosmossdk.io/x/tx v0.13.2
+	cosmossdk.io/x/tx v0.13.3
 	cosmossdk.io/x/upgrade v0.1.1
 	github.com/CosmWasm/wasmd v0.50.0
 	github.com/CosmWasm/wasmvm v1.5.2
