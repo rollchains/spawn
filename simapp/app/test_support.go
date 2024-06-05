@@ -53,13 +53,9 @@ func (app *ChainApp) GetConsumerKeeper() ibcconsumerkeeper.Keeper {
 
 // spawntag:ics>
 
-// <spawntag:staking
-// TODO: ics?
 func (app *ChainApp) GetStakingKeeper() ibctesting.StakingKeeper {
 	return app.StakingKeeper
 }
-
-// spawntag:staking>
 
 func (app *ChainApp) GetAccountKeeper() authkeeper.AccountKeeper {
 	return app.AccountKeeper

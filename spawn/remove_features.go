@@ -303,28 +303,25 @@ func (fc *FileContent) RemoveStaking() {
 	text := "staking"
 	fc.HandleAllTagged(text)
 
-	fc.RemoveModuleFromText("StakingKeeper", appGo)
-	fc.RemoveModuleFromText("stakingtypes", appGo)
+	// fc.RemoveModuleFromText("StakingKeeper", appGo)
+	// fc.RemoveModuleFromText("stakingtypes", appGo)
 
-	// TODO: depends on staking bond denom. Fix? (idk how ICS does this atm)
-	fc.RemoveModuleFromText("globalfeeante", appAnte)
+	// // delete core modules which depend on staking
+	// fc.RemoveMint()
+	// fc.RemoveDistribution()
+	// fc.RemoveGov()
 
-	// delete core modules which depend on staking
-	fc.RemoveMint()
-	fc.RemoveDistribution()
-	fc.RemoveGov()
+	// // delete test helpers
 
-	// delete test helpers
-
-	fc.DeleteFile(path.Join("app", "sim_test.go"))
-	fc.DeleteFile(path.Join("app", "test_helpers.go"))
-	fc.DeleteFile(path.Join("app", "app_test.go"))
-	fc.DeleteFile(path.Join("cmd", "wasmd", "testnet.go")) // TODO(nit): switch this to be cfg.BinDaemon instead? (check actual path vs relative)
+	// fc.DeleteFile(path.Join("app", "sim_test.go"))
+	// fc.DeleteFile(path.Join("app", "test_helpers.go"))
+	// fc.DeleteFile(path.Join("app", "app_test.go"))
+	fc.DeleteFile(path.Join("cmd", "wasmd", "testnet.go"))
 
 	// Since we will be using ICS (test_ics_node.sh)
 	fc.DeleteFile(path.Join("scripts", "test_node.sh"))
 
-	fc.removePacketForwardTestOnly()
+	// fc.removePacketForwardTestOnly()
 
 	// fix: make sh-testnet
 	if fc.ContainsPath("Makefile") {

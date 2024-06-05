@@ -22,7 +22,10 @@ import (
 	globalfeeante "github.com/strangelove-ventures/globalfee/x/globalfee/ante"
 	globalfeekeeper "github.com/strangelove-ventures/globalfee/x/globalfee/keeper"
 
-	consumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante" // TODO: ethos??
+	// TODO: ethos namespace?? (would be so nice if it had not changed namespaces :( )
+	consumerdemocracy "github.com/cosmos/interchain-security/v5/app/consumer-democracy"
+	democracyante "github.com/cosmos/interchain-security/v5/app/consumer-democracy/ante"
+	consumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"
 	ibcconsumerkeeper "github.com/ethos-works/ethos/ethos-chain/x/ccv/consumer/keeper"
 )
 
@@ -68,10 +71,11 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	poaRateCeil := sdkmath.LegacyMustNewDecFromStr("0.50")
 
 	anteDecorators := []sdk.AnteDecorator{
-		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
+		ante.NewSetUpContextDecorator(),
 		consumerante.NewMsgFilterDecorator(options.ConsumerKeeper),
 		consumerante.NewDisabledModulesDecorator("/cosmos.evidence", "/cosmos.slashing"),
-		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit), // after setup context to enforce limits early
+		democracyante.NewForbiddenProposalsDecorator(consumerdemocracy.IsProposalWhitelisted, consumerdemocracy.IsModuleWhiteList), // spawntag:ics
+		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit),                                           // after setup context to enforce limits early
 		wasmkeeper.NewCountTXDecorator(options.TXCounterStoreService),
 		wasmkeeper.NewGasRegisterDecorator(options.WasmKeeper.GetGasRegister()),
 		circuitante.NewCircuitBreakerDecorator(options.CircuitKeeper),

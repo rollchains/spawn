@@ -61,7 +61,7 @@ var (
 			ChainImage,
 		},
 		GasAdjustment:  1.5,
-		ModifyGenesis:  cosmos.ModifyGenesis(DefaultGenesis), //spawntag:staking
+		ModifyGenesis:  cosmos.ModifyGenesis(DefaultGenesis), // spawntag:staking
 		EncodingConfig: GetEncodingConfig(),
 		Type:           "cosmos",
 		Name:           Name,

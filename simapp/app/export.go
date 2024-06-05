@@ -9,7 +9,7 @@ import (
 
 	storetypes "cosmossdk.io/store/types"
 
-	tmtypes "github.com/cometbft/cometbft/types" // spawn:ics
+	// spawn:ics
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -41,7 +41,7 @@ func (app *ChainApp) ExportAppStateAndValidators(forZeroHeight bool, jailAllowed
 		return servertypes.ExportedApp{}, err
 	}
 
-	validators, err := app.GetValidatorSet(ctx)
+	validators, err := staking.WriteValidators(ctx, app.StakingKeeper)
 	if err != nil {
 		return servertypes.ExportedApp{}, err
 	}
@@ -51,7 +51,7 @@ func (app *ChainApp) ExportAppStateAndValidators(forZeroHeight bool, jailAllowed
 		Validators:      validators,
 		Height:          height,
 		ConsensusParams: app.BaseApp.GetConsensusParams(ctx),
-	}, err
+	}, nil
 }
 
 // prepare for fresh start at zero height
@@ -68,10 +68,6 @@ func (app *ChainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs 
 	height := ctx.BlockHeight()
 	ctx = ctx.WithBlockHeight(0)
 
-	// reset context height
-	ctx = ctx.WithBlockHeight(height)
-
-	// <spawntag:staking
 	applyAllowedAddrs := false
 
 	// check if there is a allowed address list
@@ -179,6 +175,9 @@ func (app *ChainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs 
 
 	// Handle staking state.
 
+	// reset context height
+	ctx = ctx.WithBlockHeight(height)
+
 	// iterate through redelegations, reset creation height
 	err = app.StakingKeeper.IterateRedelegations(ctx, func(_ int64, red stakingtypes.Redelegation) (stop bool) {
 		for i := range red.Entries {
@@ -241,7 +240,6 @@ func (app *ChainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs 
 	if err != nil {
 		log.Fatal(err)
 	}
-	// spawntag:staking>
 
 	// Handle slashing state.
 
@@ -259,24 +257,4 @@ func (app *ChainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs 
 	if err != nil {
 		panic(err)
 	}
-}
-
-// GetValidatorSet returns a slice of bonded validators.
-func (app *ChainApp) GetValidatorSet(ctx sdk.Context) ([]tmtypes.GenesisValidator, error) {
-	var err error
-	vals := []tmtypes.GenesisValidator{}
-
-	// <spawntag:ics
-	cVals := app.ConsumerKeeper.GetAllCCValidator(ctx)
-	if len(cVals) == 0 {
-		return nil, fmt.Errorf("empty validator set")
-	}
-
-	for _, v := range cVals {
-		vals = append(vals, tmtypes.GenesisValidator{Address: v.Address, Power: v.Power})
-	}
-	// spawntag:ics>
-
-	vals, err = staking.WriteValidators(ctx, app.StakingKeeper) // spawntag:staking
-	return vals, err
 }
