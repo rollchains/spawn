@@ -57,7 +57,7 @@ func SetupTestingApp(initValUpdates []cometbfttypes.ValidatorUpdate) func() (ibc
 		testApp := NewChainApp(
 			log.NewNopLogger(), db, nil, false, emptyAppOpts,
 			[]wasmkeeper.Option{}, // spawntag:wasm
-			baseapp.SetChainID(SimAppChainID),
+			baseapp.SetChainID(SimulationChainID),
 		)
 		encoding := app.AppCodec()
 

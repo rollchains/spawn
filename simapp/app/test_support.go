@@ -5,11 +5,10 @@ import (
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
-	ibctesting "github.com/cosmos/ibc-go/v8/testing/types"                             // spawntag:staking
+	ibctesting "github.com/cosmos/ibc-go/v8/testing/types"
 	ethostestutil "github.com/ethos-works/ethos/ethos-chain/testutil/integration"      // spawntag:ethos-ics
 	ibcconsumerkeeper "github.com/ethos-works/ethos/ethos-chain/x/ccv/consumer/keeper" // spawntag:ethos-ics
 
-	"github.com/cosmos/cosmos-sdk/baseapp"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
@@ -22,10 +21,6 @@ func (app *ChainApp) GetIBCKeeper() *ibckeeper.Keeper {
 
 func (app *ChainApp) GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper {
 	return app.ScopedIBCKeeper
-}
-
-func (app *ChainApp) GetBaseApp() *baseapp.BaseApp {
-	return app.BaseApp
 }
 
 func (app *ChainApp) GetBankKeeper() bankkeeper.Keeper {
@@ -59,6 +54,7 @@ func (app *ChainApp) GetConsumerKeeper() ibcconsumerkeeper.Keeper {
 // spawntag:ics>
 
 // <spawntag:staking
+// TODO: ics?
 func (app *ChainApp) GetStakingKeeper() ibctesting.StakingKeeper {
 	return app.StakingKeeper
 }

@@ -176,9 +176,10 @@ import (
 )
 
 const (
-	appName      = "CosmosSimApp"
-	NodeDir      = ".myapplicationd"
-	Bech32Prefix = "mybechprefix"
+	appName           = "CosmosSimApp"
+	NodeDir           = ".myapplicationd"
+	Bech32Prefix      = "mybechprefix"
+	SimulationChainID = "simulation-app"
 )
 
 var (
@@ -1481,6 +1482,10 @@ func (app *ChainApp) RegisterTendermintService(clientCtx client.Context) {
 
 func (app *ChainApp) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
 	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter(), cfg)
+}
+
+func (app *ChainApp) GetBaseApp() *baseapp.BaseApp {
+	return app.BaseApp
 }
 
 // GetMaccPerms returns a copy of the module account permissions

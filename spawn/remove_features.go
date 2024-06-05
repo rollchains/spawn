@@ -318,7 +318,6 @@ func (fc *FileContent) RemoveStaking() {
 
 	fc.DeleteFile(path.Join("app", "sim_test.go"))
 	fc.DeleteFile(path.Join("app", "test_helpers.go"))
-	fc.DeleteFile(path.Join("app", "test_support.go"))
 	fc.DeleteFile(path.Join("app", "app_test.go"))
 	fc.DeleteFile(path.Join("cmd", "wasmd", "testnet.go")) // TODO(nit): switch this to be cfg.BinDaemon instead? (check actual path vs relative)
 

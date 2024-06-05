@@ -35,9 +35,6 @@ import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 )
 
-// SimAppChainID hardcoded chainID for simulation
-const SimAppChainID = "simulation-app"
-
 var FlagEnableStreamingValue bool
 
 // Get flags every time the simulator is run
@@ -123,7 +120,7 @@ func TestAppImportExport(t *testing.T) {
 		require.NoError(t, os.RemoveAll(newDir))
 	}()
 
-	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions, nil, fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
+	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions, nil, fauxMerkleModeOpt, baseapp.SetChainID(SimulationChainID))
 
 	initReq := &abci.RequestInitChain{
 		AppStateBytes: exported.AppState,
@@ -237,10 +234,10 @@ func TestAppSimulationAfterImport(t *testing.T) {
 		require.NoError(t, os.RemoveAll(newDir))
 	}()
 
-	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions, nil, fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
+	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions, nil, fauxMerkleModeOpt, baseapp.SetChainID(SimulationChainID))
 
 	_, err = newApp.InitChain(&abci.RequestInitChain{
-		ChainId:       SimAppChainID,
+		ChainId:       SimulationChainID,
 		AppStateBytes: exported.AppState,
 	})
 	require.NoError(t, err)
@@ -261,7 +258,7 @@ func TestAppSimulationAfterImport(t *testing.T) {
 
 func setupSimulationApp(t *testing.T, msg string) (simtypes.Config, dbm.DB, simtestutil.AppOptionsMap, *ChainApp) {
 	config := simcli.NewConfigFromFlags()
-	config.ChainID = SimAppChainID
+	config.ChainID = SimulationChainID
 
 	db, dir, logger, skip, err := simtestutil.SetupSimulation(config, "leveldb-app-sim", "Simulation", simcli.FlagVerboseValue, simcli.FlagEnabledValue)
 	if skip {
@@ -278,7 +275,7 @@ func setupSimulationApp(t *testing.T, msg string) (simtypes.Config, dbm.DB, simt
 	appOptions[flags.FlagHome] = dir // ensure a unique folder
 	appOptions[server.FlagInvCheckPeriod] = simcli.FlagPeriodValue
 
-	app := NewChainApp(logger, db, nil, true, appOptions, nil, fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
+	app := NewChainApp(logger, db, nil, true, appOptions, nil, fauxMerkleModeOpt, baseapp.SetChainID(SimulationChainID))
 	return config, db, appOptions, app
 }
 
@@ -294,7 +291,7 @@ func TestAppStateDeterminism(t *testing.T) {
 	config.ExportParamsPath = ""
 	config.OnOperation = false
 	config.AllInvariants = false
-	config.ChainID = SimAppChainID
+	config.ChainID = SimulationChainID
 
 	numSeeds := 3
 	numTimesToRunPerSeed := 3 // This used to be set to 5, but we've temporarily reduced it to 3 for the sake of faster CI.
@@ -329,7 +326,7 @@ func TestAppStateDeterminism(t *testing.T) {
 			}
 
 			db := dbm.NewMemDB()
-			app := NewChainApp(logger, db, nil, true, appOptions, nil, interBlockCacheOpt(), baseapp.SetChainID(SimAppChainID))
+			app := NewChainApp(logger, db, nil, true, appOptions, nil, interBlockCacheOpt(), baseapp.SetChainID(SimulationChainID))
 
 			fmt.Printf(
 				"running non-determinism simulation; seed %d: %d/%d, attempt: %d/%d\n",

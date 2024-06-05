@@ -20,7 +20,7 @@ var (
 		{ID: "proof-of-authority", IsSelected: true, IsConsensus: true, Details: "Proof-of-Authority consensus algorithm (permissioned network)"},
 		{ID: "proof-of-stake", IsSelected: false, IsConsensus: true, Details: "Proof-of-Stake consensus algorithm (permissionless network)"},
 		{ID: "interchain-security", IsSelected: false, IsConsensus: true, Details: "Cosmos Hub Interchain Security"},
-		// {ID: "ics-ethos", IsSelected: false, IsConsensus: true, Details: "Interchain-Security with Ethos ETH restaking"},
+		{ID: "ethos-ics", IsSelected: false, IsConsensus: true, Details: "Interchain-Security via Ethos ETH restaking"},
 	}
 
 	SupportedFeatures = append(ConsensusFeatures, items{
@@ -36,7 +36,9 @@ var (
 	// parentDeps is a list of modules that are disabled if a parent module is disabled.
 	// i.e. Without staking, POA is not possible as it depends on staking.
 	parentDeps = map[string][]string{
-		spawn.POS: {spawn.POA},
+		// also verify in disabledConsensus below
+		spawn.POS:                {spawn.POA},
+		spawn.InterchainSecurity: {spawn.EthosICS},
 	}
 )
 
@@ -126,6 +128,8 @@ var newChain = &cobra.Command{
 			if name != consensus {
 				// if consensus is proof-of-authority, allow proof of stake
 				if consensus == spawn.POA && name == spawn.POS {
+					continue
+				} else if consensus == spawn.EthosICS && name == spawn.InterchainSecurity {
 					continue
 				}
 
