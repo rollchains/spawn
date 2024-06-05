@@ -9,7 +9,6 @@ import (
 
 	storetypes "cosmossdk.io/store/types"
 
-	tmtypes "github.com/cometbft/cometbft/types" // spawn:ics
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -41,7 +40,7 @@ func (app *ChainApp) ExportAppStateAndValidators(forZeroHeight bool, jailAllowed
 		return servertypes.ExportedApp{}, err
 	}
 
-	validators, err := app.GetValidatorSet(ctx)
+	validators, err := staking.WriteValidators(ctx, app.StakingKeeper)
 	if err != nil {
 		return servertypes.ExportedApp{}, err
 	}
@@ -51,7 +50,7 @@ func (app *ChainApp) ExportAppStateAndValidators(forZeroHeight bool, jailAllowed
 		Validators:      validators,
 		Height:          height,
 		ConsensusParams: app.BaseApp.GetConsensusParams(ctx),
-	}, err
+	}, nil
 }
 
 // prepare for fresh start at zero height
@@ -67,9 +66,6 @@ func (app *ChainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs 
 	// set context height to zero
 	height := ctx.BlockHeight()
 	ctx = ctx.WithBlockHeight(0)
-
-	// reset context height
-	ctx = ctx.WithBlockHeight(height)
 
 	// <spawntag:staking
 	applyAllowedAddrs := false
@@ -177,6 +173,9 @@ func (app *ChainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs 
 		}
 	}
 
+	// reset context height
+	ctx = ctx.WithBlockHeight(height)
+
 	// Handle staking state.
 
 	// iterate through redelegations, reset creation height
@@ -259,24 +258,4 @@ func (app *ChainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs 
 	if err != nil {
 		panic(err)
 	}
-}
-
-// GetValidatorSet returns a slice of bonded validators.
-func (app *ChainApp) GetValidatorSet(ctx sdk.Context) ([]tmtypes.GenesisValidator, error) {
-	var err error
-	vals := []tmtypes.GenesisValidator{}
-
-	// <spawntag:ics
-	cVals := app.ConsumerKeeper.GetAllCCValidator(ctx)
-	if len(cVals) == 0 {
-		return nil, fmt.Errorf("empty validator set")
-	}
-
-	for _, v := range cVals {
-		vals = append(vals, tmtypes.GenesisValidator{Address: v.Address, Power: v.Power})
-	}
-	// spawntag:ics>
-
-	vals, err = staking.WriteValidators(ctx, app.StakingKeeper) // spawntag:staking
-	return vals, err
 }

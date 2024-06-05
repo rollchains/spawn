@@ -109,13 +109,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
-	distr "github.com/cosmos/cosmos-sdk/x/distribution"
+
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	"github.com/cosmos/cosmos-sdk/x/gov"
-	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
@@ -126,14 +124,13 @@ import (
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
-	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	"github.com/cosmos/cosmos-sdk/x/staking"
+
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
@@ -169,9 +166,18 @@ import (
 	ratelimitkeeper "github.com/Stride-Labs/ibc-rate-limiting/ratelimit/keeper"
 	ratelimittypes "github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
 
+	consumerdemocracy "github.com/cosmos/interchain-security/v5/app/consumer-democracy"
 	ibcconsumer "github.com/cosmos/interchain-security/v5/x/ccv/consumer"
 	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
 	ibcconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+
+	// spawntag:ics
+	distr "github.com/cosmos/interchain-security/v5/x/ccv/democracy/distribution" // spawntag:ics
+	gov "github.com/cosmos/interchain-security/v5/x/ccv/democracy/governance"     // spawntag:ics
+	staking "github.com/cosmos/interchain-security/v5/x/ccv/democracy/staking"    // spawntag:ics
+	//distr "github.com/cosmos/cosmos-sdk/x/distribution" // ?spawntag:ics
+	//"github.com/cosmos/cosmos-sdk/x/gov" // ?spawntag:ics
+	//"github.com/cosmos/cosmos-sdk/x/staking" // ?spawntag:ics
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
@@ -712,14 +718,13 @@ func NewChainApp(
 		maccPerms,
 		app.AccountKeeper,
 		app.BankKeeper,
-		// app.DistrKeeper, // ?spawntag:ics
-		nil, // spawntag:ics
+		app.DistrKeeper,
 		[]string{
 			tokenfactorytypes.EnableBurnFrom,
 			tokenfactorytypes.EnableForceTransfer,
 			tokenfactorytypes.EnableSetMetadata,
 			// tokenfactorytypes.EnableSudoMint,
-			tokenfactorytypes.EnableCommunityPoolFeeFunding, // spawntag:staking
+			//tokenfactorytypes.EnableCommunityPoolFeeFunding, // ?spawntag:ics
 		},
 		tokenfactorykeeper.DefaultIsSudoAdminFunc,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
@@ -776,8 +781,7 @@ func NewChainApp(
 		keys[packetforwardtypes.StoreKey],
 		app.TransferKeeper, // will be zero-value here, reference is set later on with SetTransferKeeper.
 		app.IBCKeeper.ChannelKeeper,
-		//app.DistrKeeper, // ?spawntag:ics
-		nil, // spawntag:ics
+		app.DistrKeeper,
 		app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
@@ -823,10 +827,8 @@ func NewChainApp(
 		runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
 		app.AccountKeeper,
 		app.BankKeeper,
-		//app.StakingKeeper, // ?spawntag:ics
-		//distrkeeper.NewQuerier(app.DistrKeeper), // ?spawntag:ics
-		nil,              // spawntag:ics
-		nil,              // spawntag:ics
+		app.StakingKeeper,
+		distrkeeper.NewQuerier(app.DistrKeeper),
 		app.IBCFeeKeeper, // ISC4 Wrapper: fee IBC middleware
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
@@ -929,8 +931,7 @@ func NewChainApp(
 	app.ModuleManager = module.NewManager(
 		genutil.NewAppModule(
 			app.AccountKeeper,
-			//app.StakingKeeper, // ?spawntag:ics
-			app.ConsumerKeeper, // spawntag: ics
+			app.StakingKeeper,
 			app,
 			txConfig,
 		),
@@ -938,14 +939,16 @@ func NewChainApp(
 		vesting.NewAppModule(app.AccountKeeper, app.BankKeeper),
 		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper, app.GetSubspace(banktypes.ModuleName)),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
-		gov.NewAppModule(appCodec, &app.GovKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(govtypes.ModuleName)),
+		//gov.NewAppModule(appCodec, &app.GovKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(govtypes.ModuleName)), // ?spawntag:ics
+		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper, consumerdemocracy.IsProposalWhitelisted, app.GetSubspace(govtypes.ModuleName), consumerdemocracy.IsModuleWhiteList), // spawntag:ics
 		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, nil, app.GetSubspace(minttypes.ModuleName)),
 		slashing.NewAppModule(
 			appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper,
 			// app.StakingKeeper, // ?spawntag:ics
 			app.ConsumerKeeper, // spawntag:ics
 			app.GetSubspace(slashingtypes.ModuleName), app.interfaceRegistry),
-		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(distrtypes.ModuleName)),
+		//distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(distrtypes.ModuleName)), // ?spawntag:ics
+		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, *app.StakingKeeper, authtypes.FeeCollectorName, app.GetSubspace(distrtypes.ModuleName)), // spawntag:ics
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName)),
 		upgrade.NewAppModule(app.UpgradeKeeper, app.AccountKeeper.AddressCodec()),
 		evidence.NewAppModule(app.EvidenceKeeper),
@@ -959,8 +962,7 @@ func NewChainApp(
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
 		// <spawntag:wasm
 		wasm.NewAppModule(appCodec, &app.WasmKeeper,
-			//app.StakingKeeper, // ?spawntag:ics
-			app.ConsumerKeeper, // spawntag:ics
+			app.StakingKeeper,
 			app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName),
 		),
 		// spawntag:wasm>
@@ -988,12 +990,6 @@ func NewChainApp(
 		app.ModuleManager,
 		map[string]module.AppModuleBasic{
 			genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
-			govtypes.ModuleName: gov.NewAppModuleBasic(
-				[]govclient.ProposalHandler{
-					paramsclient.ProposalHandler,
-					// this line is used by starport scaffolding # stargate/app/govProposalHandler
-				},
-			),
 			// this line is used by starport scaffolding # stargate/appConfig/moduleBasic
 		})
 	app.BasicModuleManager.RegisterLegacyAminoCodec(legacyAmino)

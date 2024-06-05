@@ -75,14 +75,8 @@ func (cfg *NewChainConfig) SetProperFeaturePairs() {
 	}
 	cfg.isUsingICS = isUsingICS
 
-	// TODO: maybe we allow so democratic consumers are allowed?
-	// Remove staking if ICS is in use
-	if isUsingICS && !cfg.IsFeatureDisabled(POS) {
-		d = append(d, POS)
-	}
-
 	cfg.DisabledModules = d
-	cfg.Logger.Debug("Disabled features", "features", cfg.DisabledModules)
+	cfg.Logger.Debug("SetProperFeaturePairs Disabled features", "features", cfg.DisabledModules)
 }
 
 func RemoveDuplicates(disabled []string) []string {
@@ -162,7 +156,7 @@ func (cfg *NewChainConfig) NewChain() {
 	cfg.SetProperFeaturePairs()
 
 	logger.Debug("Spawning new app", "app", NewDirName)
-	logger.Debug("Disabled features", "features", cfg.DisabledModules)
+	logger.Debug("NewChain Disabled features", "features", cfg.DisabledModules)
 
 	if err := os.MkdirAll(NewDirName, 0755); err != nil {
 		logger.Error("Error creating directory", "err", err)
