@@ -49,16 +49,22 @@ type NewChainConfig struct {
 	isUsingICS bool
 }
 
-func (cfg NewChainConfig) Run(doAnnounce bool) {
+func (cfg NewChainConfig) Run(doAnnounce bool) error {
 	if err := cfg.Validate(); err != nil {
 		cfg.Logger.Error("Error validating config", "err", err)
-		return
+		return fmt.Errorf("error validating config: %w", err)
 	}
 
-	cfg.NewChain()
+	if err := cfg.NewChain(); err != nil {
+		cfg.Logger.Error("Error creating new chain", "err", err)
+		return fmt.Errorf("error creating new chain: %w", err)
+	}
+
 	if doAnnounce {
 		cfg.AnnounceSuccessfulBuild()
 	}
+
+	return nil
 }
 
 // SetProperFeaturePairs ensures modules that are meant to be disabled, are.
@@ -74,6 +80,11 @@ func (cfg *NewChainConfig) SetProperFeaturePairs() {
 		}
 	}
 	cfg.isUsingICS = isUsingICS
+
+	// remove POA if it is being used
+	if isUsingICS {
+		d = append(d, POA)
+	}
 
 	cfg.DisabledModules = d
 	cfg.Logger.Debug("SetProperFeaturePairs Disabled features", "features", cfg.DisabledModules)
@@ -148,7 +159,7 @@ func (cfg *NewChainConfig) GithubPath() string {
 	return fmt.Sprintf("github.com/%s/%s", cfg.GithubOrg, cfg.ProjectName)
 }
 
-func (cfg *NewChainConfig) NewChain() {
+func (cfg *NewChainConfig) NewChain() error {
 	NewDirName := cfg.ProjectName
 	logger := cfg.Logger
 
@@ -160,17 +171,17 @@ func (cfg *NewChainConfig) NewChain() {
 
 	if err := os.MkdirAll(NewDirName, 0755); err != nil {
 		logger.Error("Error creating directory", "err", err)
-		return
+		return fmt.Errorf("error creating directory: %w", err)
 	}
 
 	if err := cfg.SetupMainChainApp(); err != nil {
 		logger.Error("Error setting up main chain app", "err", err, "file", debugErrorFile(logger, NewDirName))
-		return
+		return fmt.Errorf("error setting up main chain app: %w", err)
 	}
 
 	if err := cfg.SetupInterchainTest(); err != nil {
 		logger.Error("Error setting up interchain test", "err", err, "file", debugErrorFile(logger, NewDirName))
-		return
+		return fmt.Errorf("error setting up interchain test: %w", err)
 	}
 
 	// setup local-interchain testnets
@@ -182,6 +193,8 @@ func (cfg *NewChainConfig) NewChain() {
 	if !cfg.IgnoreGitInit {
 		cfg.GitInitNewProjectRepo()
 	}
+
+	return nil
 }
 
 // errFileText is used to store the contents of a failed file on save to help with debugging
