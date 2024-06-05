@@ -548,8 +548,7 @@ func NewChainApp(
 		appCodec,
 		legacyAmino,
 		runtime.NewKVStoreService(keys[slashingtypes.StoreKey]),
-		//app.StakingKeeper, // ?spawntag:ics
-		app.ConsumerKeeper, // spawntag:ics
+		app.StakingKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
