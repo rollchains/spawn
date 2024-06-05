@@ -136,8 +136,7 @@ func (fc *FileContent) RemoveGlobalFee() {
 	text := "globalfee"
 	fc.RemoveGoModImport("github.com/strangelove-ventures/globalfee")
 
-	fc.HandleCommentSwaps(text)
-	fc.RemoveTaggedLines(text, true)
+	fc.HandleAllTagged(text)
 
 	fc.RemoveModuleFromText(text,
 		appGo,
@@ -158,7 +157,7 @@ func (fc *FileContent) RemoveCosmWasm(isWasmClientDisabled bool) {
 		fc.RemoveGoModImport("github.com/CosmWasm/wasmvm")
 	}
 
-	fc.RemoveTaggedLines(text, true)
+	fc.HandleAllTagged(text)
 
 	fc.DeleteFile(path.Join("app", "wasm.go"))
 
@@ -201,7 +200,7 @@ func (fc *FileContent) RemoveWasmLightClient() {
 	text := "08wasmlc"
 	fc.RemoveGoModImport("github.com/cosmos/ibc-go/modules/light-clients/08-wasm")
 
-	fc.RemoveTaggedLines(text, true)
+	fc.HandleAllTagged(text)
 
 	fc.RemoveModuleFromText("wasmlc",
 		appGo,
@@ -242,8 +241,7 @@ func (fc *FileContent) RemoveInterchainSecurity() {
 
 	fc.RemoveGoModImport("github.com/cosmos/interchain-security")
 
-	fc.HandleCommentSwaps(text)
-	fc.RemoveTaggedLines(text, true)
+	fc.HandleAllTagged(text)
 
 	// remove from e2e
 	fc.RemoveModuleFromText(text, path.Join("workflows", "interchaintest-e2e.yml"))
@@ -263,11 +261,11 @@ func (fc *FileContent) RemoveInterchainSecurity() {
 
 // Remove staking module if using a custom impl like the ICS Consumer
 func (fc *FileContent) RemoveStaking() {
+	// TODO: this should be done at cfg build time, not here?
 	fc.RemovePOA() // if we already removed we should be fine
 
 	text := "staking"
-	fc.HandleCommentSwaps(text)
-	fc.RemoveTaggedLines(text, true)
+	fc.HandleAllTagged(text)
 
 	fc.RemoveModuleFromText("StakingKeeper", appGo)
 	fc.RemoveModuleFromText("stakingtypes", appGo)
@@ -299,8 +297,7 @@ func (fc *FileContent) RemoveStaking() {
 func (fc *FileContent) RemoveMint() {
 	// NOTE: be careful, tenderMINT has 'mint' suffix in it. Which can match
 	text := "mint"
-	fc.HandleCommentSwaps(text)
-	fc.RemoveTaggedLines(text, true)
+	fc.HandleAllTagged(text)
 
 	// TODO: Fix this so it does not break
 	fc.RemoveModuleFromText("MintKeeper", appGo)
@@ -310,8 +307,7 @@ func (fc *FileContent) RemoveMint() {
 
 func (fc *FileContent) RemoveGov() {
 	text := "gov"
-	fc.HandleCommentSwaps(text)
-	fc.RemoveTaggedLines(text, true)
+	fc.HandleAllTagged(text)
 
 	fc.RemoveModuleFromText("GovKeeper", appGo)
 
@@ -321,8 +317,7 @@ func (fc *FileContent) RemoveGov() {
 
 func (fc *FileContent) RemoveDistribution() {
 	text := "distribution"
-	fc.HandleCommentSwaps(text)
-	fc.RemoveTaggedLines(text, true)
+	fc.HandleAllTagged(text)
 
 	fc.RemoveModuleFromText("distrtypes", appGo)
 	fc.RemoveModuleFromText("DistrKeeper", appGo)
