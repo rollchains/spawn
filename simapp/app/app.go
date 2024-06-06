@@ -167,9 +167,9 @@ import (
 	ratelimittypes "github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
 
 	consumerdemocracy "github.com/cosmos/interchain-security/v5/app/consumer-democracy"
-	ibcconsumer "github.com/cosmos/interchain-security/v5/x/ccv/consumer"
-	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
-	ibcconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	ccvconsumer "github.com/cosmos/interchain-security/v5/x/ccv/consumer"
+	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
+	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 
 	distr "github.com/cosmos/interchain-security/v5/x/ccv/democracy/distribution" // spawntag:ics
 	gov "github.com/cosmos/interchain-security/v5/x/ccv/democracy/governance"     // spawntag:ics
@@ -233,8 +233,8 @@ var maccPerms = map[string][]string{
 	icatypes.ModuleName:                           nil,
 	wasmtypes.ModuleName:                          {authtypes.Burner},
 	tokenfactorytypes.ModuleName:                  {authtypes.Minter, authtypes.Burner},
-	ibcconsumertypes.ConsumerRedistributeName:     nil,
-	ibcconsumertypes.ConsumerToSendToProviderName: nil,
+	ccvconsumertypes.ConsumerRedistributeName:     nil,
+	ccvconsumertypes.ConsumerToSendToProviderName: nil,
 	// this line is used by starport scaffolding # stargate/app/maccPerms
 }
 
@@ -281,7 +281,7 @@ type ChainApp struct {
 	ICAControllerKeeper icacontrollerkeeper.Keeper
 	ICAHostKeeper       icahostkeeper.Keeper
 	TransferKeeper      ibctransferkeeper.Keeper
-	ConsumerKeeper      ibcconsumerkeeper.Keeper
+	ConsumerKeeper      ccvconsumerkeeper.Keeper
 
 	// Custom
 	WasmKeeper          wasmkeeper.Keeper
@@ -416,7 +416,7 @@ func NewChainApp(
 		packetforwardtypes.StoreKey,
 		wasmlctypes.StoreKey,
 		ratelimittypes.StoreKey,
-		ibcconsumertypes.StoreKey,
+		ccvconsumertypes.StoreKey,
 	)
 
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -466,7 +466,7 @@ func NewChainApp(
 	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
-	scopedIBCConsumerKeeper := app.CapabilityKeeper.ScopeToModule(ibcconsumertypes.ModuleName)
+	scopedIBCConsumerKeeper := app.CapabilityKeeper.ScopeToModule(ccvconsumertypes.ModuleName)
 	app.CapabilityKeeper.Seal()
 
 	// add keepers
@@ -537,10 +537,10 @@ func NewChainApp(
 	// pre-initialize ConsumerKeeper to satsfy ibckeeper.NewKeeper which would panic on nil or zero keeper
 	// ConsumerKeeper implements StakingKeeper but all function calls result in no-ops so this is safe.
 	// ConsumerKeeper communication over IBC is not affected by these changes
-	app.ConsumerKeeper = ibcconsumerkeeper.NewNonZeroKeeper(
+	app.ConsumerKeeper = ccvconsumerkeeper.NewNonZeroKeeper(
 		appCodec,
-		keys[ibcconsumertypes.StoreKey],
-		app.GetSubspace(ibcconsumertypes.ModuleName),
+		keys[ccvconsumertypes.StoreKey],
+		app.GetSubspace(ccvconsumertypes.ModuleName),
 	)
 
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
@@ -626,10 +626,10 @@ func NewChainApp(
 	)
 
 	// initialize the actual ConsumerKeeper
-	app.ConsumerKeeper = ibcconsumerkeeper.NewKeeper(
+	app.ConsumerKeeper = ccvconsumerkeeper.NewKeeper(
 		appCodec,
-		keys[ibcconsumertypes.StoreKey],
-		app.GetSubspace(ibcconsumertypes.ModuleName),
+		keys[ccvconsumertypes.StoreKey],
+		app.GetSubspace(ccvconsumertypes.ModuleName),
 		scopedIBCConsumerKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
@@ -645,10 +645,11 @@ func NewChainApp(
 		authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
 		authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
 	)
+	app.ConsumerKeeper.SetStandaloneStakingKeeper(app.StakingKeeper)
 
 	// register slashing module Slashing hooks to the consumer keeper
 	app.ConsumerKeeper = *app.ConsumerKeeper.SetHooks(app.SlashingKeeper.Hooks())
-	consumerModule := ibcconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ibcconsumertypes.ModuleName))
+	consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
 
 	// <spawntag:staking
 	// Register the proposal types
@@ -913,7 +914,7 @@ func NewChainApp(
 	ibcRouter.AddRoute(wasmtypes.ModuleName, wasmStack)
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerStack)
 	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostStack)
-	ibcRouter.AddRoute(ibcconsumertypes.ModuleName, consumerModule)
+	ibcRouter.AddRoute(ccvconsumertypes.ModuleName, consumerModule)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	// this line is used by starport scaffolding # ibc/app/module
@@ -1023,7 +1024,7 @@ func NewChainApp(
 		packetforwardtypes.ModuleName,
 		wasmlctypes.ModuleName,
 		ratelimittypes.ModuleName,
-		ibcconsumertypes.ModuleName,
+		ccvconsumertypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
 	)
 
@@ -1046,7 +1047,7 @@ func NewChainApp(
 		packetforwardtypes.ModuleName,
 		wasmlctypes.ModuleName,
 		ratelimittypes.ModuleName,
-		ibcconsumertypes.ModuleName,
+		ccvconsumertypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/endBlockers
 	)
 
@@ -1092,7 +1093,7 @@ func NewChainApp(
 		packetforwardtypes.ModuleName,
 		wasmlctypes.ModuleName,
 		ratelimittypes.ModuleName,
-		ibcconsumertypes.ModuleName,
+		ccvconsumertypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
@@ -1491,7 +1492,7 @@ func BlockedAddresses() map[string]bool {
 
 	// allow the following addresses to receive funds
 	delete(modAccAddrs, authtypes.NewModuleAddress(govtypes.ModuleName).String())
-	delete(modAccAddrs, authtypes.NewModuleAddress(ibcconsumertypes.ConsumerToSendToProviderName).String()) // spawntag:ics
+	delete(modAccAddrs, authtypes.NewModuleAddress(ccvconsumertypes.ConsumerToSendToProviderName).String()) // spawntag:ics
 
 	return modAccAddrs
 }
@@ -1525,7 +1526,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(globalfee.ModuleName)
 	paramsKeeper.Subspace(packetforwardtypes.ModuleName).WithKeyTable(packetforwardtypes.ParamKeyTable())
 	paramsKeeper.Subspace(ratelimittypes.ModuleName)
-	paramsKeeper.Subspace(ibcconsumertypes.ModuleName)
+	paramsKeeper.Subspace(ccvconsumertypes.ModuleName)
 
 	return paramsKeeper
 }

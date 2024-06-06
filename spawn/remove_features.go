@@ -246,14 +246,15 @@ func (fc *FileContent) RemoveInterchainSecurity() {
 	// remove from e2e
 	fc.RemoveModuleFromText(text, path.Join("workflows", "interchaintest-e2e.yml"))
 
-	fc.RemoveModuleFromText("ibcconsumerkeeper.NewNonZeroKeeper", appGo)
+	fc.RemoveModuleFromText("ccvconsumerkeeper.NewNonZeroKeeper", appGo)
 	fc.RemoveModuleFromText("ConsumerKeeper", appGo)
 	fc.RemoveModuleFromText("ScopedIBCConsumerKeeper", appGo)
 
-	fc.RemoveLineWithAnyMatch("ibcconsumerkeeper")
-	fc.RemoveLineWithAnyMatch("ibcconsumertypes")
-	fc.RemoveLineWithAnyMatch("consumerante")
-	fc.RemoveLineWithAnyMatch("democracyante")
+	fc.RemoveLineWithAnyMatch("ccvconsumer")
+	fc.RemoveLineWithAnyMatch("ccvconsumerkeeper")
+	fc.RemoveLineWithAnyMatch("ccvconsumertypes")
+	fc.RemoveLineWithAnyMatch("ccvconsumerante")
+	fc.RemoveLineWithAnyMatch("ccvdemocracyante")
 
 	fc.DeleteFile(path.Join("cmd", "wasmd", "ics_consumer.go"))
 	fc.DeleteFile(path.Join("scripts", "test_ics_node.sh"))

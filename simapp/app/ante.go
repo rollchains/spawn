@@ -23,9 +23,9 @@ import (
 	globalfeekeeper "github.com/strangelove-ventures/globalfee/x/globalfee/keeper"
 
 	consumerdemocracy "github.com/cosmos/interchain-security/v5/app/consumer-democracy"
-	democracyante "github.com/cosmos/interchain-security/v5/app/consumer-democracy/ante"
-	consumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"
-	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
+	ccvdemocracyante "github.com/cosmos/interchain-security/v5/app/consumer-democracy/ante"
+	ccvconsumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"
+	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
@@ -41,7 +41,7 @@ type HandlerOptions struct {
 
 	GlobalFeeKeeper      globalfeekeeper.Keeper
 	BypassMinFeeMsgTypes []string
-	ConsumerKeeper       ibcconsumerkeeper.Keeper
+	ConsumerKeeper       ccvconsumerkeeper.Keeper
 }
 
 // NewAnteHandler constructor
@@ -71,9 +71,9 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
-		consumerante.NewMsgFilterDecorator(options.ConsumerKeeper),
-		consumerante.NewDisabledModulesDecorator("/cosmos.evidence", "/cosmos.slashing"),
-		democracyante.NewForbiddenProposalsDecorator(consumerdemocracy.IsProposalWhitelisted, consumerdemocracy.IsModuleWhiteList),
+		ccvconsumerante.NewMsgFilterDecorator(options.ConsumerKeeper),
+		ccvconsumerante.NewDisabledModulesDecorator("/cosmos.evidence", "/cosmos.slashing"),
+		ccvdemocracyante.NewForbiddenProposalsDecorator(consumerdemocracy.IsProposalWhitelisted, consumerdemocracy.IsModuleWhiteList),
 		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit), // after setup context to enforce limits early
 		wasmkeeper.NewCountTXDecorator(options.TXCounterStoreService),
 		wasmkeeper.NewGasRegisterDecorator(options.WasmKeeper.GetGasRegister()),

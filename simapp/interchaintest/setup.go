@@ -17,7 +17,7 @@ import (
 
 	wasm "github.com/CosmWasm/wasmd/x/wasm/types"
 	ibcconntypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
-	ibcconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 	globalfee "github.com/strangelove-ventures/globalfee/x/globalfee/types"
 	poa "github.com/strangelove-ventures/poa"
 	tokenfactory "github.com/strangelove-ventures/tokenfactory/x/tokenfactory/types"
@@ -124,7 +124,7 @@ func GetEncodingConfig() *moduletestutil.TestEncodingConfig {
 	tokenfactory.RegisterInterfaces(cfg.InterfaceRegistry)
 	globalfee.RegisterInterfaces(cfg.InterfaceRegistry)
 	poa.RegisterInterfaces(cfg.InterfaceRegistry)
-	ibcconsumertypes.RegisterInterfaces(cfg.InterfaceRegistry)
+	ccvconsumertypes.RegisterInterfaces(cfg.InterfaceRegistry)
 	return &cfg
 }
 
