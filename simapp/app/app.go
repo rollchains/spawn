@@ -534,6 +534,14 @@ func NewChainApp(
 	)
 	// spawntag:staking>
 
+	app.SlashingKeeper = slashingkeeper.NewKeeper(
+		appCodec,
+		legacyAmino,
+		runtime.NewKVStoreService(keys[slashingtypes.StoreKey]),
+		app.StakingKeeper,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+
 	// pre-initialize ConsumerKeeper to satsfy ibckeeper.NewKeeper which would panic on nil or zero keeper
 	// ConsumerKeeper implements StakingKeeper but all function calls result in no-ops so this is safe.
 	// ConsumerKeeper communication over IBC is not affected by these changes
@@ -541,14 +549,6 @@ func NewChainApp(
 		appCodec,
 		keys[ccvconsumertypes.StoreKey],
 		app.GetSubspace(ccvconsumertypes.ModuleName),
-	)
-
-	app.SlashingKeeper = slashingkeeper.NewKeeper(
-		appCodec,
-		legacyAmino,
-		runtime.NewKVStoreService(keys[slashingtypes.StoreKey]),
-		app.StakingKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	invCheckPeriod := cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod))
@@ -563,14 +563,6 @@ func NewChainApp(
 	)
 
 	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[feegrant.StoreKey]), app.AccountKeeper)
-
-	// <spawntag:staking
-	// register the staking hooks
-	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
-	app.StakingKeeper.SetHooks(
-		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
-	)
-	// spawntag:staking>
 
 	app.CircuitKeeper = circuitkeeper.NewKeeper(
 		appCodec,
@@ -625,6 +617,17 @@ func NewChainApp(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
+	// <spawntag:staking
+	// register the staking hooks
+	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
+	app.StakingKeeper.SetHooks(
+		stakingtypes.NewMultiStakingHooks(
+			app.DistrKeeper.Hooks(),
+			app.SlashingKeeper.Hooks(), // spawntag:slashing // TODO: remove if using ICS
+		),
+	)
+	// spawntag:staking>
+
 	// initialize the actual ConsumerKeeper
 	app.ConsumerKeeper = ccvconsumerkeeper.NewKeeper(
 		appCodec,
@@ -645,11 +648,21 @@ func NewChainApp(
 		authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
 		authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
 	)
-	app.ConsumerKeeper.SetStandaloneStakingKeeper(app.StakingKeeper)
 
 	// register slashing module Slashing hooks to the consumer keeper
 	app.ConsumerKeeper = *app.ConsumerKeeper.SetHooks(app.SlashingKeeper.Hooks())
 	consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
+
+	// <spawntag:ics
+	// Set the slashing keeper again, this time with the ConsumerKeeper
+	app.SlashingKeeper = slashingkeeper.NewKeeper(
+		appCodec,
+		legacyAmino,
+		runtime.NewKVStoreService(keys[slashingtypes.StoreKey]),
+		&app.ConsumerKeeper,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+	// spawntag:ics>
 
 	// <spawntag:staking
 	// Register the proposal types
@@ -695,7 +708,7 @@ func NewChainApp(
 		appCodec,
 		runtime.NewKVStoreService(keys[evidencetypes.StoreKey]),
 		//app.StakingKeeper, // ?spawntag:ics
-		app.ConsumerKeeper,
+		&app.ConsumerKeeper,
 		app.SlashingKeeper,
 		app.AccountKeeper.AddressCodec(),
 		runtime.ProvideCometInfoService(),
@@ -930,7 +943,8 @@ func NewChainApp(
 	app.ModuleManager = module.NewManager(
 		genutil.NewAppModule(
 			app.AccountKeeper,
-			app.StakingKeeper,
+			// app.StakingKeeper, // ?spawntag:ics
+			&app.ConsumerKeeper, // spawntag:ics
 			app,
 			txConfig,
 		),
