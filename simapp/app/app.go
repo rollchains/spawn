@@ -171,7 +171,6 @@ import (
 	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
 	ibcconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 
-	// spawntag:ics
 	distr "github.com/cosmos/interchain-security/v5/x/ccv/democracy/distribution" // spawntag:ics
 	gov "github.com/cosmos/interchain-security/v5/x/ccv/democracy/governance"     // spawntag:ics
 	staking "github.com/cosmos/interchain-security/v5/x/ccv/democracy/staking"    // spawntag:ics
