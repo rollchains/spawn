@@ -96,6 +96,10 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		}
 	}
 
+	if cfg.isUsingICS {
+		fc.RemoveStandardTestNodeScript()
+	}
+
 	// remove any left over `// spawntag:` comments
 	fc.RemoveTaggedLines("", false)
 }
@@ -258,6 +262,11 @@ func (fc *FileContent) RemoveInterchainSecurity() {
 
 	fc.DeleteFile(path.Join("cmd", "wasmd", "ics_consumer.go"))
 	fc.DeleteFile(path.Join("scripts", "test_ics_node.sh"))
+}
+
+// Remove this if using ICS, no need.
+func (fc *FileContent) RemoveStandardTestNodeScript() {
+	fc.DeleteFile(path.Join("scripts", "test_node.sh"))
 }
 
 // Remove staking module if using a custom impl like the ICS Consumer

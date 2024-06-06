@@ -623,7 +623,7 @@ func NewChainApp(
 	app.StakingKeeper.SetHooks(
 		stakingtypes.NewMultiStakingHooks(
 			app.DistrKeeper.Hooks(),
-			app.SlashingKeeper.Hooks(), // spawntag:slashing // TODO: remove if using ICS
+			//app.SlashingKeeper.Hooks(), // ?spawntag:ics
 		),
 	)
 	// spawntag:staking>
