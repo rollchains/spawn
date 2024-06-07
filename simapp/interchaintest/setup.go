@@ -31,8 +31,7 @@ var (
 	Name    = "appName"
 	ChainID = "localchain-1"
 	Binary  = "wasmd"
-
-	Bech32 = "wasm"
+	Bech32  = "mybechprefix"
 
 	NumberVals         = 1
 	NumberFullNodes    = 0
@@ -71,7 +70,7 @@ var (
 		Denom:          Denom,
 		CoinType:       "118",
 		GasPrices:      "0" + Denom,
-		TrustingPeriod: "336h",
+		TrustingPeriod: "504h",
 	}
 
 	DefaultChainSpec = interchaintest.ChainSpec{
@@ -108,7 +107,7 @@ var (
 		NumValidators: &vals, NumFullNodes: &fNodes,
 		ChainConfig: ibc.ChainConfig{
 			GasAdjustment:  1.5,
-			TrustingPeriod: "336h",
+			TrustingPeriod: "504h",
 			ModifyGenesis: cosmos.ModifyGenesis([]cosmos.GenesisKV{
 				cosmos.NewGenesisKV("app_state.provider.params.blocks_per_epoch", "1"),
 			}),

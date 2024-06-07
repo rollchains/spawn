@@ -46,7 +46,7 @@ def main():
             "spawndefaultfeatures",
             POA,
             "ibc-ratelimit,cosmwasm,wasm-light-client,ignite-cli".split(","),
-            "wasmd",
+            "wasm",
             "appd",
             "utoken",
             "myghorg",
