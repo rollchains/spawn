@@ -300,6 +300,8 @@ class CmdCreator:
             # this is run after a cd .. so we set the source as that nested dir
             text += f" && gh repo create {self.name} --source={self.name}/ --remote=upstream --push --private"
 
+        text += f"\ngh repo delete {self.name} --yes\n"
+
         return text
 
 
