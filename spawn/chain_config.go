@@ -270,7 +270,7 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 			fc.ReplaceAll("mydenom", cfg.Denom)
 			fc.ReplaceAll("appName", cfg.ProjectName)
 			fc.ReplaceAll(`Binary  = "wasmd"`, fmt.Sprintf(`Binary  = "%s"`, cfg.BinDaemon)) // else it would replace the Cosmwasm/wasmd import path
-			fc.ReplaceAll(`Bech32 = "wasm"`, fmt.Sprintf(`Bech32 = "%s"`, cfg.Bech32Prefix))
+			fc.ReplaceAll(`mybechprefix`, cfg.Bech32Prefix)
 
 			fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix)
 
