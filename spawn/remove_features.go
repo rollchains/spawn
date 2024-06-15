@@ -11,16 +11,17 @@ import (
 // - Handle ComentSwaps before removing lines
 
 var (
-	TokenFactory       = "tokenfactory"
-	POA                = "poa"
-	POS                = "staking" // if ICS is used, we remove staking
-	GlobalFee          = "globalfee"
-	CosmWasm           = "cosmwasm"
-	WasmLC             = "wasmlc"
-	PacketForward      = "packetforward"
-	IBCRateLimit       = "ibc-ratelimit"
-	Ignite             = "ignite"
-	InterchainSecurity = "ics"
+	TokenFactory        = "tokenfactory"
+	POA                 = "poa"
+	POS                 = "staking" // if ICS is used, we remove staking
+	GlobalFee           = "globalfee"
+	CosmWasm            = "cosmwasm"
+	WasmLC              = "wasmlc"
+	PacketForward       = "packetforward"
+	IBCRateLimit        = "ibc-ratelimit"
+	Ignite              = "ignite"
+	InterchainSecurity  = "ics"
+	OptimisticExecution = "optimistic-execution"
 
 	appGo   = path.Join("app", "app.go")
 	appAnte = path.Join("app", "ante.go")
@@ -53,6 +54,8 @@ func AliasName(name string) string {
 		return PacketForward
 	case Ignite, "ignite-cli":
 		return Ignite
+	case OptimisticExecution, "optimisticexecution", "optimistic-exec":
+		return OptimisticExecution
 	case IBCRateLimit, "ibc-rate-limit", "ratelimit":
 		return IBCRateLimit
 	case InterchainSecurity, "interchain-security":
@@ -89,8 +92,11 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 			fc.RemovePacketForward()
 		case IBCRateLimit:
 			fc.RemoveIBCRateLimit()
+		// other
 		case Ignite:
 			fc.RemoveIgniteCLI()
+		case OptimisticExecution:
+			fc.RemoveOptimisticExecution()
 		default:
 			panic(fmt.Sprintf("unknown feature to remove %s", name))
 		}
@@ -236,6 +242,10 @@ func (fc *FileContent) RemoveIBCRateLimit() {
 
 func (fc *FileContent) RemoveIgniteCLI() {
 	fc.RemoveLineWithAnyMatch("starport scaffolding")
+}
+
+func (fc *FileContent) RemoveOptimisticExecution() {
+	fc.RemoveTaggedLines(OptimisticExecution, true)
 }
 
 func (fc *FileContent) RemoveInterchainSecurity() {

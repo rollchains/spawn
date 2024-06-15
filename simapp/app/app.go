@@ -373,6 +373,8 @@ func NewChainApp(
 	// }
 	// baseAppOptions = append(baseAppOptions, voteExtOp)
 
+	baseAppOptions = append(baseAppOptions, baseapp.SetOptimisticExecution()) // spawntag:optimistic-execution
+
 	bApp := baseapp.NewBaseApp(appName, logger, db, txConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
