@@ -19,11 +19,24 @@ import (
 var (
 	IgnoredFiles = []string{"embed.go", "heighliner/"}
 
-	CosmosHubProvider = localictypes.
-				ChainCosmosHub("localcosmos-1").
-				SetDockerImage(ibc.NewDockerImage("", "v15.1.0", "1025:1025")).
-				SetDefaultSDKv47Genesis(2)
+	CosmosHubProvider *localictypes.Chain
 )
+
+func init() {
+	CosmosHubProvider = localictypes.
+		ChainCosmosHub("localcosmos-1").
+		SetDockerImage(ibc.NewDockerImage("", "v15.1.0", "1025:1025")).
+		SetBlockTime("2000ms").
+		SetDefaultSDKv47Genesis(2)
+
+	// override default genesis
+	CosmosHubProvider.Genesis.Modify = []cosmos.GenesisKV{
+		cosmos.NewGenesisKV("app_state.gov.params.voting_period", "10s"),
+		cosmos.NewGenesisKV("app_state.gov.params.max_deposit_period", "10s"),
+		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.denom", CosmosHubProvider.Denom),
+		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.amount", "1"),
+	}
+}
 
 type NewChainConfig struct {
 	// ProjectName is the name of the new chain
@@ -288,11 +301,18 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 // SetupLocalInterchainJSON sets up the local-interchain testnets configuration files.
 func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 	c := localictypes.NewChainBuilder(cfg.ProjectName, "localchain-1", cfg.BinDaemon, cfg.Denom, cfg.Bech32Prefix).
-		SetBlockTime("1000ms").
+		SetBlockTime("2000ms").
 		SetDockerImage(ibc.NewDockerImage(strings.ToLower(cfg.ProjectName), "local", "")).
 		SetTrustingPeriod("336h").
 		SetHostPortOverride(localictypes.BaseHostPortOverride()).
 		SetDefaultSDKv47Genesis(2)
+
+	c.Genesis.Modify = []cosmos.GenesisKV{
+		cosmos.NewGenesisKV("app_state.gov.params.voting_period", "10s"),
+		cosmos.NewGenesisKV("app_state.gov.params.max_deposit_period", "10s"),
+		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.denom", c.Denom),
+		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.amount", "1"),
+	}
 
 	if cfg.isUsingICS {
 		c.SetICSConsumerLink("localcosmos-1")
