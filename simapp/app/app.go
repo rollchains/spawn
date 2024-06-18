@@ -542,15 +542,6 @@ func NewChainApp(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
-	// pre-initialize ConsumerKeeper to satsfy ibckeeper.NewKeeper which would panic on nil or zero keeper
-	// ConsumerKeeper implements StakingKeeper but all function calls result in no-ops so this is safe.
-	// ConsumerKeeper communication over IBC is not affected by these changes
-	app.ConsumerKeeper = ccvconsumerkeeper.NewNonZeroKeeper(
-		appCodec,
-		keys[ccvconsumertypes.StoreKey],
-		app.GetSubspace(ccvconsumertypes.ModuleName),
-	)
-
 	invCheckPeriod := cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod))
 	app.CrisisKeeper = crisiskeeper.NewKeeper(
 		appCodec,
@@ -606,29 +597,25 @@ func NewChainApp(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
+	// pre-initialize ConsumerKeeper to satsfy ibckeeper.NewKeeper which would panic on nil or zero keeper
+	// ConsumerKeeper implements StakingKeeper but all function calls result in no-ops so this is safe.
+	// ConsumerKeeper communication over IBC is not affected by these changes
+	app.ConsumerKeeper = ccvconsumerkeeper.NewNonZeroKeeper(
+		appCodec,
+		keys[ccvconsumertypes.StoreKey],
+		app.GetSubspace(ccvconsumertypes.ModuleName),
+	)
+
 	app.IBCKeeper = ibckeeper.NewKeeper(
 		appCodec,
 		keys[ibcexported.StoreKey],
 		app.GetSubspace(ibcexported.ModuleName),
 		//app.StakingKeeper, // ?spawntag:ics
-		app.ConsumerKeeper,
-		app.UpgradeKeeper,
-		scopedIBCKeeper,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-	)
-
-	// <spawntag:ics
-	// Set the IBC keeper again this time with reference to the ConsumerKeeper
-	app.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec,
-		keys[ibcexported.StoreKey],
-		app.GetSubspace(ibcexported.ModuleName),
 		&app.ConsumerKeeper,
 		app.UpgradeKeeper,
 		scopedIBCKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	// spawntag:ics>
 
 	// <spawntag:staking
 	// register the staking hooks
@@ -641,7 +628,7 @@ func NewChainApp(
 	)
 	// spawntag:staking>
 
-	// initialize the actual ConsumerKeeper
+	// Initialize the actual ConsumerKeeper
 	app.ConsumerKeeper = ccvconsumerkeeper.NewKeeper(
 		appCodec,
 		keys[ccvconsumertypes.StoreKey],
@@ -662,10 +649,6 @@ func NewChainApp(
 		authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
 	)
 
-	// register slashing module Slashing hooks to the consumer keeper
-	app.ConsumerKeeper = *app.ConsumerKeeper.SetHooks(app.SlashingKeeper.Hooks())
-	consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
-
 	// <spawntag:ics
 	// Set the slashing keeper again, this time with the ConsumerKeeper
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
@@ -675,6 +658,10 @@ func NewChainApp(
 		&app.ConsumerKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
+
+	// register slashing module Slashing hooks to the consumer keeper
+	app.ConsumerKeeper = *app.ConsumerKeeper.SetHooks(app.SlashingKeeper.Hooks())
+	consumerModule := ccvconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ccvconsumertypes.ModuleName))
 	// spawntag:ics>
 
 	// <spawntag:staking
