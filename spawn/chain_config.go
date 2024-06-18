@@ -323,10 +323,6 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 
 	if cfg.isUsingICS {
 		c.SetICSConsumerLink("localcosmos-1")
-
-		// ICS won't have gov, mint, staking, etc.
-		c.Genesis.Modify = []cosmos.GenesisKV{}
-		c.SetGenesis(c.Genesis)
 	} else {
 		// make this is an IBC testnet for POA/POS chains
 		c.SetAppendedIBCPathLink(CosmosHubProvider)
