@@ -105,6 +105,7 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 	if cfg.isUsingICS {
 		fc.RemoveStandardTestNodeScript()
 		fc.HandleAllTagged("not-ics") // interchaintest
+		fc.removePacketForwardTestOnly()
 	}
 
 	// remove any left over `// spawntag:` comments
