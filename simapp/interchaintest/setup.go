@@ -60,7 +60,7 @@ var (
 			ChainImage,
 		},
 		GasAdjustment:  1.5,
-		ModifyGenesis:  cosmos.ModifyGenesis(DefaultGenesis), //spawntag:staking
+		ModifyGenesis:  cosmos.ModifyGenesis(DefaultGenesis), // spawntag:staking
 		EncodingConfig: GetEncodingConfig(),
 		Type:           "cosmos",
 		Name:           Name,
@@ -101,15 +101,16 @@ var (
 	fNodes = 0
 
 	// <spawntag:ics
-	ProviderVer   = "v4.1.0"
+	ProviderVer   = "v15.2.0"
 	ProviderChain = interchaintest.ChainSpec{
-		Name: "ics-provider", Version: ProviderVer,
+		Name: "gaia", Version: ProviderVer,
 		NumValidators: &vals, NumFullNodes: &fNodes,
 		ChainConfig: ibc.ChainConfig{
-			GasAdjustment:  1.5,
+			GasAdjustment:  3.0,
 			TrustingPeriod: "504h",
-			ModifyGenesis: cosmos.ModifyGenesis([]cosmos.GenesisKV{
-				cosmos.NewGenesisKV("app_state.provider.params.blocks_per_epoch", "1"),
+			ModifyGenesis:  cosmos.ModifyGenesis([]cosmos.GenesisKV{
+				// v4+ ICS provider required
+				// cosmos.NewGenesisKV("app_state.provider.params.blocks_per_epoch", "1"),
 			}),
 		},
 	}
