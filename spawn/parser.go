@@ -26,6 +26,11 @@ const (
 	MultiLineEndFormat = StdFormat + ">"
 )
 
+func (fc *FileContent) HandleAllTagged(text string) {
+	fc.HandleCommentSwaps(text)
+	fc.RemoveTaggedLines(text, true)
+}
+
 // Sometimes we remove a module line and would like to swap it for another.
 func (fc *FileContent) HandleCommentSwaps(name string) {
 	splitContent := strings.Split(fc.Contents, "\n")

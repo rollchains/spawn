@@ -41,10 +41,10 @@ func TestDisabledGeneration(t *testing.T) {
 			// by default ICS is used
 			Name:          "default",
 			Disabled:      []string{},
-			NotContainAny: []string{"StakingKeeper", "POAKeeper"},
+			NotContainAny: []string{"POAKeeper"},
 		},
 		{
-			Name:     "everything but staking",
+			Name:     "everythingbutstaking",
 			Disabled: allButStaking,
 		},
 		{
@@ -83,7 +83,6 @@ func TestDisabledGeneration(t *testing.T) {
 
 		t.Run(name, func(t *testing.T) {
 			dirPath := path.Join(cwd, name)
-
 			require.NoError(t, os.RemoveAll(name))
 
 			cfg := spawn.NewChainConfig{
@@ -97,10 +96,9 @@ func TestDisabledGeneration(t *testing.T) {
 				DisabledModules: dc,
 				Logger:          Logger,
 			}
-			cfg.Run(false)
+			require.NoError(t, cfg.Run(false), "failed to generate proper chain")
 
-			AssertValidGeneration(t, dirPath, dc, c.NotContainAny)
-
+			AssertValidGeneration(t, dirPath, dc, c.NotContainAny, cfg)
 			require.NoError(t, os.RemoveAll(name))
 		})
 	}
@@ -116,7 +114,7 @@ func RandStringBytes(n int) string {
 	return string(b)
 }
 
-func AssertValidGeneration(t *testing.T, dirPath string, dc []string, notContainAny []string) {
+func AssertValidGeneration(t *testing.T, dirPath string, dc []string, notContainAny []string, cfg spawn.NewChainConfig) {
 	fileCount := 0
 	err := filepath.WalkDir(dirPath, func(p string, file fs.DirEntry, err error) error {
 		if err != nil {
@@ -134,7 +132,7 @@ func AssertValidGeneration(t *testing.T, dirPath string, dc []string, notContain
 			// ensure no disabled modules are present
 			for _, text := range notContainAny {
 				text := text
-				require.NotContains(t, string(f), text, fmt.Sprintf("disabled module %s found in %s (%s)", text, base, p))
+				require.NotContains(t, string(f), text, fmt.Sprintf("disabled module %s found in %s (%s) with config %+v", text, base, p, cfg))
 			}
 
 			_, err = format.Source(f)

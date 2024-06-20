@@ -62,16 +62,22 @@ type NewChainConfig struct {
 	isUsingICS bool
 }
 
-func (cfg NewChainConfig) Run(doAnnounce bool) {
+func (cfg NewChainConfig) Run(doAnnounce bool) error {
 	if err := cfg.Validate(); err != nil {
 		cfg.Logger.Error("Error validating config", "err", err)
-		return
+		return fmt.Errorf("error validating config: %w", err)
 	}
 
-	cfg.NewChain()
+	if err := cfg.NewChain(); err != nil {
+		cfg.Logger.Error("Error creating new chain", "err", err)
+		return fmt.Errorf("error creating new chain: %w", err)
+	}
+
 	if doAnnounce {
 		cfg.AnnounceSuccessfulBuild()
 	}
+
+	return nil
 }
 
 // SetProperFeaturePairs ensures modules that are meant to be disabled, are.
@@ -88,14 +94,13 @@ func (cfg *NewChainConfig) SetProperFeaturePairs() {
 	}
 	cfg.isUsingICS = isUsingICS
 
-	// TODO: maybe we allow so democratic consumers are allowed?
-	// Remove staking if ICS is in use
-	if isUsingICS && !cfg.IsFeatureDisabled(POS) {
-		d = append(d, POS)
+	// remove POA if it is being used
+	if isUsingICS {
+		d = append(d, POA)
 	}
 
 	cfg.DisabledModules = d
-	cfg.Logger.Debug("Disabled features", "features", cfg.DisabledModules)
+	cfg.Logger.Debug("SetProperFeaturePairs Disabled features", "features", cfg.DisabledModules)
 }
 
 func RemoveDuplicates(disabled []string) []string {
@@ -167,7 +172,7 @@ func (cfg *NewChainConfig) GithubPath() string {
 	return fmt.Sprintf("github.com/%s/%s", cfg.GithubOrg, cfg.ProjectName)
 }
 
-func (cfg *NewChainConfig) NewChain() {
+func (cfg *NewChainConfig) NewChain() error {
 	NewDirName := cfg.ProjectName
 	logger := cfg.Logger
 
@@ -175,21 +180,21 @@ func (cfg *NewChainConfig) NewChain() {
 	cfg.SetProperFeaturePairs()
 
 	logger.Debug("Spawning new app", "app", NewDirName)
-	logger.Debug("Disabled features", "features", cfg.DisabledModules)
+	logger.Debug("NewChain Disabled features", "features", cfg.DisabledModules)
 
 	if err := os.MkdirAll(NewDirName, 0755); err != nil {
 		logger.Error("Error creating directory", "err", err)
-		return
+		return fmt.Errorf("error creating directory: %w", err)
 	}
 
 	if err := cfg.SetupMainChainApp(); err != nil {
 		logger.Error("Error setting up main chain app", "err", err, "file", debugErrorFile(logger, NewDirName))
-		return
+		return fmt.Errorf("error setting up main chain app: %w", err)
 	}
 
 	if err := cfg.SetupInterchainTest(); err != nil {
 		logger.Error("Error setting up interchain test", "err", err, "file", debugErrorFile(logger, NewDirName))
-		return
+		return fmt.Errorf("error setting up interchain test: %w", err)
 	}
 
 	// setup local-interchain testnets
@@ -201,6 +206,8 @@ func (cfg *NewChainConfig) NewChain() {
 	if !cfg.IgnoreGitInit {
 		cfg.GitInitNewProjectRepo()
 	}
+
+	return nil
 }
 
 // errFileText is used to store the contents of a failed file on save to help with debugging
@@ -276,7 +283,7 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 			fc.ReplaceAll("mydenom", cfg.Denom)
 			fc.ReplaceAll("appName", cfg.ProjectName)
 			fc.ReplaceAll(`Binary  = "wasmd"`, fmt.Sprintf(`Binary  = "%s"`, cfg.BinDaemon)) // else it would replace the Cosmwasm/wasmd import path
-			fc.ReplaceAll(`Bech32 = "wasm"`, fmt.Sprintf(`Bech32 = "%s"`, cfg.Bech32Prefix))
+			fc.ReplaceAll(`mybechprefix`, cfg.Bech32Prefix)
 
 			fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix)
 
@@ -316,10 +323,6 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 
 	if cfg.isUsingICS {
 		c.SetICSConsumerLink("localcosmos-1")
-
-		// ICS won't have gov, mint, staking, etc.
-		c.Genesis.Modify = []cosmos.GenesisKV{}
-		c.SetGenesis(c.Genesis)
 	} else {
 		// make this is an IBC testnet for POA/POS chains
 		c.SetAppendedIBCPathLink(CosmosHubProvider)

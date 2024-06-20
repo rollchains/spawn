@@ -102,6 +102,12 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		}
 	}
 
+	if cfg.isUsingICS {
+		fc.RemoveStandardTestNodeScript()
+		fc.HandleAllTagged("not-ics") // interchaintest
+		fc.removePacketForwardTestOnly()
+	}
+
 	// remove any left over `// spawntag:` comments
 	fc.RemoveTaggedLines("", false)
 }
@@ -142,8 +148,7 @@ func (fc *FileContent) RemoveGlobalFee() {
 	text := "globalfee"
 	fc.RemoveGoModImport("github.com/strangelove-ventures/globalfee")
 
-	fc.HandleCommentSwaps(text)
-	fc.RemoveTaggedLines(text, true)
+	fc.HandleAllTagged(text)
 
 	fc.RemoveModuleFromText(text,
 		appGo,
@@ -164,7 +169,7 @@ func (fc *FileContent) RemoveCosmWasm(isWasmClientDisabled bool) {
 		fc.RemoveGoModImport("github.com/CosmWasm/wasmvm")
 	}
 
-	fc.RemoveTaggedLines(text, true)
+	fc.HandleAllTagged(text)
 
 	fc.DeleteFile(path.Join("app", "wasm.go"))
 
@@ -207,7 +212,7 @@ func (fc *FileContent) RemoveWasmLightClient() {
 	text := "08wasmlc"
 	fc.RemoveGoModImport("github.com/cosmos/ibc-go/modules/light-clients/08-wasm")
 
-	fc.RemoveTaggedLines(text, true)
+	fc.HandleAllTagged(text)
 
 	fc.RemoveModuleFromText("wasmlc",
 		appGo,
@@ -228,8 +233,7 @@ func (fc *FileContent) RemoveIBCRateLimit() {
 	text := "ratelimit"
 	fc.RemoveGoModImport("github.com/Stride-Labs/ibc-rate-limiting")
 
-	fc.HandleCommentSwaps(text)
-	fc.RemoveTaggedLines(text, true)
+	fc.HandleAllTagged(text)
 
 	fc.RemoveModuleFromText("RatelimitKeeper", appGo)
 	fc.RemoveModuleFromText(text,
@@ -253,40 +257,40 @@ func (fc *FileContent) RemoveInterchainSecurity() {
 
 	fc.RemoveGoModImport("github.com/cosmos/interchain-security")
 
-	fc.HandleCommentSwaps(text)
-	fc.RemoveTaggedLines(text, true)
+	fc.HandleAllTagged(text)
 
 	// remove from e2e
 	fc.RemoveModuleFromText(text, path.Join("workflows", "interchaintest-e2e.yml"))
 
-	fc.RemoveModuleFromText("ibcconsumerkeeper.NewNonZeroKeeper", appGo)
+	fc.RemoveModuleFromText("ccvconsumerkeeper.NewNonZeroKeeper", appGo)
 	fc.RemoveModuleFromText("ConsumerKeeper", appGo)
 	fc.RemoveModuleFromText("ScopedIBCConsumerKeeper", appGo)
 
-	fc.RemoveLineWithAnyMatch("ibcconsumerkeeper")
-	fc.RemoveLineWithAnyMatch("ibcconsumertypes")
-	fc.RemoveLineWithAnyMatch("consumerante")
+	fc.RemoveLineWithAnyMatch("ccvconsumer")
+	fc.RemoveLineWithAnyMatch("ccvconsumerkeeper")
+	fc.RemoveLineWithAnyMatch("ccvconsumertypes")
+	fc.RemoveLineWithAnyMatch("ccvconsumerante")
+	fc.RemoveLineWithAnyMatch("ccvdemocracyante")
 
 	fc.DeleteFile(path.Join("cmd", "wasmd", "ics_consumer.go"))
 	fc.DeleteFile(path.Join("scripts", "test_ics_node.sh"))
+}
 
-	// TODO: remove any ictest related
-
+// Remove this if using ICS, no need.
+func (fc *FileContent) RemoveStandardTestNodeScript() {
+	fc.DeleteFile(path.Join("scripts", "test_node.sh"))
 }
 
 // Remove staking module if using a custom impl like the ICS Consumer
 func (fc *FileContent) RemoveStaking() {
+	// TODO: this should be done at cfg build time, not here?
 	fc.RemovePOA() // if we already removed we should be fine
 
 	text := "staking"
-	fc.HandleCommentSwaps(text)
-	fc.RemoveTaggedLines(text, true)
+	fc.HandleAllTagged(text)
 
 	fc.RemoveModuleFromText("StakingKeeper", appGo)
 	fc.RemoveModuleFromText("stakingtypes", appGo)
-
-	// TODO: depends on staking bond denom. Fix? (idk how ICS does this atm)
-	fc.RemoveModuleFromText("globalfeeante", appAnte)
 
 	// delete core modules which depend on staking
 	fc.RemoveMint()
@@ -299,7 +303,7 @@ func (fc *FileContent) RemoveStaking() {
 	fc.DeleteFile(path.Join("app", "test_helpers.go"))
 	fc.DeleteFile(path.Join("app", "test_support.go"))
 	fc.DeleteFile(path.Join("app", "app_test.go"))
-	fc.DeleteFile(path.Join("cmd", "wasmd", "testnet.go")) // TODO(nit): switch this to be cfg.BinDaemon instead? (check actual path vs relative)
+	fc.DeleteFile(path.Join("cmd", "wasmd", "testnet.go"))
 
 	// Since we will be using ICS (test_ics_node.sh)
 	fc.DeleteFile(path.Join("scripts", "test_node.sh"))
@@ -315,8 +319,7 @@ func (fc *FileContent) RemoveStaking() {
 func (fc *FileContent) RemoveMint() {
 	// NOTE: be careful, tenderMINT has 'mint' suffix in it. Which can match
 	text := "mint"
-	fc.HandleCommentSwaps(text)
-	fc.RemoveTaggedLines(text, true)
+	fc.HandleAllTagged(text)
 
 	// TODO: Fix this so it does not break
 	fc.RemoveModuleFromText("MintKeeper", appGo)
@@ -326,8 +329,7 @@ func (fc *FileContent) RemoveMint() {
 
 func (fc *FileContent) RemoveGov() {
 	text := "gov"
-	fc.HandleCommentSwaps(text)
-	fc.RemoveTaggedLines(text, true)
+	fc.HandleAllTagged(text)
 
 	fc.RemoveModuleFromText("GovKeeper", appGo)
 
@@ -337,8 +339,7 @@ func (fc *FileContent) RemoveGov() {
 
 func (fc *FileContent) RemoveDistribution() {
 	text := "distribution"
-	fc.HandleCommentSwaps(text)
-	fc.RemoveTaggedLines(text, true)
+	fc.HandleAllTagged(text)
 
 	fc.RemoveModuleFromText("distrtypes", appGo)
 	fc.RemoveModuleFromText("DistrKeeper", appGo)

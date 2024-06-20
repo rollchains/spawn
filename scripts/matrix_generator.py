@@ -15,12 +15,13 @@ SupportedFeatures = [
     "ibc-ratelimit",
     "cosmwasm",
     "wasm-light-client",
+    "optimistic-execution",
     "ignite-cli",
 ]
 
 POS = "proof-of-stake"
 POA = "proof-of-authority"
-ICS = "interchain-security"
+ICS = "interchain-security"  # cosmoshub
 
 
 def main():
@@ -46,7 +47,7 @@ def main():
             "spawndefaultfeatures",
             POA,
             "ibc-ratelimit,cosmwasm,wasm-light-client,ignite-cli".split(","),
-            "wasmd",
+            "cosmos",
             "appd",
             "utoken",
             "myghorg",
@@ -299,6 +300,7 @@ class CmdCreator:
         if self.push_to_gh:
             # this is run after a cd .. so we set the source as that nested dir
             text += f" && gh repo create {self.name} --source={self.name}/ --remote=upstream --push --private"
+            text += f"\ngh repo delete {self.name} --yes"
 
         return text
 

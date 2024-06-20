@@ -33,7 +33,7 @@ func TestIBCRateLimit(t *testing.T) {
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
 		cs,
 		&ProviderChain,          // spawntag:ics
-		&SecondDefaultChainSpec, // spawntag:staking
+		&SecondDefaultChainSpec, // spawntag:not-ics
 	})
 
 	chains, err := cf.Chains(t.Name())
@@ -55,14 +55,14 @@ func TestIBCRateLimit(t *testing.T) {
 		AddChain(secondary).
 		AddRelayer(r, "relayer")
 
-	// <spawntag:staking
+	// <spawntag:not-ics
 	ic = ic.AddLink(interchaintest.InterchainLink{
 		Chain1:  chain,
 		Chain2:  secondary,
 		Relayer: r,
 		Path:    ibcPath,
 	})
-	// spawntag:staking>
+	// spawntag:not-ics>
 	// <spawntag:ics
 	ic = ic.AddProviderConsumerLink(interchaintest.ProviderConsumerLink{
 		Provider: secondary,

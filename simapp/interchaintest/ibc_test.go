@@ -11,6 +11,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
 	interchaintestrelayer "github.com/strangelove-ventures/interchaintest/v8/relayer"
 	"github.com/strangelove-ventures/interchaintest/v8/testreporter"
+	"github.com/strangelove-ventures/interchaintest/v8/testutil"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest"
@@ -34,7 +35,7 @@ func TestIBCBasic(t *testing.T) {
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
 		cs,
 		&ProviderChain,          // spawntag:ics
-		&SecondDefaultChainSpec, // spawntag:staking
+		&SecondDefaultChainSpec, // spawntag:not-ics
 	})
 
 	chains, err := cf.Chains(t.Name())
@@ -55,14 +56,14 @@ func TestIBCBasic(t *testing.T) {
 		AddChain(chainB).
 		AddRelayer(r, "relayer")
 
-	// <spawntag:staking
+	// <spawntag:not-ics
 	ic = ic.AddLink(interchaintest.InterchainLink{
 		Chain1:  chainA,
 		Chain2:  chainB,
 		Relayer: r,
 		Path:    ibcPath,
 	})
-	// spawntag:staking>
+	// spawntag:not-ics>
 	// <spawntag:ics
 	ic = ic.AddProviderConsumerLink(interchaintest.ProviderConsumerLink{
 		Consumer: chainA,
@@ -81,6 +82,8 @@ func TestIBCBasic(t *testing.T) {
 	}))
 
 	require.NoError(t, chainB.FinishICSProviderSetup(ctx, r, eRep, ibcPath)) // spawntag:ics
+
+	require.NoError(t, testutil.WaitForBlocks(ctx, 5, chainA)) // spawntag:not-ics
 
 	// Create and Fund User Wallets
 	fundAmount := math.NewInt(10_000_000)

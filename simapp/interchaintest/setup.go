@@ -17,7 +17,7 @@ import (
 
 	wasm "github.com/CosmWasm/wasmd/x/wasm/types"
 	ibcconntypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
-	ibcconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 	globalfee "github.com/strangelove-ventures/globalfee/x/globalfee/types"
 	poa "github.com/strangelove-ventures/poa"
 	tokenfactory "github.com/strangelove-ventures/tokenfactory/x/tokenfactory/types"
@@ -31,8 +31,7 @@ var (
 	Name    = "appName"
 	ChainID = "localchain-1"
 	Binary  = "wasmd"
-
-	Bech32 = "wasm"
+	Bech32  = "mybechprefix"
 
 	NumberVals         = 1
 	NumberFullNodes    = 0
@@ -61,7 +60,7 @@ var (
 			ChainImage,
 		},
 		GasAdjustment:  1.5,
-		ModifyGenesis:  cosmos.ModifyGenesis(DefaultGenesis), //spawntag:staking
+		ModifyGenesis:  cosmos.ModifyGenesis(DefaultGenesis), // spawntag:staking
 		EncodingConfig: GetEncodingConfig(),
 		Type:           "cosmos",
 		Name:           Name,
@@ -71,7 +70,7 @@ var (
 		Denom:          Denom,
 		CoinType:       "118",
 		GasPrices:      "0" + Denom,
-		TrustingPeriod: "336h",
+		TrustingPeriod: "504h",
 	}
 
 	DefaultChainSpec = interchaintest.ChainSpec{
@@ -102,15 +101,16 @@ var (
 	fNodes = 0
 
 	// <spawntag:ics
-	ProviderVer   = "v4.1.0"
+	ProviderVer   = "v15.2.0"
 	ProviderChain = interchaintest.ChainSpec{
-		Name: "ics-provider", Version: ProviderVer,
+		Name: "gaia", Version: ProviderVer,
 		NumValidators: &vals, NumFullNodes: &fNodes,
 		ChainConfig: ibc.ChainConfig{
-			GasAdjustment:  1.5,
-			TrustingPeriod: "336h",
-			ModifyGenesis: cosmos.ModifyGenesis([]cosmos.GenesisKV{
-				cosmos.NewGenesisKV("app_state.provider.params.blocks_per_epoch", "1"),
+			GasAdjustment:  3.0,
+			TrustingPeriod: "504h",
+			ModifyGenesis:  cosmos.ModifyGenesis([]cosmos.GenesisKV{
+				// v4+ ICS provider required
+				// cosmos.NewGenesisKV("app_state.provider.params.blocks_per_epoch", "1"),
 			}),
 		},
 	}
@@ -124,7 +124,7 @@ func GetEncodingConfig() *moduletestutil.TestEncodingConfig {
 	tokenfactory.RegisterInterfaces(cfg.InterfaceRegistry)
 	globalfee.RegisterInterfaces(cfg.InterfaceRegistry)
 	poa.RegisterInterfaces(cfg.InterfaceRegistry)
-	ibcconsumertypes.RegisterInterfaces(cfg.InterfaceRegistry)
+	ccvconsumertypes.RegisterInterfaces(cfg.InterfaceRegistry)
 	return &cfg
 }
 

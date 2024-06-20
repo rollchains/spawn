@@ -36,9 +36,7 @@ var (
 
 	// parentDeps is a list of modules that are disabled if a parent module is disabled.
 	// i.e. Without staking, POA is not possible as it depends on staking.
-	parentDeps = map[string][]string{
-		spawn.POS: {spawn.POA},
-	}
+	parentDeps = map[string][]string{}
 )
 
 const (
@@ -128,6 +126,8 @@ var newChain = &cobra.Command{
 				// if consensus is proof-of-authority, allow proof of stake
 				if consensus == spawn.POA && name == spawn.POS {
 					continue
+				} else if consensus == spawn.InterchainSecurity && name == spawn.POS {
+					continue
 				}
 
 				disabledConsensus = append(disabledConsensus, name)
@@ -151,7 +151,7 @@ var newChain = &cobra.Command{
 		disabled = append(disabled, disabledConsensus...)
 		disabled = spawn.NormalizeDisabledNames(disabled, parentDeps)
 
-		logger.Debug("Disabled features", "features", disabled)
+		logger.Debug("Disabled features final", "features", disabled)
 
 		cfg := &spawn.NewChainConfig{
 			ProjectName:     projName,
