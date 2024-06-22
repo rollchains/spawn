@@ -12,6 +12,11 @@ func ExecCommand(command string, args ...string) error {
 	return cmd.Run()
 }
 
+func ExecCommandWithOutput(command string, args ...string) ([]byte, error) {
+	cmd := exec.Command(command, args...)
+	return cmd.CombinedOutput()
+}
+
 func (cfg *NewChainConfig) GitInitNewProjectRepo() {
 	if err := ExecCommand("git", "init", cfg.ProjectName, "--quiet"); err != nil {
 		cfg.Logger.Error("Error initializing git", "err", err)
