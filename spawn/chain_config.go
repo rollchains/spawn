@@ -86,6 +86,8 @@ func (cfg NewChainConfig) Run(doAnnounce bool) error {
 func (cfg *NewChainConfig) SetProperFeaturePairs() {
 	d := RemoveDuplicates(cfg.DisabledModules)
 
+	// TODO: if ethos ics is used, isUsingICS == true
+
 	isUsingICS := true
 	for _, name := range d {
 		if AliasName(name) == InterchainSecurity {
