@@ -27,7 +27,7 @@ require (
 	github.com/strangelove-ventures/globalfee v0.50.0
 	github.com/strangelove-ventures/interchaintest/v8 v8.4.0
 	github.com/strangelove-ventures/poa v0.50.0
-	github.com/strangelove-ventures/tokenfactory v0.50.0
+	github.com/strangelove-ventures/tokenfactory v0.50.2-alpha.1
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
 )
