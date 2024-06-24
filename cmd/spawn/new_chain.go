@@ -20,7 +20,7 @@ var (
 		{ID: "proof-of-authority", IsSelected: true, IsConsensus: true, Details: "Proof-of-Authority consensus algorithm (permissioned network)"},
 		{ID: "proof-of-stake", IsSelected: false, IsConsensus: true, Details: "Proof-of-Stake consensus algorithm (permissionless network)"},
 		{ID: "interchain-security", IsSelected: false, IsConsensus: true, Details: "Cosmos Hub Interchain Security"},
-		// {ID: "ics-ethos", IsSelected: false, IsConsensus: true, Details: "Interchain-Security with Ethos ETH restaking"},
+		{ID: "ics-ethos", IsSelected: false, IsConsensus: true, Details: "Ethos ETH restaking Security"},
 	}
 
 	SupportedFeatures = append(ConsensusFeatures, items{
@@ -127,6 +127,8 @@ var newChain = &cobra.Command{
 				if consensus == spawn.POA && name == spawn.POS {
 					continue
 				} else if consensus == spawn.InterchainSecurity && name == spawn.POS {
+					continue
+				} else if consensus == spawn.InterchainSecurity && name == spawn.EthosICS {
 					continue
 				}
 

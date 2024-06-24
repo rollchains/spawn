@@ -11,16 +11,19 @@ import (
 // - Handle ComentSwaps before removing lines
 
 var (
+	// Consensus
+	POA                = "poa"
+	POS                = "staking"
+	InterchainSecurity = "ics"
+	EthosICS           = "ics-ethos"
+	// Modules
 	TokenFactory        = "tokenfactory"
-	POA                 = "poa"
-	POS                 = "staking" // if ICS is used, we remove staking
 	GlobalFee           = "globalfee"
 	CosmWasm            = "cosmwasm"
 	WasmLC              = "wasmlc"
 	PacketForward       = "packetforward"
 	IBCRateLimit        = "ibc-ratelimit"
 	Ignite              = "ignite"
-	InterchainSecurity  = "ics"
 	OptimisticExecution = "optimistic-execution"
 
 	appGo   = path.Join("app", "app.go")
@@ -28,9 +31,11 @@ var (
 )
 
 // used for fuzz testing
+var AllConsensus = []string{POA, POS, InterchainSecurity, EthosICS}
+
 var AllFeatures = []string{
-	TokenFactory, POA, GlobalFee, CosmWasm, WasmLC,
-	PacketForward, IBCRateLimit, Ignite, InterchainSecurity, POS,
+	TokenFactory, GlobalFee, CosmWasm, WasmLC,
+	PacketForward, IBCRateLimit, Ignite,
 }
 
 // Given a string, return the reduced name for the module
@@ -60,6 +65,8 @@ func AliasName(name string) string {
 		return IBCRateLimit
 	case InterchainSecurity, "interchain-security":
 		return InterchainSecurity
+	case EthosICS, "ethos":
+		return EthosICS
 	default:
 		panic(fmt.Sprintf("AliasName: unknown feature to remove: %s", name))
 	}
@@ -79,6 +86,8 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 			fc.RemoveStaking()
 		case InterchainSecurity:
 			fc.RemoveInterchainSecurity()
+		case EthosICS:
+			fc.RemoveEthosInterchainSecurity()
 		// modules
 		case TokenFactory:
 			fc.RemoveTokenFactory()
@@ -274,6 +283,17 @@ func (fc *FileContent) RemoveInterchainSecurity() {
 
 	fc.DeleteFile(path.Join("cmd", "wasmd", "ics_consumer.go"))
 	fc.DeleteFile(path.Join("scripts", "test_ics_node.sh"))
+}
+
+func (fc *FileContent) RemoveEthosInterchainSecurity() {
+	text := EthosICS
+
+	fc.RemoveGoModImport("github.com/ethos-works/ethos-avs")
+	fc.RemoveGoModImport("github.com/ethos-works/ethos/ethos-chain")
+
+	fc.HandleAllTagged(text)
+
+	// We should only have to remove e2e test and files from here. Since it's a replacement?
 }
 
 // Remove this if using ICS, no need.

@@ -1121,8 +1121,7 @@ func NewChainApp(
 
 	app.ModuleManager.RegisterInvariants(app.CrisisKeeper)
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
-	err = app.ModuleManager.RegisterServices(app.configurator)
-	if err != nil {
+	if err = app.ModuleManager.RegisterServices(app.configurator); err != nil {
 		panic(err)
 	}
 
@@ -1367,6 +1366,11 @@ func (app *ChainApp) AppCodec() codec.Codec {
 // InterfaceRegistry returns ChainApp's InterfaceRegistry
 func (app *ChainApp) InterfaceRegistry() types.InterfaceRegistry {
 	return app.interfaceRegistry
+}
+
+// GetBaseApp returns the baseapp
+func (app *ChainApp) GetBaseApp() *baseapp.BaseApp {
+	return app.BaseApp
 }
 
 // TxConfig returns ChainApp's TxConfig

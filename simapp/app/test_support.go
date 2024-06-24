@@ -1,10 +1,10 @@
 package app
 
 import (
+	evidencekeeper "cosmossdk.io/x/evidence/keeper"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
-	"github.com/cosmos/cosmos-sdk/baseapp"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
@@ -20,12 +20,12 @@ func (app *ChainApp) GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper {
 	return app.ScopedIBCKeeper
 }
 
-func (app *ChainApp) GetBaseApp() *baseapp.BaseApp {
-	return app.BaseApp
-}
-
 func (app *ChainApp) GetBankKeeper() bankkeeper.Keeper {
 	return app.BankKeeper
+}
+
+func (app *ChainApp) GetTestEvidenceKeeper() evidencekeeper.Keeper {
+	return app.EvidenceKeeper
 }
 
 // <spawntag:staking
@@ -42,3 +42,19 @@ func (app *ChainApp) GetAccountKeeper() authkeeper.AccountKeeper {
 func (app *ChainApp) GetWasmKeeper() wasmkeeper.Keeper {
 	return app.WasmKeeper
 }
+
+// <spawntag:ethos-ics
+// TODO:
+// func (app *ChainApp) GetTestAccountKeeper() ethostestutil.TestAccountKeeper {
+// 	return app.AccountKeeper
+// }
+
+// func (app *ChainApp) GetTestBankKeeper() ethostestutil.TestBankKeeper {
+// 	return app.BankKeeper
+// }
+
+// func (app *ChainApp) GetTestSlashingKeeper() ethostestutil.TestSlashingKeeper {
+// 	return app.SlashingKeeper
+// }
+
+// spawntag:ethos-ics>
