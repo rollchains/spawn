@@ -128,7 +128,7 @@ var newChain = &cobra.Command{
 					continue
 				} else if consensus == spawn.InterchainSecurity && name == spawn.POS {
 					continue
-				} else if consensus == spawn.InterchainSecurity && name == spawn.EthosICS {
+				} else if consensus == spawn.EthosICS && name == spawn.InterchainSecurity {
 					continue
 				}
 

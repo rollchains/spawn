@@ -13,7 +13,7 @@ import (
 var (
 	// Consensus
 	POA                = "poa"
-	POS                = "staking"
+	POS                = "staking" // TODO: right now it does not remove anything
 	InterchainSecurity = "ics"
 	EthosICS           = "ethos-ics"
 	// Modules
@@ -83,7 +83,7 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		case POA:
 			fc.RemovePOA()
 		case POS:
-			fc.RemoveStaking()
+			// fc.RemoveStaking() // TODO: does not remove anything
 		case InterchainSecurity:
 			fc.RemoveInterchainSecurity()
 		case EthosICS:

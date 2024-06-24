@@ -24,7 +24,6 @@ import (
 )
 
 var (
-	app      *ChainApp
 	ccvSuite *integration.CCVTestSuite
 )
 
@@ -60,14 +59,14 @@ func SetupTestingApp(initValUpdates []cometbfttypes.ValidatorUpdate) func() (ibc
 			[]wasmkeeper.Option{}, // spawntag:wasm
 			baseapp.SetChainID(chainID),
 		)
-		encoding := app.AppCodec()
+		encoding := testApp.AppCodec()
 
 		// we need to set up a TestInitChainer where we can redefine MaxBlockGas in ConsensusParamsKeeper
 		testApp.SetInitChainer(testApp.InitChainer)
 		// and then we manually init baseapp and load states
 		testApp.LoadLatestVersion()
 
-		genesisState := app.DefaultGenesis()
+		genesisState := testApp.DefaultGenesis()
 
 		// NOTE ibc-go/v8/testing.SetupWithGenesisValSet requires a staking module
 		// genesisState or it panics. Feed a minimum one.

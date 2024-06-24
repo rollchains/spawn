@@ -59,9 +59,7 @@ func (app *ChainApp) GetTestSlashingKeeper() ethostestutil.TestSlashingKeeper {
 }
 
 func (app *ChainApp) GetConsumerKeeper() ibcconsumerkeeper.Keeper {
-	panic("GetConsumerKeeper not implemented on app for ethos yet. TODO(reece)")
-	return ibcconsumerkeeper.Keeper{}
-	// return app.ConsumerKeeper
+	return app.ConsumerKeeper
 }
 
 // GetTxConfig returns ChainApp's TxConfig
