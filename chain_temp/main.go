@@ -9,6 +9,11 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v8/testutil"
 )
 
+/*
+cd chain_temp
+local-ic start ethos-ics
+*/
+
 func main() {
 	// ProjectName:myproject Bech32Prefix:roll HomeDir:.myproject BinDaemon:rolld Denom:uroll GithubOrg:rollchains IgnoreGitInit:true DisabledModules:[poa staking] Logger:0xc001264330 isUsingICS:false
 
@@ -55,5 +60,5 @@ func main() {
 		},
 	})
 
-	localictypes.NewChainsConfig(ethos, eth, c).SaveJSON("chains/ethos-ics.json")
+	localictypes.NewChainsConfig(c, ethos, eth).SaveJSON("chains/ethos-ics.json")
 }
