@@ -15,14 +15,19 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-	ccvtypes "github.com/cosmos/interchain-security/v5/x/ccv/types"
+
+	// ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types" // ?spawntag:ethos-ics
+	// ccvtypes "github.com/cosmos/interchain-security/v5/x/ccv/types" // ?spawntag:ethos-ics
+	ccvconsumertypes "github.com/ethos-works/ethos/ethos-chain/x/ccv/consumer/types" // spawntag:ethos-ics
+	ccvtypes "github.com/ethos-works/ethos/ethos-chain/x/ccv/types"                  // spawntag:ethos-ics
 	"github.com/spf13/cobra"
 
 	ibctypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	commitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
 	ibctmtypes "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
-	ccvprovidertypes "github.com/cosmos/interchain-security/v5/x/ccv/provider/types"
+
+	// ccvprovidertypes "github.com/cosmos/interchain-security/v5/x/ccv/provider/types" // ?spawntag:ethos-ics
+	ccvprovidertypes "github.com/ethos-works/ethos/ethos-chain/x/ccv/provider/types" // spawntag:ethos-ics
 )
 
 // original credit: https://github.com/Stride-Labs/stride/blob/v22.0.0/cmd/consumer.go

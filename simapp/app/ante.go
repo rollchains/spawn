@@ -22,10 +22,12 @@ import (
 	globalfeeante "github.com/strangelove-ventures/globalfee/x/globalfee/ante"
 	globalfeekeeper "github.com/strangelove-ventures/globalfee/x/globalfee/keeper"
 
-	consumerdemocracy "github.com/cosmos/interchain-security/v5/app/consumer-democracy"
-	ccvdemocracyante "github.com/cosmos/interchain-security/v5/app/consumer-democracy/ante"
-	ccvconsumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"
-	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
+	//consumerdemocracy "github.com/cosmos/interchain-security/v5/app/consumer-democracy"  // ?spawntag:ethos-ics
+	//ccvdemocracyante "github.com/cosmos/interchain-security/v5/app/consumer-democracy/ante"  // ?spawntag:ethos-ics
+	//ccvconsumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"  // ?spawntag:ethos-ics
+
+	//ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper" // ?spawntag:ethos-ics
+	ccvconsumerkeeper "github.com/ethos-works/ethos/ethos-chain/x/ccv/consumer/keeper" // spawntag:ethos-ics
 )
 
 // HandlerOptions extend the SDK's AnteHandler options by requiring the IBC
@@ -71,9 +73,9 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
-		ccvconsumerante.NewMsgFilterDecorator(options.ConsumerKeeper),
-		ccvconsumerante.NewDisabledModulesDecorator("/cosmos.evidence", "/cosmos.slashing"),
-		ccvdemocracyante.NewForbiddenProposalsDecorator(consumerdemocracy.IsProposalWhitelisted, consumerdemocracy.IsModuleWhiteList),
+		//ccvconsumerante.NewMsgFilterDecorator(options.ConsumerKeeper), // ?spawntag:ethos-ics
+		//ccvconsumerante.NewDisabledModulesDecorator("/cosmos.evidence", "/cosmos.slashing"), // ?spawntag:ethos-ics
+		//ccvdemocracyante.NewForbiddenProposalsDecorator(consumerdemocracy.IsProposalWhitelisted, consumerdemocracy.IsModuleWhiteList), // ?spawntag:ethos-ics
 		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit), // after setup context to enforce limits early
 		wasmkeeper.NewCountTXDecorator(options.TXCounterStoreService),
 		wasmkeeper.NewGasRegisterDecorator(options.WasmKeeper.GetGasRegister()),

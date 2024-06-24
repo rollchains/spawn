@@ -15,7 +15,7 @@ var (
 	POA                = "poa"
 	POS                = "staking"
 	InterchainSecurity = "ics"
-	EthosICS           = "ics-ethos"
+	EthosICS           = "ethos-ics"
 	// Modules
 	TokenFactory        = "tokenfactory"
 	GlobalFee           = "globalfee"

@@ -48,9 +48,13 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	commitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
 	ibctmtypes "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
-	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-	ccvprovidertypes "github.com/cosmos/interchain-security/v5/x/ccv/provider/types"
-	ccvtypes "github.com/cosmos/interchain-security/v5/x/ccv/types"
+
+	// consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types" // ?spawntag:ethos-ics
+	// ccvprovidertypes "github.com/cosmos/interchain-security/v5/x/ccv/provider/types" // ?spawntag:ethos-ics
+	// ccvtypes "github.com/cosmos/interchain-security/v5/x/ccv/types" // ?spawntag:ethos-ics
+	consumertypes "github.com/ethos-works/ethos/ethos-chain/x/ccv/consumer/types"    // spawntag:ethos-ics
+	ccvprovidertypes "github.com/ethos-works/ethos/ethos-chain/x/ccv/provider/types" // spawntag:ethos-ics
+	ccvtypes "github.com/ethos-works/ethos/ethos-chain/x/ccv/types"                  // spawntag:ethos-ics
 )
 
 const chainID = "testing"

@@ -166,18 +166,26 @@ import (
 	ratelimitkeeper "github.com/Stride-Labs/ibc-rate-limiting/ratelimit/keeper"
 	ratelimittypes "github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
 
-	consumerdemocracy "github.com/cosmos/interchain-security/v5/app/consumer-democracy"
-	ccvconsumer "github.com/cosmos/interchain-security/v5/x/ccv/consumer"
-	ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
-	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	//consumerdemocracy "github.com/cosmos/interchain-security/v5/app/consumer-democracy" // ?spawntag:ethos-ics
+	//ccvconsumer "github.com/cosmos/interchain-security/v5/x/ccv/consumer" // ?spawntag:ethos-ics
+	//ccvconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper" // ?spawntag:ethos-ics
+	//ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types" // ?spawntag:ethos-ics
+	ccvconsumer "github.com/ethos-works/ethos/ethos-chain/x/ccv/consumer"              // spawntag:ethos-ics
+	ccvconsumerkeeper "github.com/ethos-works/ethos/ethos-chain/x/ccv/consumer/keeper" // spawntag:ethos-ics
+	ccvconsumertypes "github.com/ethos-works/ethos/ethos-chain/x/ccv/consumer/types"   // spawntag:ethos-ics
 
-	distr "github.com/cosmos/interchain-security/v5/x/ccv/democracy/distribution" // spawntag:ics
-	gov "github.com/cosmos/interchain-security/v5/x/ccv/democracy/governance"     // spawntag:ics
-	staking "github.com/cosmos/interchain-security/v5/x/ccv/democracy/staking"    // spawntag:ics
+	// TODO: how to do this wrt ethos ics? (maybe just remove any instances within remove_features?)
+	// distr "github.com/cosmos/interchain-security/v5/x/ccv/democracy/distribution" // ?spawntag:ethos-ics
+	// gov "github.com/cosmos/interchain-security/v5/x/ccv/democracy/governance"     // ?spawntag:ethos-ics
+	// staking "github.com/cosmos/interchain-security/v5/x/ccv/democracy/staking"    // ?spawntag:ethos-ics
 	//distr "github.com/cosmos/cosmos-sdk/x/distribution" // ?spawntag:ics
 	//"github.com/cosmos/cosmos-sdk/x/gov" // ?spawntag:ics
 	//"github.com/cosmos/cosmos-sdk/x/staking" // ?spawntag:ics
 	// this line is used by starport scaffolding # stargate/app/moduleImport
+
+	distr "github.com/ethos-works/ethos/ethos-chain/x/ccv/democracy/distribution" // spawntag:ethos-ics
+	gov "github.com/ethos-works/ethos/ethos-chain/x/ccv/democracy/governance"     // spawntag:ethos-ics
+	staking "github.com/ethos-works/ethos/ethos-chain/x/ccv/democracy/staking"    // spawntag:ethos-ics
 )
 
 const (
@@ -604,8 +612,9 @@ func NewChainApp(
 	// ConsumerKeeper communication over IBC is not affected by these changes
 	app.ConsumerKeeper = ccvconsumerkeeper.NewNonZeroKeeper(
 		appCodec,
-		keys[ccvconsumertypes.StoreKey],
-		app.GetSubspace(ccvconsumertypes.ModuleName),
+		//keys[ccvconsumertypes.StoreKey], // ?spawntag:ethos-ics
+		//app.GetSubspace(ccvconsumertypes.ModuleName), // ?spawntag:ethos-ics
+		runtime.NewKVStoreService(keys[ccvconsumertypes.StoreKey]), // spawntag:ethos-ics
 	)
 
 	app.IBCKeeper = ibckeeper.NewKeeper(
@@ -622,8 +631,9 @@ func NewChainApp(
 	// Initialize the actual ConsumerKeeper
 	app.ConsumerKeeper = ccvconsumerkeeper.NewKeeper(
 		appCodec,
-		keys[ccvconsumertypes.StoreKey],
-		app.GetSubspace(ccvconsumertypes.ModuleName),
+		// keys[ccvconsumertypes.StoreKey], // ?spawntag:ethos-ics
+		// app.GetSubspace(ccvconsumertypes.ModuleName), // ?spawntag:ethos-ics
+		runtime.NewKVStoreService(keys[ccvconsumertypes.StoreKey]), // spawntag:ethos-ics
 		scopedIBCConsumerKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
@@ -956,7 +966,8 @@ func NewChainApp(
 		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper, app.GetSubspace(banktypes.ModuleName)),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		//gov.NewAppModule(appCodec, &app.GovKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(govtypes.ModuleName)), // ?spawntag:ics
-		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper, consumerdemocracy.IsProposalWhitelisted, app.GetSubspace(govtypes.ModuleName), consumerdemocracy.IsModuleWhiteList), // spawntag:ics
+		// gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper, consumerdemocracy.IsProposalWhitelisted, app.GetSubspace(govtypes.ModuleName), consumerdemocracy.IsModuleWhiteList), // ?spawntag:ethos-ics || spawntag:ics
+		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper, IsProposalWhitelisted, app.GetSubspace(govtypes.ModuleName), IsModuleWhiteList), // spawntag:ethos-ics
 		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, nil, app.GetSubspace(minttypes.ModuleName)),
 		slashing.NewAppModule(
 			appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper,
@@ -965,7 +976,14 @@ func NewChainApp(
 			app.GetSubspace(slashingtypes.ModuleName), app.interfaceRegistry),
 		//distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.GetSubspace(distrtypes.ModuleName)), // ?spawntag:ics
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, *app.StakingKeeper, authtypes.FeeCollectorName, app.GetSubspace(distrtypes.ModuleName)), // spawntag:ics
-		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName)),
+		staking.NewAppModule(
+			appCodec,
+			// app.StakingKeeper, // ?spawntag:ethos-ics
+			*app.StakingKeeper, // spawntag:ethos-ics
+			app.AccountKeeper,
+			app.BankKeeper,
+			app.GetSubspace(stakingtypes.ModuleName),
+		),
 		upgrade.NewAppModule(app.UpgradeKeeper, app.AccountKeeper.AddressCodec()),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		params.NewAppModule(app.ParamsKeeper),
@@ -1373,7 +1391,7 @@ func (app *ChainApp) GetBaseApp() *baseapp.BaseApp {
 	return app.BaseApp
 }
 
-// TxConfig returns ChainApp's TxConfig
+// TxConfig returns the application's tx config.
 func (app *ChainApp) TxConfig() client.TxConfig {
 	return app.txConfig
 }
