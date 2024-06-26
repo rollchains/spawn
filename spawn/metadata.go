@@ -8,7 +8,8 @@ import (
 )
 
 func (cfg *NewChainConfig) MetadataFile() MetadataFile {
-	now := time.Now()
+	now := time.Now().UTC()
+	now = now.Round(time.Minute)
 
 	mf := MetadataFile{
 		Token: TokenMeta{
