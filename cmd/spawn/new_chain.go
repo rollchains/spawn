@@ -165,7 +165,10 @@ var newChain = &cobra.Command{
 			Logger:          logger,
 		}
 
-		cfg.Run(true)
+		if err := cfg.ValidateAndRun(true); err != nil {
+			logger.Error("Error creating new chain", "err", err)
+			return
+		}
 	},
 }
 

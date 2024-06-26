@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 	"time"
 
@@ -17,9 +18,11 @@ import (
 )
 
 var (
-	IgnoredFiles = []string{"embed.go", "heighliner/"}
-
+	// errFileText is used to store the contents of a failed file on save to help with debugging
+	errFileText       = ""
 	CosmosHubProvider *localictypes.Chain
+	IgnoredFiles      = []string{"embed.go", "heighliner/"}
+	isAlphaFn         = regexp.MustCompile(`^[A-Za-z]+$`).MatchString
 )
 
 func init() {
@@ -53,23 +56,18 @@ type NewChainConfig struct {
 	// GithubOrg is the github organization name to use for the module
 	GithubOrg string
 	// IgnoreGitInit is a flag to ignore git init
-	IgnoreGitInit bool
-
+	IgnoreGitInit   bool
 	DisabledModules []string
-
-	Logger *slog.Logger
-
-	isUsingICS bool
+	Logger          *slog.Logger
+	isUsingICS      bool
 }
 
-func (cfg NewChainConfig) Run(doAnnounce bool) error {
+func (cfg NewChainConfig) ValidateAndRun(doAnnounce bool) error {
 	if err := cfg.Validate(); err != nil {
-		cfg.Logger.Error("Error validating config", "err", err)
 		return fmt.Errorf("error validating config: %w", err)
 	}
 
-	if err := cfg.NewChain(); err != nil {
-		cfg.Logger.Error("Error creating new chain", "err", err)
+	if err := cfg.CreateNewChain(); err != nil {
 		return fmt.Errorf("error creating new chain: %w", err)
 	}
 
@@ -103,38 +101,6 @@ func (cfg *NewChainConfig) SetProperFeaturePairs() {
 	cfg.Logger.Debug("SetProperFeaturePairs Disabled features", "features", cfg.DisabledModules)
 }
 
-func RemoveDuplicates(disabled []string) []string {
-	names := make(map[string]bool)
-	for _, d := range disabled {
-		names[d] = true
-	}
-
-	newDisabled := []string{}
-	for d := range names {
-		newDisabled = append(newDisabled, d)
-	}
-
-	return newDisabled
-}
-
-// NormalizeDisabledNames normalizes the names, removes any parent dependencies, and removes duplicates.
-// It then returns the cleaned list of disabled modules.
-func NormalizeDisabledNames(disabled []string, improperPairs map[string][]string) []string {
-	for i, name := range disabled {
-		// normalize disabled to standard aliases
-		alias := AliasName(name)
-		disabled[i] = alias
-
-		// if we disable a feature which has disabled dependency, we need to disable those too
-		if deps, ok := improperPairs[alias]; ok {
-			// duplicates will arise, removed in the next step
-			disabled = append(disabled, deps...)
-		}
-	}
-
-	return RemoveDuplicates(disabled)
-}
-
 func (cfg *NewChainConfig) IsFeatureDisabled(featName string) bool {
 	for _, feat := range cfg.DisabledModules {
 		if AliasName(feat) == AliasName(featName) {
@@ -145,8 +111,39 @@ func (cfg *NewChainConfig) IsFeatureDisabled(featName string) bool {
 }
 
 func (cfg *NewChainConfig) Validate() error {
+	if cfg.ProjectName == "" {
+		return ErrCfgEmptyProject
+	}
+
 	if strings.ContainsAny(cfg.ProjectName, `~!@#$%^&*()_+{}|:"<>?/.,;'[]\=-`) {
-		return fmt.Errorf("project name cannot contain special characters %s", cfg.ProjectName)
+		return ErrCfgProjSpecialChars
+	}
+
+	if cfg.GithubOrg == "" {
+		return ErrCfgEmptyOrg
+	}
+
+	minDenomLen := 3
+	if len(cfg.Denom) < minDenomLen {
+		return ErrExpectedRange(ErrCfgDenomTooShort, minDenomLen, len(cfg.Denom))
+	}
+
+	minBinLen := 2
+	if len(cfg.BinDaemon) < minBinLen {
+		return ErrExpectedRange(ErrCfgBinTooShort, minBinLen, len(cfg.BinDaemon))
+	}
+
+	if cfg.Bech32Prefix == "" {
+		return ErrCfgEmptyBech32
+	}
+
+	if !isAlphaFn(cfg.Bech32Prefix) {
+		return ErrCfgBech32Alpha
+	}
+
+	minHomeLen := 2
+	if len(cfg.HomeDir) < minHomeLen {
+		return ErrExpectedRange(ErrCfgHomeDirTooShort, minHomeLen, len(cfg.HomeDir))
 	}
 
 	if cfg.Logger == nil {
@@ -172,7 +169,7 @@ func (cfg *NewChainConfig) GithubPath() string {
 	return fmt.Sprintf("github.com/%s/%s", cfg.GithubOrg, cfg.ProjectName)
 }
 
-func (cfg *NewChainConfig) NewChain() error {
+func (cfg *NewChainConfig) CreateNewChain() error {
 	NewDirName := cfg.ProjectName
 	logger := cfg.Logger
 
@@ -209,9 +206,6 @@ func (cfg *NewChainConfig) NewChain() error {
 
 	return nil
 }
-
-// errFileText is used to store the contents of a failed file on save to help with debugging
-var errFileText = ""
 
 func (cfg *NewChainConfig) SetupMainChainApp() error {
 	newDirName := cfg.ProjectName
@@ -332,6 +326,38 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 	if err := cc.SaveJSON(fmt.Sprintf("%s/chains/testnet.json", cfg.ProjectName)); err != nil {
 		panic(err)
 	}
+}
+
+// NormalizeDisabledNames normalizes the names, removes any parent dependencies, and removes duplicates.
+// It then returns the cleaned list of disabled modules.
+func NormalizeDisabledNames(disabled []string, improperPairs map[string][]string) []string {
+	for i, name := range disabled {
+		// normalize disabled to standard aliases
+		alias := AliasName(name)
+		disabled[i] = alias
+
+		// if we disable a feature which has disabled dependency, we need to disable those too
+		if deps, ok := improperPairs[alias]; ok {
+			// duplicates will arise, removed in the next step
+			disabled = append(disabled, deps...)
+		}
+	}
+
+	return RemoveDuplicates(disabled)
+}
+
+func RemoveDuplicates(disabled []string) []string {
+	names := make(map[string]bool)
+	for _, d := range disabled {
+		names[d] = true
+	}
+
+	newDisabled := []string{}
+	for d := range names {
+		newDisabled = append(newDisabled, d)
+	}
+
+	return newDisabled
 }
 
 func GetFileContent(logger *slog.Logger, newFilePath string, fs embed.FS, relPath string, d fs.DirEntry) (*FileContent, error) {

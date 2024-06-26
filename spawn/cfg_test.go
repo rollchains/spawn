@@ -170,3 +170,75 @@ func TestNormalizedNames(t *testing.T) {
 		})
 	}
 }
+
+type cfgCase struct {
+	Desc string
+	Cfg  spawn.NewChainConfig
+	Err  error
+}
+
+func NewCfgCase(desc string, cfg spawn.NewChainConfig, expectedErr error) cfgCase {
+	return cfgCase{
+		Desc: desc,
+		Cfg:  cfg,
+		Err:  expectedErr,
+	}
+}
+
+const (
+	proj  = "myproject"
+	bech  = "cosmos"
+	home  = ".app"
+	bin   = "appd"
+	denom = "token"
+	org   = "myorg"
+)
+
+func goodCfg() spawn.NewChainConfig {
+	return spawn.NewChainConfig{
+		ProjectName:  proj,
+		Bech32Prefix: bech,
+		HomeDir:      home,
+		BinDaemon:    bin,
+		Denom:        denom,
+		GithubOrg:    org,
+	}
+}
+
+func TestBadConfigInputs(t *testing.T) {
+	chainCases := []cfgCase{
+		NewCfgCase("valid config", goodCfg(), nil),
+		NewCfgCase("no github org", goodCfg().WithOrg(""), spawn.ErrCfgEmptyOrg),
+		NewCfgCase("no project name", goodCfg().WithProjectName(""), spawn.ErrCfgEmptyProject),
+		NewCfgCase("project special chars -", goodCfg().WithProjectName("my-project"), spawn.ErrCfgProjSpecialChars),
+		NewCfgCase("project special chars /", goodCfg().WithProjectName("my/project"), spawn.ErrCfgProjSpecialChars),
+		NewCfgCase("binary name to short len 1", goodCfg().WithBinDaemon("a"), spawn.ErrCfgBinTooShort),
+		NewCfgCase("success: binary name len 2", goodCfg().WithBinDaemon("ad"), nil),
+		NewCfgCase("token denom too short len 1", goodCfg().WithDenom("a"), spawn.ErrCfgDenomTooShort),
+		NewCfgCase("token denom too short len 2", goodCfg().WithDenom("ab"), spawn.ErrCfgDenomTooShort),
+		NewCfgCase("success: token denom special chars", goodCfg().WithDenom("my-cool/token"), nil),
+		NewCfgCase("success: token denom 3", goodCfg().WithDenom("abc"), nil),
+		NewCfgCase("home dir too short", goodCfg().WithHomeDir("."), spawn.ErrCfgHomeDirTooShort),
+		NewCfgCase("success: home dir valid", goodCfg().WithHomeDir(".a"), nil),
+		NewCfgCase("bech32 prefix to short", goodCfg().WithBech32Prefix(""), spawn.ErrCfgEmptyBech32),
+		NewCfgCase("bech32 not alpha", goodCfg().WithBech32Prefix("c919"), spawn.ErrCfgBech32Alpha),
+		NewCfgCase("bech32 not alpha", goodCfg().WithBech32Prefix("1"), spawn.ErrCfgBech32Alpha),
+		NewCfgCase("bech32 not alpha", goodCfg().WithBech32Prefix("---"), spawn.ErrCfgBech32Alpha),
+		NewCfgCase("success: bech32 prefix", goodCfg().WithBech32Prefix("c"), nil),
+	}
+
+	for _, c := range chainCases {
+		c := c
+
+		t.Run(c.Desc, func(t *testing.T) {
+
+			err := c.Cfg.Validate()
+			if c.Err != nil {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), c.Err.Error())
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
