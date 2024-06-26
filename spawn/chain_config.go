@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 	"time"
 
@@ -20,6 +21,8 @@ var (
 	IgnoredFiles = []string{"embed.go", "heighliner/"}
 
 	CosmosHubProvider *localictypes.Chain
+
+	isAlphaFn = regexp.MustCompile(`^[A-Za-z]+$`).MatchString
 )
 
 func init() {
@@ -143,12 +146,39 @@ func (cfg *NewChainConfig) IsFeatureDisabled(featName string) bool {
 }
 
 func (cfg *NewChainConfig) Validate() error {
+	if cfg.ProjectName == "" {
+		return ErrCfgEmptyProject
+	}
+
 	if strings.ContainsAny(cfg.ProjectName, `~!@#$%^&*()_+{}|:"<>?/.,;'[]\=-`) {
-		return fmt.Errorf("project name cannot contain special characters %s", cfg.ProjectName)
+		return ErrCfgProjSpecialChars
 	}
 
 	if cfg.GithubOrg == "" {
-		return fmt.Errorf("github organization name cannot be empty")
+		return ErrCfgEmptyOrg
+	}
+
+	minDenomLen := 3
+	if len(cfg.Denom) < minDenomLen {
+		return CfgErrorGen(ErrCfgDenomTooShort, minDenomLen, len(cfg.Denom))
+	}
+
+	minBinLen := 2
+	if len(cfg.BinDaemon) < minBinLen {
+		return CfgErrorGen(ErrCfgBinTooShort, minBinLen, len(cfg.BinDaemon))
+	}
+
+	if cfg.Bech32Prefix == "" {
+		return ErrCfgEmptyBech32
+	}
+
+	if !isAlphaFn(cfg.Bech32Prefix) {
+		return ErrCfgBech32Alpha
+	}
+
+	minHomeLen := 2
+	if len(cfg.HomeDir) < minHomeLen {
+		return CfgErrorGen(ErrCfgHomeDirTooShort, minHomeLen, len(cfg.HomeDir))
 	}
 
 	if cfg.Logger == nil {
@@ -156,6 +186,10 @@ func (cfg *NewChainConfig) Validate() error {
 	}
 
 	return nil
+}
+
+func CfgErrorGen(base error, expected int, actual int) error {
+	return fmt.Errorf("%w: minimum expected length %d, got %d", base, expected, actual)
 }
 
 func (cfg *NewChainConfig) AnnounceSuccessfulBuild() {
