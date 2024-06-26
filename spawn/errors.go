@@ -1,6 +1,9 @@
 package spawn
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 var (
 	ErrCfgEmptyOrg         = errors.New("github organization name cannot be empty")
@@ -12,3 +15,7 @@ var (
 	ErrCfgEmptyBech32      = errors.New("bech32 prefix cannot be empty")
 	ErrCfgBech32Alpha      = errors.New("bech32 prefix must only contain alphabetical characters")
 )
+
+func ErrExpectedRange(base error, expected int, actual int) error {
+	return fmt.Errorf("%w: minimum expected length %d, got %d", base, expected, actual)
+}
