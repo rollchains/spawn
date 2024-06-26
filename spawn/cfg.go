@@ -194,6 +194,8 @@ func (cfg *NewChainConfig) CreateNewChain() error {
 		return fmt.Errorf("error setting up interchain test: %w", err)
 	}
 
+	cfg.MetadataFile().Save(fmt.Sprintf("%s/chain_metadata.json", NewDirName))
+
 	// setup local-interchain testnets
 	// *testnet.json (chains/ directory)
 	cfg.SetupLocalInterchainJSON()
