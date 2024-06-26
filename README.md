@@ -54,7 +54,7 @@ spawn new rollchain \
 --denom=uroll `# the coin denomination to create` \
 --bin=rolld `# the name of the binary` \
 --disabled=cosmwasm,globalfee `# disable features. [tokenfactory,globalfee,ibc-packetforward,ibc-ratelimit,cosmwasm,wasm-light-client,ignite-cli]` \
---org=${GITHUB_USERNAME} `# the github username or organization to use for the module imports`
+--org=${GITHUB_USERNAME} `# the github username or organization to use for the module imports, optional`
 ```
 
 > *NOTE:* `spawn` creates a ready to use repository complete with `git` and GitHub CI. It can be quickly pushed to a new repository getting you and your team up and running quickly.

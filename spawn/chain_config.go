@@ -62,14 +62,12 @@ type NewChainConfig struct {
 	isUsingICS bool
 }
 
-func (cfg NewChainConfig) Run(doAnnounce bool) error {
+func (cfg NewChainConfig) ValidateAndRun(doAnnounce bool) error {
 	if err := cfg.Validate(); err != nil {
-		cfg.Logger.Error("Error validating config", "err", err)
 		return fmt.Errorf("error validating config: %w", err)
 	}
 
 	if err := cfg.NewChain(); err != nil {
-		cfg.Logger.Error("Error creating new chain", "err", err)
 		return fmt.Errorf("error creating new chain: %w", err)
 	}
 
@@ -147,6 +145,10 @@ func (cfg *NewChainConfig) IsFeatureDisabled(featName string) bool {
 func (cfg *NewChainConfig) Validate() error {
 	if strings.ContainsAny(cfg.ProjectName, `~!@#$%^&*()_+{}|:"<>?/.,;'[]\=-`) {
 		return fmt.Errorf("project name cannot contain special characters %s", cfg.ProjectName)
+	}
+
+	if cfg.GithubOrg == "" {
+		return fmt.Errorf("github organization name cannot be empty")
 	}
 
 	if cfg.Logger == nil {
