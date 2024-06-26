@@ -35,23 +35,24 @@ func (cfg *NewChainConfig) MetadataFile() MetadataFile {
 				Discord:  "",
 			},
 		},
+		ICS: ICSMeta{},
 	}
 
 	if cfg.isUsingICS {
 		mf.ICS = ICSMeta{
-			SpawnTime:   now,
-			Title:       cfg.BinDaemon,
-			Description: ".md description of your chain and all other relevant information",
-			ChainID:     "newchain-1",
-			InitialHeight: ICSInitialHeight{
+			SpawnTime: now,
+			Title:     cfg.BinDaemon,
+			Summary:   ".md description of your chain and all other relevant information",
+			ChainID:   "newchain-1",
+			InitialHeight: ICSClientTypes{
 				RevisionHeight: 0,
 				RevisionNumber: 1,
 			},
-			UnbondingPeriod:                   86400000000000,
-			CcvTimeoutPeriod:                  259200000000000,
-			TransferTimeoutPeriod:             1800000000000,
+			UnbondingPeriod:                   21 * 24 * time.Hour.Nanoseconds(), // 21 days
+			CcvTimeoutPeriod:                  28 * 24 * time.Hour.Nanoseconds(), // 28 days
+			TransferTimeoutPeriod:             1 * time.Hour.Nanoseconds(),       // 1 hour (matches stride-1 and neutron-1)
 			ConsumerRedistributionFraction:    "0.75",
-			BlocksPerDistributionTransmission: 1000,
+			BlocksPerDistributionTransmission: 1_000,
 			HistoricalEntries:                 10_000,
 			GenesisHash:                       "",
 			BinaryHash:                        "",
@@ -68,45 +69,74 @@ func (cfg *NewChainConfig) MetadataFile() MetadataFile {
 }
 
 type MetadataFile struct {
-	ICS     ICSMeta     `json:"ics,omitempty"`
-	Token   TokenMeta   `json:"token,omitempty"`
-	Project ProjectMeta `json:"project,omitempty"`
+	ICS     ICSMeta     `json:"ics"`
+	Token   TokenMeta   `json:"token"`
+	Project ProjectMeta `json:"project"`
 }
 
 func (mf MetadataFile) SaveJSON(loc string) error {
-	bz, err := json.MarshalIndent(mf, "", "  ")
-	if err != nil {
-		return err
+	var bz []byte
+	var err error
+
+	if mf.ICS.IsZero() {
+		// Non-ICS chains would save 0 state to file despite IsZero() being true.
+		// Hacky override with a new type to save instead.
+		type MetadataFileBare struct {
+			Token   TokenMeta   `json:"token"`
+			Project ProjectMeta `json:"project"`
+		}
+
+		bz, err = json.MarshalIndent(MetadataFileBare{
+			Token:   mf.Token,
+			Project: mf.Project,
+		}, "", "  ")
+	} else {
+		bz, err = json.MarshalIndent(mf, "", "  ")
+		if err != nil {
+			return err
+		}
 	}
 
 	return os.WriteFile(loc, bz, 0644)
 }
 
-type ICSInitialHeight struct {
-	RevisionHeight int `json:"revision_height"`
-	RevisionNumber int `json:"revision_number"`
+type ICSClientTypes struct {
+	// IBC clienttypes.Height just without omitempty
+
+	// the revision that the client is currently on
+	RevisionNumber uint64 `protobuf:"varint,1,opt,name=revision_number,json=revisionNumber,proto3" json:"revision_number"`
+	// the height within the given revision
+	RevisionHeight uint64 `protobuf:"varint,2,opt,name=revision_height,json=revisionHeight,proto3" json:"revision_height"`
 }
 
 type ICSMeta struct {
-	SpawnTime                         time.Time        `json:"spawn_time"`
-	Title                             string           `json:"title"`
-	Description                       string           `json:"description"`
-	ChainID                           string           `json:"chain_id"`
-	InitialHeight                     ICSInitialHeight `json:"initial_height"`
-	UnbondingPeriod                   int64            `json:"unbonding_period"`
-	CcvTimeoutPeriod                  int64            `json:"ccv_timeout_period"`
-	TransferTimeoutPeriod             int64            `json:"transfer_timeout_period"`
-	ConsumerRedistributionFraction    string           `json:"consumer_redistribution_fraction"`
-	BlocksPerDistributionTransmission int              `json:"blocks_per_distribution_transmission"`
-	HistoricalEntries                 int              `json:"historical_entries"`
-	GenesisHash                       string           `json:"genesis_hash"`
-	BinaryHash                        string           `json:"binary_hash"`
-	DistributionTransmissionChannel   string           `json:"distribution_transmission_channel"`
-	TopN                              int              `json:"top_N"`
-	ValidatorsPowerCap                int              `json:"validators_power_cap"`
-	ValidatorSetCap                   int              `json:"validator_set_cap"`
-	Allowlist                         []any            `json:"allowlist"`
-	Denylist                          []any            `json:"denylist"`
+	SpawnTime                         time.Time      `json:"spawn_time"`
+	Title                             string         `json:"title"`
+	Summary                           string         `json:"summary"`
+	ChainID                           string         `json:"chain_id"`
+	InitialHeight                     ICSClientTypes `json:"initial_height"`
+	UnbondingPeriod                   int64          `json:"unbonding_period"`
+	CcvTimeoutPeriod                  int64          `json:"ccv_timeout_period"`
+	TransferTimeoutPeriod             int64          `json:"transfer_timeout_period"`
+	ConsumerRedistributionFraction    string         `json:"consumer_redistribution_fraction"`
+	BlocksPerDistributionTransmission int            `json:"blocks_per_distribution_transmission"`
+	HistoricalEntries                 int            `json:"historical_entries"`
+	GenesisHash                       string         `json:"genesis_hash"`
+	BinaryHash                        string         `json:"binary_hash"`
+	DistributionTransmissionChannel   string         `json:"distribution_transmission_channel"`
+	TopN                              int            `json:"top_N"`
+	ValidatorsPowerCap                int            `json:"validators_power_cap"`
+	ValidatorSetCap                   int            `json:"validator_set_cap"`
+	Allowlist                         []any          `json:"allowlist"`
+	Denylist                          []any          `json:"denylist"`
+}
+
+// impl IsZero on ICSMeta
+func (ics ICSMeta) IsZero() bool {
+	// can't compare []any, so checking most defaults
+	return (ics.Title == "" &&
+		ics.Summary == "" &&
+		ics.ChainID == "")
 }
 
 type TokenMeta struct {
