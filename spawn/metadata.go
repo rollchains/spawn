@@ -68,12 +68,12 @@ func (cfg *NewChainConfig) MetadataFile() MetadataFile {
 }
 
 type MetadataFile struct {
-	ICS     ICSMeta     `json:"ics_meta omitempty"`
-	Token   TokenMeta   `json:"token_meta omitempty"`
-	Project ProjectMeta `json:"project_meta omitempty"`
+	ICS     ICSMeta     `json:"ics,omitempty"`
+	Token   TokenMeta   `json:"token,omitempty"`
+	Project ProjectMeta `json:"project,omitempty"`
 }
 
-func (mf MetadataFile) Save(loc string) error {
+func (mf MetadataFile) SaveJSON(loc string) error {
 	bz, err := json.MarshalIndent(mf, "", "  ")
 	if err != nil {
 		return err
