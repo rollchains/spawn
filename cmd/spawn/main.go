@@ -13,7 +13,6 @@ import (
 
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
-	"github.com/rollchains/spawn/spawn"
 	"github.com/spf13/cobra"
 )
 
@@ -74,7 +73,7 @@ func applyPluginCmds() {
 		name := name
 		abspath := abspath
 
-		info, err := spawn.ParseCobraCLICmd(abspath)
+		info, err := ParseCobraCLICmd(abspath)
 		if err != nil {
 			GetLogger().Warn("error parsing the CLI commands from the plugin", "name", name, "error", err)
 			continue
