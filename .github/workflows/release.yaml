@@ -10,6 +10,7 @@ on:
 
 jobs:
   goreleaser:
+    name: "Binary Release"
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
@@ -41,6 +42,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   release-image:
+    name: "Docker Release"
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
