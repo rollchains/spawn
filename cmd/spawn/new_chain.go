@@ -68,7 +68,7 @@ func init() {
 	newChain.Flags().String(FlagGithubOrg, "rollchains", "github organization")
 	newChain.Flags().String(FlagTokenDenom, "token", "bank token denomination")
 	newChain.Flags().StringSlice(FlagDisabled, []string{}, strings.Join(features, ","))
-	newChain.Flags().String(FlagConsensus, "", strings.Join(consensus, ",")) // we default to POA later if not set
+	newChain.Flags().String(FlagConsensus, spawn.POA, strings.Join(consensus, ",")) // we default to POA later if not set
 	newChain.Flags().Bool(FlagDebugging, false, "enable debugging")
 	newChain.Flags().Bool(FlagNoGit, false, "ignore git init")
 	newChain.Flags().Bool(FlagBypassPrompt, false, "bypass UI prompt")
