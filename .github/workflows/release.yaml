@@ -48,9 +48,6 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      # - name: Set up QEMU
-      #   uses: docker/setup-qemu-action@v3
-
       # all lowercase ghcr registry
       - run: |
          DOCKER_REGISTRY=`echo "ghcr.io/${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]'`
