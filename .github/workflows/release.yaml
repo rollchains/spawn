@@ -39,3 +39,41 @@ jobs:
           args: release --skip-validate --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # all lowercase ghcr registry
+      - run: |
+         DOCKER_REGISTRY=`echo "ghcr.io/${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]'`
+         echo "DOCKER_REGISTRY=$DOCKER_REGISTRY" >> $GITHUB_ENV
+
+         REPO_NAME=`echo "${{ github.repository }}" | awk -F'/' '{print $2}' | tr '[:upper:]' '[:lower:]'`
+         echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+
+      # build and publish package to ghcr (public) with codebase remaining private
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # build and push Docker image
+      - name: Build and push
+        id: build_push_image
+        uses: docker/build-push-action@v5
+        with:
+          file: Dockerfile
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/spawn:latest
+            ghcr.io/${{ github.repository_owner }}/spawn:${{ github.ref_name }}
