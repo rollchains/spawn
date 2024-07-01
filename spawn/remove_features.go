@@ -106,6 +106,13 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		fc.RemoveStandardTestNodeScript()
 		fc.HandleAllTagged("not-ics") // interchaintest
 		fc.removePacketForwardTestOnly()
+		if fc.ContainsPath("Makefile") {
+			fc.RemoveLineWithAnyMatch("scripts/test_node.sh")
+		}
+	} else {
+		if fc.ContainsPath("Makefile") {
+			fc.RemoveLineWithAnyMatch("scripts/test_ics_node.sh")
+		}
 	}
 
 	// remove any left over `// spawntag:` comments
