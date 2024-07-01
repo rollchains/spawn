@@ -75,5 +75,5 @@ jobs:
     uses: ./.github/workflows/reusable-e2e.yaml
     with:
       id: ICS - Module Plugins
-      spawn-create-cmd: ./spawn new mychain --consensus=ics --bin=appd --bypass-prompt --bech32=roll --no-git --org=rollchains-org --denom=uroll --debug --log-level=debug && cd mychain && spawn module new AAAAAAA && spawn module new BBBBB --ibc-middleware && make proto-gen
+      spawn-create-cmd: ./spawn new mychain --consensus=ics --bin=appd --bypass-prompt --bech32=roll --no-git --org=rollchains-org --denom=uroll --debug --log-level=debug && cd mychain && ./spawn module new AAAAAAA && ./spawn module new BBBBB --ibc-middleware && make proto-gen
       start-chain-cmd: HOME_DIR="~/.icsnetwork" CHAIN_ID="localchain-2" CLEAN=true BLOCK_TIME="2000ms" sh scripts/test_ics_node.sh &
