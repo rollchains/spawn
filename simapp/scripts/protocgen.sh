@@ -33,9 +33,13 @@ echo "Generating pulsar proto code"
 buf generate --template buf.gen.pulsar.yaml
 echo "Generated pulsar proto code: status: $?"
 
+echo "before"
 ls
 cd ..
+echo "after"
 ls
+echo "above anotehr"
+ls ../
 
 # TODO: remove this after debugging out issues
 

@@ -68,15 +68,11 @@ jobs:
           name: spawn
 
       - name: Spawn Permission
-        run: chmod +x ./spawn && ls -l
+        run: chmod +x ./spawn && ls -l && echo $PATH
 
       # === Chain Creation & Validation ===
       - name: Spawn Gen - '${{inputs.id}}'
         run: ${{ inputs.spawn-create-cmd }}
-
-      - name: Spawn Extra Generation
-        if : ${{ inputs.spawn-extra-cmd }}
-        run: ${{ inputs.spawn-extra-cmd }}
 
       - uses: actions/checkout@v2
       - name: Setup upterm session
@@ -87,6 +83,12 @@ jobs:
           ## limits ssh access and adds the ssh public keys of the listed GitHub users
           limit-access-to-users: reecepbcups
           wait-timeout-minutes: 2
+
+      - name: Spawn Extra Generation
+        if : ${{ inputs.spawn-extra-cmd }}
+        run: ${{ inputs.spawn-extra-cmd }}
+
+
 
       - name: Build and Run '${{inputs.id}}'
         run: |
