@@ -4,27 +4,22 @@ set -e
 
 GO_MOD_PACKAGE="github.com/rollchains/spawn/simapp"
 
-echo "Generating gogo proto code"
 cd proto
 proto_dirs=$(find . -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
-echo "proto_dirs $proto_dirs"
-
 for dir in $proto_dirs; do
   for file in $(find "${dir}" -maxdepth 1 -name '*.proto'); do
     # this regex checks if a proto file has its go_package set to $GO_MOD_PACKAGE...
     # gogo proto files SHOULD ONLY be generated if this is false
     # we don't want gogo proto to run for proto files which are natively built for google.golang.org/protobuf
-    echo "Proto Checking $file"
-    # if grep -q "option go_package" "$file" && grep -H -o -c "option go_package.*$GO_MOD_PACKAGE/api" "$file" | grep -q ':0$'; then
-    # if grep -q "option go_package" "$file"; then
 
     # module/v1 use `import "cosmos/app/v1alpha1/module.proto";`
+    # if grep -q "option go_package" "$file" && grep -H -o -c "option go_package.*$GO_MOD_PACKAGE/api" "$file" | grep -q ':0$'; then
     if grep -q "module.proto" "$file"; then
       echo "Skipping module.proto file: $file"
       continue
     fi
 
-    echo "Generated gogo proto code: file: $file"
+    echo "Generated proto code: file: $file"
     buf generate --template buf.gen.gogo.yaml $file
   done
 done
@@ -33,38 +28,31 @@ echo "Generating pulsar proto code"
 buf generate --template buf.gen.pulsar.yaml
 echo "Generated pulsar proto code: status: $?"
 
-echo "before"
-ls
+# back to the root of the directory
 cd ..
-echo "after"
-ls
-echo "above anotehr"
-ls ../
 
-# TODO: remove this after debugging out issues
+cp -r $GO_MOD_PACKAGE/* ./
+rm -rf github.com
 
-# cp -r "$GO_MOD_PACKAGE/"* ./
-# rm -rf github.com
+# Copy files over for dep injection
+rm -rf api && mkdir api
+custom_modules=$(find . -name 'module' -type d -not -path "./proto/*")
 
-# # Copy files over for dep injection
-# rm -rf api && mkdir api
-# custom_modules=$(find . -name 'module' -type d -not -path "./proto/*")
+# get the 1 up directory (so ./cosmos/mint/module becomes ./cosmos/mint)
+# remove the relative path starter from base namespaces. so ./cosmos/mint becomes cosmos/mint
+base_namespace=$(echo $custom_modules | sed -e 's|/module||g' | sed -e 's|\./||g')
 
-# # get the 1 up directory (so ./cosmos/mint/module becomes ./cosmos/mint)
-# # remove the relative path starter from base namespaces. so ./cosmos/mint becomes cosmos/mint
-# base_namespace=$(echo $custom_modules | sed -e 's|/module||g' | sed -e 's|\./||g')
+# echo "Base namespace: $base_namespace"
+for module in $base_namespace; do
+  echo " [+] Moving: ./$module to ./api/$module"
 
-# # echo "Base namespace: $base_namespace"
-# for module in $base_namespace; do
-#   echo " [+] Moving: ./$module to ./api/$module"
+  mkdir -p api/$module
 
-#   mkdir -p api/$module
+  mv $module/* ./api/$module/
 
-#   mv $module/* ./api/$module/
+  # # incorrect reference to the module for coins
+  find api/$module -type f -name '*.go' -exec sed -i -e 's|types "github.com/cosmos/cosmos-sdk/types"|types "cosmossdk.io/api/cosmos/base/v1beta1"|g' {} \;
+  find api/$module -type f -name '*.go' -exec sed -i -e 's|types1 "github.com/cosmos/cosmos-sdk/x/bank/types"|types1 "cosmossdk.io/api/cosmos/bank/v1beta1"|g' {} \;
 
-#   # # incorrect reference to the module for coins
-#   find api/$module -type f -name '*.go' -exec sed -i -e 's|types "github.com/cosmos/cosmos-sdk/types"|types "cosmossdk.io/api/cosmos/base/v1beta1"|g' {} \;
-#   find api/$module -type f -name '*.go' -exec sed -i -e 's|types1 "github.com/cosmos/cosmos-sdk/x/bank/types"|types1 "cosmossdk.io/api/cosmos/bank/v1beta1"|g' {} \;
-
-#   rm -rf $module
-# done
+  rm -rf $module
+done
