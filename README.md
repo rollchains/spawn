@@ -97,7 +97,7 @@ sleep 10
 
 # Interact with the other chain without having to install the cosmos binary
 # - Endpoints found at: GET http://127.0.0.1:8080/info
-local-ic interact localcosmos-1 query 'bank balances cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr' --api-endpoint=http://127.0.0.1:8080
+local-ic interact localcosmos-1 query 'bank balances cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr'
 ```
 
 6. Push your new chain to a github repository
