@@ -66,25 +66,28 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: spawn
+          # in the runner path
+          path: /home/runner/go/bin
 
       - name: Spawn Permission
-        run: chmod +x ./spawn && ls -l && echo $PATH
+        run: chmod +x /home/runner/go/bin/spawn
 
       # === Chain Creation & Validation ===
       - name: Spawn Gen - '${{inputs.id}}'
         run: ${{ inputs.spawn-create-cmd }}
+
+      - name: Spawn Extra Generation
+        if : ${{ inputs.spawn-extra-cmd }}
+        run: |
+          # fixes `could not read Username for 'https://github.com': terminal prompts disabled` error from make proto-gen
+          git config --global --add url."git@github.com:".insteadOf "https://github.com/"
+          ${{ inputs.spawn-extra-cmd }}
 
       - uses: actions/checkout@v2
       - name: Setup upterm session
         uses: lhotari/action-upterm@v1
         with:
           wait-timeout-minutes: 2
-
-      - name: Spawn Extra Generation
-        if : ${{ inputs.spawn-extra-cmd }}
-        run: ${{ inputs.spawn-extra-cmd }}
-
-
 
       - name: Build and Run '${{inputs.id}}'
         run: |
