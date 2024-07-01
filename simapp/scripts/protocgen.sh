@@ -16,10 +16,10 @@ for dir in $proto_dirs; do
     # we don't want gogo proto to run for proto files which are natively built for google.golang.org/protobuf
     echo "Proto Checking $file"
     # if grep -q "option go_package" "$file" && grep -H -o -c "option go_package.*$GO_MOD_PACKAGE/api" "$file" | grep -q ':0$'; then
-    if grep -q "option go_package" "$file"; then
+    # if grep -q "option go_package" "$file"; then
       buf generate --template buf.gen.gogo.yaml $file
       echo "Generated gogo proto code: file: $file status: $?"
-    fi
+    # fi
   done
 done
 
