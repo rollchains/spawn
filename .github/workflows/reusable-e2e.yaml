@@ -76,6 +76,13 @@ jobs:
       - name: Spawn Gen - '${{inputs.id}}'
         run: ${{ inputs.spawn-create-cmd }}
 
+      - uses: actions/checkout@v2
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+        with:
+          wait-timeout-minutes: 2
+          limit-access-to-users: reecepbcups
+
       - name: Spawn Extra Generation
         if : ${{ inputs.spawn-extra-cmd }}
         run: |
@@ -83,11 +90,7 @@ jobs:
           git config --global --add url."git@github.com:".insteadOf "https://github.com/"
           ${{ inputs.spawn-extra-cmd }}
 
-      - uses: actions/checkout@v2
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
-        with:
-          wait-timeout-minutes: 2
+
 
       - name: Build and Run '${{inputs.id}}'
         run: |
