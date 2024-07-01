@@ -17,9 +17,15 @@ for dir in $proto_dirs; do
     echo "Proto Checking $file"
     # if grep -q "option go_package" "$file" && grep -H -o -c "option go_package.*$GO_MOD_PACKAGE/api" "$file" | grep -q ':0$'; then
     # if grep -q "option go_package" "$file"; then
-      buf generate --template buf.gen.gogo.yaml $file
-      echo "Generated gogo proto code: file: $file status: $?"
-    # fi
+
+    # module/v1 use `import "cosmos/app/v1alpha1/module.proto";`
+    if grep -q "module.proto" "$file"; then
+      echo "Skipping module.proto file: $file"
+      continue
+    fi
+
+    echo "Generated gogo proto code: file: $file"
+    buf generate --template buf.gen.gogo.yaml $file
   done
 done
 
