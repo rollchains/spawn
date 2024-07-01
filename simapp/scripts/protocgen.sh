@@ -33,31 +33,34 @@ echo "Generating pulsar proto code"
 buf generate --template buf.gen.pulsar.yaml
 echo "Generated pulsar proto code: status: $?"
 
-cd ..
-
 ls
-cp -r "$GO_MOD_PACKAGE/"* ./
-rm -rf github.com
+cd ..
+ls
 
-# Copy files over for dep injection
-rm -rf api && mkdir api
-custom_modules=$(find . -name 'module' -type d -not -path "./proto/*")
+# TODO: remove this after debugging out issues
 
-# get the 1 up directory (so ./cosmos/mint/module becomes ./cosmos/mint)
-# remove the relative path starter from base namespaces. so ./cosmos/mint becomes cosmos/mint
-base_namespace=$(echo $custom_modules | sed -e 's|/module||g' | sed -e 's|\./||g')
+# cp -r "$GO_MOD_PACKAGE/"* ./
+# rm -rf github.com
 
-# echo "Base namespace: $base_namespace"
-for module in $base_namespace; do
-  echo " [+] Moving: ./$module to ./api/$module"
+# # Copy files over for dep injection
+# rm -rf api && mkdir api
+# custom_modules=$(find . -name 'module' -type d -not -path "./proto/*")
 
-  mkdir -p api/$module
+# # get the 1 up directory (so ./cosmos/mint/module becomes ./cosmos/mint)
+# # remove the relative path starter from base namespaces. so ./cosmos/mint becomes cosmos/mint
+# base_namespace=$(echo $custom_modules | sed -e 's|/module||g' | sed -e 's|\./||g')
 
-  mv $module/* ./api/$module/
+# # echo "Base namespace: $base_namespace"
+# for module in $base_namespace; do
+#   echo " [+] Moving: ./$module to ./api/$module"
 
-  # # incorrect reference to the module for coins
-  find api/$module -type f -name '*.go' -exec sed -i -e 's|types "github.com/cosmos/cosmos-sdk/types"|types "cosmossdk.io/api/cosmos/base/v1beta1"|g' {} \;
-  find api/$module -type f -name '*.go' -exec sed -i -e 's|types1 "github.com/cosmos/cosmos-sdk/x/bank/types"|types1 "cosmossdk.io/api/cosmos/bank/v1beta1"|g' {} \;
+#   mkdir -p api/$module
 
-  rm -rf $module
-done
+#   mv $module/* ./api/$module/
+
+#   # # incorrect reference to the module for coins
+#   find api/$module -type f -name '*.go' -exec sed -i -e 's|types "github.com/cosmos/cosmos-sdk/types"|types "cosmossdk.io/api/cosmos/base/v1beta1"|g' {} \;
+#   find api/$module -type f -name '*.go' -exec sed -i -e 's|types1 "github.com/cosmos/cosmos-sdk/x/bank/types"|types1 "cosmossdk.io/api/cosmos/bank/v1beta1"|g' {} \;
+
+#   rm -rf $module
+# done
