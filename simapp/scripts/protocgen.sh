@@ -7,25 +7,28 @@ GO_MOD_PACKAGE="github.com/rollchains/spawn/simapp"
 echo "Generating gogo proto code"
 cd proto
 proto_dirs=$(find . -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
+echo "proto_dirs $proto_dirs"
+
 for dir in $proto_dirs; do
   for file in $(find "${dir}" -maxdepth 1 -name '*.proto'); do
-    # this regex checks if a proto file has its go_package set to github.com/strangelove-ventures/poa/...
+    # this regex checks if a proto file has its go_package set to $GO_MOD_PACKAGE...
     # gogo proto files SHOULD ONLY be generated if this is false
     # we don't want gogo proto to run for proto files which are natively built for google.golang.org/protobuf
+    echo "Proto Checking $file"
     if grep -q "option go_package" "$file" && grep -H -o -c "option go_package.*$GO_MOD_PACKAGE/api" "$file" | grep -q ':0$'; then
       buf generate --template buf.gen.gogo.yaml $file
+      echo "Generated gogo proto code: status: $?"
     fi
   done
 done
 
 echo "Generating pulsar proto code"
 buf generate --template buf.gen.pulsar.yaml
+echo "Generated pulsar proto code: status: $?"
 
 cd ..
 
 ls
-ls github.com
-ls github.com/rollchains
 cp -r "$GO_MOD_PACKAGE/"* ./
 rm -rf github.com
 
