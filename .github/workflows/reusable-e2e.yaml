@@ -74,7 +74,12 @@ jobs:
 
       # === Chain Creation & Validation ===
       - name: Spawn Gen - '${{inputs.id}}'
-        run: ${{ inputs.spawn-create-cmd }}
+        run: |
+          git config --global --add url."git@github.com:".insteadOf "https://github.com/"
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+          ${{ inputs.spawn-create-cmd }}
+          pwd
 
       - uses: actions/checkout@v2
       - name: Setup upterm session
@@ -85,10 +90,7 @@ jobs:
 
       - name: Spawn Extra Generation
         if : ${{ inputs.spawn-extra-cmd }}
-        run: |
-          # fixes `could not read Username for 'https://github.com': terminal prompts disabled` error from make proto-gen
-          git config --global --add url."git@github.com:".insteadOf "https://github.com/"
-          ${{ inputs.spawn-extra-cmd }}
+        run: ${{ inputs.spawn-extra-cmd }}
 
 
 
