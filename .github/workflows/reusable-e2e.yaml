@@ -13,6 +13,10 @@ on:
         type: string
         required: true
         description: 'The spawn command to create the chain'
+      spawn-extra-cmd:
+        type: string
+        required: false
+        description: 'Extra command to run after the chain is created'
       start-chain-cmd:
         type: string
         required: true
@@ -69,6 +73,10 @@ jobs:
       # === Chain Creation & Validation ===
       - name: Spawn Gen - '${{inputs.id}}'
         run: ${{ inputs.spawn-create-cmd }}
+
+      - name: Spawn Extra Generation
+        if : ${{ inputs.spawn-extra-cmd }}
+        run: ${{ inputs.spawn-extra-cmd }}
 
       - name: Build and Run '${{inputs.id}}'
         run: |

@@ -23,7 +23,10 @@ buf generate --template buf.gen.pulsar.yaml
 
 cd ..
 
-cp -r $GO_MOD_PACKAGE/* ./
+ls
+ls github.com
+ls github.com/rollchains
+cp -r "$GO_MOD_PACKAGE/"* ./
 rm -rf github.com
 
 # Copy files over for dep injection
