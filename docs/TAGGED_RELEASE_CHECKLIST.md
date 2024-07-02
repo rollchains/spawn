@@ -6,6 +6,7 @@ This document outlines the steps required to verify the functionality of spawn a
 
 - Update the README document to be the next spawn tag version (i.e. v0.50.X) that the next release will be.
 - Verify the README running docs work as expected for the example chain
+- Verify docs/demo works
 
 ## Semi-Automatic Verification
 
