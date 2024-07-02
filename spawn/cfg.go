@@ -137,6 +137,7 @@ func (cfg *NewChainConfig) Validate() error {
 		return ErrCfgEmptyBech32
 	}
 
+	cfg.Bech32Prefix = strings.ToLower(cfg.Bech32Prefix)
 	if !isAlphaFn(cfg.Bech32Prefix) {
 		return ErrCfgBech32Alpha
 	}

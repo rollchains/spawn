@@ -39,7 +39,7 @@ In this tutorial, we'll create and interact with a new Cosmos-SDK blockchain cal
 ```shell
 git clone https://github.com/rollchains/spawn.git
 cd spawn
-git checkout v0.50.2
+git checkout v0.50.3
 make install
 ```
 
@@ -97,6 +97,7 @@ sleep 10
 
 # Interact with the other chain without having to install the cosmos binary
 # - Endpoints found at: GET http://127.0.0.1:8080/info
+# - make get-localic
 local-ic interact localcosmos-1 query 'bank balances cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr'
 ```
 

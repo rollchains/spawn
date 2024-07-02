@@ -13,7 +13,7 @@ RUN go mod tidy
 COPY . .
 
 # Download local-ic (nested spawn add on)
-RUN wget https://github.com/strangelove-ventures/interchaintest/releases/download/v8.4.0/local-ic && chmod +x local-ic
+RUN wget https://github.com/strangelove-ventures/interchaintest/releases/download/v8.5.0/local-ic && chmod +x local-ic
 RUN mv ./local-ic /go/bin
 
 # Build Spawn
