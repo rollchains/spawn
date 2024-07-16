@@ -2,5 +2,5 @@ package docs
 
 import "embed"
 
-//go:embed demo info
+//go:embed demo DEPLOYMENTS.md SYSTEM_SETUP.md
 var Docs embed.FS

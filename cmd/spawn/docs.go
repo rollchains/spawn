@@ -21,9 +21,7 @@ var DocsCmd = &cobra.Command{
 		err := fs.WalkDir(docs.Docs, ".", func(relPath string, d fs.DirEntry, e error) error {
 			newPath := path.Join(dirPath, relPath)
 
-			// save the file to disk
 			if d.IsDir() {
-				// TODO; also write dierctories
 				return os.MkdirAll(newPath, 0755)
 			}
 
@@ -50,14 +48,6 @@ var DocsCmd = &cobra.Command{
 			return err
 		}
 		defer os.RemoveAll(dirPath)
-
-		// save embed.FS to path
-		// serverRoot, err := fs.Sub(f, "static")
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
-
-		// fs := http.FS(serverRoot)
 
 		return View(dirPath)
 	},
