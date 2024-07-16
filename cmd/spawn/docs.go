@@ -14,14 +14,11 @@ import (
 
 var DocsCmd = &cobra.Command{
 	Use:   "docs",
-	Short: "Spawn Documentation",
+	Short: "View Spawn Documentation",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		dirPath := path.Join(os.TempDir(), "spawn", "docs")
 
-		// load f in a temp dir
-
-		dirPath := os.TempDir()
-
-		fs.WalkDir(docs.Docs, ".", func(relPath string, d fs.DirEntry, e error) error {
+		err := fs.WalkDir(docs.Docs, ".", func(relPath string, d fs.DirEntry, e error) error {
 			newPath := path.Join(dirPath, relPath)
 
 			// save the file to disk
@@ -49,6 +46,10 @@ var DocsCmd = &cobra.Command{
 
 			return nil
 		})
+		if err != nil {
+			return err
+		}
+		defer os.RemoveAll(dirPath)
 
 		// save embed.FS to path
 		// serverRoot, err := fs.Sub(f, "static")

@@ -2,5 +2,5 @@ package docs
 
 import "embed"
 
-//go:embed **.md
+//go:embed demo info
 var Docs embed.FS
