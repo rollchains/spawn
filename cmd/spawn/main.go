@@ -29,6 +29,7 @@ func main() {
 	rootCmd.AddCommand(ModuleCmd())
 	rootCmd.AddCommand(ProtoServiceGenerate())
 	rootCmd.AddCommand(DocsCmd)
+	rootCmd.AddCommand(contactCmd)
 
 	applyPluginCmds()
 
@@ -165,6 +166,15 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version number of spawn",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(SpawnVersion)
+	},
+}
+
+var contactCmd = &cobra.Command{
+	Use:     "email",
+	Aliases: []string{"contact"},
+	Short:   "Reach out and connect with us!",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Email us! support@rollchains.com")
 	},
 }
 
