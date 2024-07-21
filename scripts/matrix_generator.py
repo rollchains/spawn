@@ -270,7 +270,7 @@ class CmdCreator:
         if len(self.org) == 0:
             self.org = random_string(10, True)
 
-        text = f"spawn new {self.name} --consensus={self.consensus} --bech32={self.bech32} --bin={self.bin} --denom={self.denom} --org={self.org}  --skip-explorer"
+        text = f"spawn new {self.name} --consensus={self.consensus} --bech32={self.bech32} --bin={self.bin} --denom={self.denom} --org={self.org}"
 
         if len(self.disabled_features) == 0:
             text += " --bypass-prompt"

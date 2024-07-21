@@ -22,6 +22,7 @@ var (
 	Ignite              = "ignite"
 	InterchainSecurity  = "ics"
 	OptimisticExecution = "optimistic-execution"
+	BlockExplorer       = "block-explorer"
 
 	appGo   = path.Join("app", "app.go")
 	appAnte = path.Join("app", "ante.go")
@@ -60,6 +61,8 @@ func AliasName(name string) string {
 		return IBCRateLimit
 	case InterchainSecurity, "interchain-security":
 		return InterchainSecurity
+	case BlockExplorer, "explorer", "pingpub":
+		return BlockExplorer
 	default:
 		panic(fmt.Sprintf("AliasName: unknown feature to remove: %s", name))
 	}
@@ -97,6 +100,8 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 			fc.RemoveIgniteCLI()
 		case OptimisticExecution:
 			fc.RemoveOptimisticExecution()
+		case BlockExplorer:
+			continue
 		default:
 			panic(fmt.Sprintf("unknown feature to remove %s", name))
 		}

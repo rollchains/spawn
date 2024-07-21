@@ -58,7 +58,6 @@ type NewChainConfig struct {
 	GithubOrg string
 	// IgnoreGitInit is a flag to ignore git init
 	IgnoreGitInit   bool
-	IgnoreExplorer  bool
 	DisabledModules []string
 	Logger          *slog.Logger
 	isUsingICS      bool
@@ -210,7 +209,13 @@ func (cfg *NewChainConfig) CreateNewChain() error {
 		cfg.GitInitNewProjectRepo()
 	}
 
-	if !cfg.IgnoreExplorer {
+	// see if block-expolorer is disbaled
+	// if !cfg.IgnoreExplorer {
+	// 	cfg.NewPingPubExplorer()
+	// }
+
+	// if  "block-explorer" is not in cfg.Disabled
+	if !cfg.IsFeatureDisabled("block-explorer") {
 		cfg.NewPingPubExplorer()
 	}
 
