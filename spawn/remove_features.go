@@ -101,7 +101,7 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		case OptimisticExecution:
 			fc.RemoveOptimisticExecution()
 		case BlockExplorer:
-			continue
+			fc.RemoveExplorer()
 		default:
 			panic(fmt.Sprintf("unknown feature to remove %s", name))
 		}
@@ -262,6 +262,10 @@ func (fc *FileContent) RemoveIgniteCLI() {
 
 func (fc *FileContent) RemoveOptimisticExecution() {
 	fc.RemoveTaggedLines(OptimisticExecution, true)
+}
+
+func (fc *FileContent) RemoveExplorer() {
+	fc.DeleteDirectoryContents("nginx")
 }
 
 func (fc *FileContent) RemoveInterchainSecurity() {

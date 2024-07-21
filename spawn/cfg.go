@@ -484,8 +484,8 @@ func (cfg NewChainConfig) NewChainExplorerConfig() ChainExplorer {
 	return ChainExplorer{
 		ChainName:        cfg.ProjectName,
 		Coingecko:        "",
-		Api:              []string{"http://127.0.0.1:1317"},
-		Rpc:              []string{"http://127.0.0.1:26657"},
+		Api:              []string{"https://api.localhost"},
+		Rpc:              []string{"https://rpc.localhost"},
 		SnapshotProvider: "",
 		SdkVersion:       "v0.50",
 		CoinType:         "118",
