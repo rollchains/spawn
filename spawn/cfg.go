@@ -2,6 +2,7 @@ package spawn
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"log/slog"
@@ -57,6 +58,7 @@ type NewChainConfig struct {
 	GithubOrg string
 	// IgnoreGitInit is a flag to ignore git init
 	IgnoreGitInit   bool
+	IgnoreExplorer  bool
 	DisabledModules []string
 	Logger          *slog.Logger
 	isUsingICS      bool
@@ -164,6 +166,7 @@ func (cfg *NewChainConfig) AnnounceSuccessfulBuild() {
 	fmt.Printf("  - $ gh repo create %s --source=. --remote=upstream --push --private\n", projName)
 	fmt.Println("  - $ spawn module new <name>   # generate a new module scaffolding")
 	fmt.Println("  - $ make testnet              # build & start a testnet with IBC")
+	fmt.Println("  - $ make explorer             # run a local block explorer")
 }
 
 func (cfg *NewChainConfig) GithubPath() string {
@@ -205,6 +208,10 @@ func (cfg *NewChainConfig) CreateNewChain() error {
 
 	if !cfg.IgnoreGitInit {
 		cfg.GitInitNewProjectRepo()
+	}
+
+	if !cfg.IgnoreExplorer {
+		cfg.NewPingPubExplorer()
 	}
 
 	return nil
@@ -406,4 +413,90 @@ func debugErrorFile(logger *slog.Logger, newDirname string) string {
 	}
 
 	return fullPath
+}
+
+func (cfg NewChainConfig) clearDir(dirLoc ...string) {
+	dir := path.Join(dirLoc...)
+
+	if err := os.RemoveAll(dir); err != nil {
+		cfg.Logger.Error("Error removing directory", "err", err)
+	}
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		cfg.Logger.Error("Error creating directory", "err", err)
+	}
+}
+
+func (cfg NewChainConfig) NewPingPubExplorer() error {
+	if err := os.Chdir(cfg.ProjectName); err != nil {
+		cfg.Logger.Error("chdir", "err", err)
+	}
+	if err := ExecCommand("git", "clone", "https://github.com/ping-pub/explorer.git"); err != nil {
+		cfg.Logger.Error("git clone", "err", err)
+	}
+	if err := os.Chdir(".."); err != nil {
+		cfg.Logger.Error("chdir", "err", err)
+	}
+
+	mainnet := path.Join(cfg.ProjectName, "explorer", "chains", "mainnet")
+	cfg.clearDir(mainnet)
+	cfg.clearDir(path.Join(cfg.ProjectName, "explorer", "chains", "testnet"))
+
+	// Create JSON config file for explorer
+	explorer := cfg.NewChainExplorerConfig()
+	bz, err := json.MarshalIndent(explorer, "", "  ")
+	if err != nil {
+		cfg.Logger.Error("Error marshalling chain explorer config", "err", err)
+	}
+
+	return os.WriteFile(path.Join(mainnet, "chain_explorer.json"), bz, 0644)
+}
+
+type ChainExplorerAsset struct {
+	Base        string `json:"base"`
+	Symbol      string `json:"symbol"`
+	Exponent    string `json:"exponent"`
+	CoingeckoId string `json:"coingecko_id"`
+	Logo        string `json:"logo"`
+}
+
+type ChainExplorer struct {
+	ChainName        string               `json:"chain_name"`
+	Coingecko        string               `json:"coingecko"`
+	Api              []string             `json:"api"`
+	Rpc              []string             `json:"rpc"`
+	SnapshotProvider string               `json:"snapshot_provider"`
+	SdkVersion       string               `json:"sdk_version"`
+	CoinType         string               `json:"coin_type"`
+	MinTxFee         string               `json:"min_tx_fee"`
+	AddrPrefix       string               `json:"addr_prefix"`
+	Logo             string               `json:"logo"`
+	ThemeColor       string               `json:"theme_color"`
+	Assets           []ChainExplorerAsset `json:"assets"`
+}
+
+func (cfg NewChainConfig) NewChainExplorerConfig() ChainExplorer {
+	logo := "https://img.freepik.com/free-vector/letter-s-box-logo-design-template_474888-3345.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1721260800&semt=ais_user"
+	return ChainExplorer{
+		ChainName:        cfg.ProjectName,
+		Coingecko:        "",
+		Api:              []string{"http://127.0.0.1:1317"},
+		Rpc:              []string{"http://127.0.0.1:26657"},
+		SnapshotProvider: "",
+		SdkVersion:       "v0.50",
+		CoinType:         "118",
+		MinTxFee:         "800",
+		AddrPrefix:       cfg.Bech32Prefix,
+		Logo:             logo,
+		ThemeColor:       "#001be7",
+		Assets: []ChainExplorerAsset{
+			{
+				Base:        cfg.Denom,
+				Symbol:      strings.ToUpper(cfg.Denom),
+				Exponent:    "6",
+				CoingeckoId: "",
+				Logo:        logo,
+			},
+		},
+	}
+
 }

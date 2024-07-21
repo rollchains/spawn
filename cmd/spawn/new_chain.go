@@ -49,6 +49,7 @@ const (
 	FlagConsensus    = "consensus"
 	FlagNoGit        = "skip-git"
 	FlagBypassPrompt = "bypass-prompt"
+	FlagNoExplorer   = "skip-explorer"
 )
 
 func init() {
@@ -71,6 +72,7 @@ func init() {
 	newChain.Flags().String(FlagConsensus, "", strings.Join(consensus, ",")) // must be set to nothing is nothing is set
 	newChain.Flags().Bool(FlagDebugging, false, "enable debugging")
 	newChain.Flags().Bool(FlagNoGit, false, "ignore git init")
+	newChain.Flags().Bool(FlagNoExplorer, false, "ignore block explorer")
 	newChain.Flags().Bool(FlagBypassPrompt, false, "bypass UI prompt")
 	newChain.Flags().SetNormalizeFunc(normalizeWhitelistVarRun)
 }
@@ -82,8 +84,8 @@ var newChain = &cobra.Command{
 		`  - spawn new rollchain --consensus=proof-of-stake --%s=cosmos --%s=simd --%s=token --org=abcde
   - spawn new rollchain --consensus=proof-of-authority --%s=tokenfactory,globalfee
   - spawn new rollchain --consensus=interchain-security --%s=cosmwasm --%s
-  - spawn new rollchain --%s`,
-		FlagWalletPrefix, FlagBinDaemon, FlagTokenDenom, FlagDisabled, FlagDisabled, FlagNoGit, FlagBypassPrompt,
+  - spawn new rollchain --%s --%s`,
+		FlagWalletPrefix, FlagBinDaemon, FlagTokenDenom, FlagDisabled, FlagDisabled, FlagNoGit, FlagBypassPrompt, FlagNoExplorer,
 	),
 	Args:    cobra.ExactArgs(1),
 	Aliases: []string{"new", "init", "create"},
@@ -102,6 +104,7 @@ var newChain = &cobra.Command{
 		consensus, _ := cmd.Flags().GetString(FlagConsensus)
 
 		bypassPrompt, _ := cmd.Flags().GetBool(FlagBypassPrompt)
+		ignoreExplorer, _ := cmd.Flags().GetBool(FlagNoExplorer)
 
 		// Show a UI to select the consensus algorithm (POS, POA, ICS) if a custom one was not specified.
 		if !bypassPrompt {
@@ -165,6 +168,7 @@ var newChain = &cobra.Command{
 			Denom:           denom,
 			GithubOrg:       githubOrg,
 			IgnoreGitInit:   ignoreGitInit,
+			IgnoreExplorer:  ignoreExplorer,
 			DisabledModules: disabled,
 			Logger:          logger,
 		}
