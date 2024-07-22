@@ -162,9 +162,9 @@ import (
 	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
 	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 
-	"github.com/Stride-Labs/ibc-rate-limiting/ratelimit"
-	ratelimitkeeper "github.com/Stride-Labs/ibc-rate-limiting/ratelimit/keeper"
-	ratelimittypes "github.com/Stride-Labs/ibc-rate-limiting/ratelimit/types"
+	ratelimit "github.com/cosmos/ibc-apps/modules/rate-limiting/v8"
+	ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/keeper"
+	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
 
 	consumerdemocracy "github.com/cosmos/interchain-security/v5/app/consumer-democracy"
 	ccvconsumer "github.com/cosmos/interchain-security/v5/x/ccv/consumer"
@@ -767,7 +767,7 @@ func NewChainApp(
 	// Create the ratelimit keeper
 	app.RatelimitKeeper = *ratelimitkeeper.NewKeeper(
 		appCodec,
-		keys[ratelimittypes.StoreKey],
+		runtime.NewKVStoreService(keys[ratelimittypes.StoreKey]),
 		app.GetSubspace(ratelimittypes.ModuleName),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		app.BankKeeper,
@@ -815,6 +815,8 @@ func NewChainApp(
 		app.MsgServiceRouter(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
+	app.ICAHostKeeper.WithQueryRouter(app.GRPCQueryRouter())
+
 	app.ICAControllerKeeper = icacontrollerkeeper.NewKeeper(
 		appCodec,
 		keys[icacontrollertypes.StoreKey],
