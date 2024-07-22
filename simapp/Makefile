@@ -309,6 +309,10 @@ sh-testnet: mod-tidy
 ###                                     help                                ###
 ###############################################################################
 
+.PHONY: explorer
+explorer:
+	docker compose up
+
 help:
 	@echo "Usage: make <target>"
 	@echo ""
