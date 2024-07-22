@@ -16,6 +16,7 @@ Start the testnet with: `make sh-testnet` or the full IBC network with `make tes
 
 Then `docker compose up` to start the reverse proxy, explorer, and the RPC/REST API Services.
 
+<!-- markdown-link-check-disable-next-line -->
 Visit: https://pingpub.localhost to view the explorer.
 
 > Attempting to view as a standard http:// instance will break the block explorer due to pesky CORS errors.
