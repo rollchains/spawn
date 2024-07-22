@@ -14,10 +14,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	outOfDateChecker()
-}
-
 var (
 	// Set in the makefile ld_flags on compile
 	SpawnVersion = ""
@@ -37,6 +33,8 @@ var (
 )
 
 func main() {
+	outOfDateChecker()
+
 	rootCmd.AddCommand(newChain)
 	rootCmd.AddCommand(LocalICCmd)
 	rootCmd.AddCommand(&cobra.Command{
@@ -91,12 +89,12 @@ func outOfDateChecker() {
 	for _, program := range []string{"local-ic", "spawn"} {
 		releases, err := spawn.GetLatestGithubReleases(spawn.BinaryToGithubAPI[program])
 		if err != nil {
-			GetLogger().Error("Error getting latest local-ic releases", "err", err)
+			logger.Error("Error getting latest local-ic releases", "err", err)
 			return
 		}
 		latest := releases[0].TagName
 
-		current := spawn.GetLocalVersion(program, latest)
+		current := spawn.GetLocalVersion(logger, program, latest)
 		if spawn.OutOfDateCheckLog(logger, program, current, latest) {
 			// write check to -24h from now to spam the user until it's resolved.
 

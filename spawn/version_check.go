@@ -2,7 +2,6 @@ package spawn
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -104,17 +103,18 @@ func GetLatestGithubReleases(apiRepoURL string) ([]Release, error) {
 	return releases, nil
 }
 
-func GetLocalVersion(binName, latestVer string) string {
+func GetLocalVersion(logger *slog.Logger, binName, latestVer string) string {
 	loc := WhereIsBinInstalled(binName)
 	if loc == "" {
-		fmt.Printf("%s not found. Please run `%s`\n", binName, GetInstallMsg(howToInstallBinary[binName], latestVer))
+		// WhereIsBinInstalled loggers error already
 		return ""
 	}
 
 	output, err := ExecCommandWithOutput(loc, "version")
 	if err != nil {
-		fmt.Println("Error calling local-ic", err)
-		return ""
+		// typically old spawn / local-ic versions
+		logger.Error("Error calling version command", "bin", binName+" version", "err", err)
+		return "v0.0.0"
 	}
 
 	out := string(output)
@@ -124,6 +124,7 @@ func GetLocalVersion(binName, latestVer string) string {
 	}
 
 	if out == "" {
+		logger.Debug("Could not parse version", "output", out, "setting to", "v0.0.0")
 		out = "v0.0.0"
 	}
 
