@@ -22,6 +22,7 @@ var (
 	Ignite              = "ignite"
 	InterchainSecurity  = "ics"
 	OptimisticExecution = "optimistic-execution"
+	BlockExplorer       = "block-explorer"
 
 	appGo   = path.Join("app", "app.go")
 	appAnte = path.Join("app", "ante.go")
@@ -60,6 +61,8 @@ func AliasName(name string) string {
 		return IBCRateLimit
 	case InterchainSecurity, "interchain-security":
 		return InterchainSecurity
+	case BlockExplorer, "explorer", "pingpub":
+		return BlockExplorer
 	default:
 		panic(fmt.Sprintf("AliasName: unknown feature to remove: %s", name))
 	}
@@ -97,6 +100,8 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 			fc.RemoveIgniteCLI()
 		case OptimisticExecution:
 			fc.RemoveOptimisticExecution()
+		case BlockExplorer:
+			fc.RemoveExplorer()
 		default:
 			panic(fmt.Sprintf("unknown feature to remove %s", name))
 		}
@@ -106,6 +111,13 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		fc.RemoveStandardTestNodeScript()
 		fc.HandleAllTagged("not-ics") // interchaintest
 		fc.removePacketForwardTestOnly()
+		if fc.ContainsPath("Makefile") {
+			fc.RemoveLineWithAnyMatch("scripts/test_node.sh")
+		}
+	} else {
+		if fc.ContainsPath("Makefile") {
+			fc.RemoveLineWithAnyMatch("scripts/test_ics_node.sh")
+		}
 	}
 
 	// remove any left over `// spawntag:` comments
@@ -250,6 +262,10 @@ func (fc *FileContent) RemoveIgniteCLI() {
 
 func (fc *FileContent) RemoveOptimisticExecution() {
 	fc.RemoveTaggedLines(OptimisticExecution, true)
+}
+
+func (fc *FileContent) RemoveExplorer() {
+	fc.DeleteDirectoryContents("nginx")
 }
 
 func (fc *FileContent) RemoveInterchainSecurity() {

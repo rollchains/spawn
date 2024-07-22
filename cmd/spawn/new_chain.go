@@ -32,6 +32,7 @@ var (
 		{ID: "wasm-light-client", IsSelected: false, Details: "08 Wasm Light Client"},
 		{ID: "optimistic-execution", IsSelected: false, Details: "Pre-process blocks ahead of consensus request"},
 		{ID: "ignite-cli", IsSelected: false, Details: "Ignite-CLI Support"},
+		{ID: "block-explorer", IsSelected: true, Details: "Ping Pub Explorer"},
 	}...)
 
 	// parentDeps is a list of modules that are disabled if a parent module is disabled.
@@ -68,7 +69,7 @@ func init() {
 	newChain.Flags().String(FlagGithubOrg, "rollchains", "github organization")
 	newChain.Flags().String(FlagTokenDenom, "token", "bank token denomination")
 	newChain.Flags().StringSlice(FlagDisabled, []string{}, strings.Join(features, ","))
-	newChain.Flags().String(FlagConsensus, "", strings.Join(consensus, ",")) // we default to POA later if not set
+	newChain.Flags().String(FlagConsensus, "", strings.Join(consensus, ",")) // must be set to nothing is nothing is set
 	newChain.Flags().Bool(FlagDebugging, false, "enable debugging")
 	newChain.Flags().Bool(FlagNoGit, false, "ignore git init")
 	newChain.Flags().Bool(FlagBypassPrompt, false, "bypass UI prompt")
@@ -115,6 +116,10 @@ var newChain = &cobra.Command{
 				consensus = items.String()
 			}
 		}
+		if len(consensus) == 0 {
+			consensus = spawn.POA // set the default if still none is provided
+		}
+
 		consensus = spawn.AliasName(consensus)
 		logger.Debug("Consensus selected", "consensus", consensus)
 
@@ -165,7 +170,10 @@ var newChain = &cobra.Command{
 			Logger:          logger,
 		}
 
-		cfg.Run(true)
+		if err := cfg.ValidateAndRun(true); err != nil {
+			logger.Error("Error creating new chain", "err", err)
+			return
+		}
 	},
 }
 

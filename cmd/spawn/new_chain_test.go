@@ -96,7 +96,7 @@ func TestDisabledGeneration(t *testing.T) {
 				DisabledModules: dc,
 				Logger:          Logger,
 			}
-			require.NoError(t, cfg.Run(false), "failed to generate proper chain")
+			require.NoError(t, cfg.ValidateAndRun(false), "failed to generate proper chain")
 
 			AssertValidGeneration(t, dirPath, dc, c.NotContainAny, cfg)
 			require.NoError(t, os.RemoveAll(name))

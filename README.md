@@ -39,7 +39,7 @@ In this tutorial, we'll create and interact with a new Cosmos-SDK blockchain cal
 ```shell
 git clone https://github.com/rollchains/spawn.git
 cd spawn
-git checkout v0.50.2
+git checkout v0.50.4
 make install
 ```
 
@@ -48,13 +48,18 @@ make install
 ```shell
 GITHUB_USERNAME=rollchains
 
+# Available Features:
+# * tokenfactory,globalfee,ibc-packetforward,ibc-ratelimit,cosmwasm,wasm-light-client,optimistic-execution,ignite-cli,block-explorer
+
 spawn new rollchain \
 --consensus=proof-of-authority `# proof-of-authority,proof-of-stake,interchain-security` \
 --bech32=roll `# the prefix for addresses` \
 --denom=uroll `# the coin denomination to create` \
 --bin=rolld `# the name of the binary` \
---disabled=cosmwasm,globalfee `# disable features. [tokenfactory,globalfee,ibc-packetforward,ibc-ratelimit,cosmwasm,wasm-light-client,ignite-cli]` \
---org=${GITHUB_USERNAME} `# the github username or organization to use for the module imports`
+--disabled=cosmwasm,globalfee,block-explorer `# disable features.` \
+--org=${GITHUB_USERNAME} `# the github username or organization to use for the module imports, optional`
+
+
 ```
 
 > *NOTE:* `spawn` creates a ready to use repository complete with `git` and GitHub CI. It can be quickly pushed to a new repository getting you and your team up and running quickly.
@@ -97,7 +102,8 @@ sleep 10
 
 # Interact with the other chain without having to install the cosmos binary
 # - Endpoints found at: GET http://127.0.0.1:8080/info
-local-ic interact localcosmos-1 query 'bank balances cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr' --api-endpoint=http://127.0.0.1:8080
+# - make get-localic
+local-ic interact localcosmos-1 query 'bank balances cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr'
 ```
 
 6. Push your new chain to a github repository

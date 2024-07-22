@@ -13,7 +13,6 @@ import (
 
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
-	"github.com/rollchains/spawn/spawn"
 	"github.com/spf13/cobra"
 )
 
@@ -29,6 +28,8 @@ func main() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(ModuleCmd())
 	rootCmd.AddCommand(ProtoServiceGenerate())
+	rootCmd.AddCommand(DocsCmd)
+	rootCmd.AddCommand(contactCmd)
 
 	applyPluginCmds()
 
@@ -74,7 +75,7 @@ func applyPluginCmds() {
 		name := name
 		abspath := abspath
 
-		info, err := spawn.ParseCobraCLICmd(abspath)
+		info, err := ParseCobraCLICmd(abspath)
 		if err != nil {
 			GetLogger().Warn("error parsing the CLI commands from the plugin", "name", name, "error", err)
 			continue
@@ -165,6 +166,15 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version number of spawn",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(SpawnVersion)
+	},
+}
+
+var contactCmd = &cobra.Command{
+	Use:     "email",
+	Aliases: []string{"contact"},
+	Short:   "Reach out and connect with us!",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Email us! support@rollchains.com")
 	},
 }
 

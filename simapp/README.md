@@ -22,3 +22,7 @@
 
 - `go test ./... -v` *Unit test*
 - `make ictest-*`  *E2E testing*
+
+## Launch Block Explorer Locally
+
+[Reference Guide](./nginx/README.md)

@@ -92,6 +92,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
 		poaante.NewPOADisableStakingDecorator(),
+		poaante.NewPOADisableWithdrawDelegatorRewards(),
 		poaante.NewCommissionLimitDecorator(poaDoGenTxRateValidation, poaRateFloor, poaRateCeil),
 	}
 

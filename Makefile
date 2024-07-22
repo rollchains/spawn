@@ -62,7 +62,7 @@ help: Makefile
 
 # ---- Developer Templates ----
 template-staking: install
-	spawn new myproject --consensus=proof-of-stake --debug --bech32=cosmos --bin=appd --bypass-prompt --log-level=debug
+	spawn new myproject --consensus=proof-of-stake --debug --bech32=cosmos --bin=appd --bypass-prompt --log-level=debug --org=reece
 
 template-poa: install
 	spawn new myproject --consensus=proof-of-authority --debug --no-git --bin=rolld --bech32=roll --denom=uroll --bypass-prompt --log-level=debug

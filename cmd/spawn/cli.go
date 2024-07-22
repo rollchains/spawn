@@ -1,4 +1,4 @@
-package spawn
+package main
 
 import (
 	"os/exec"

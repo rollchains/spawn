@@ -200,6 +200,7 @@ proto-gen:
 	@$(protoImage) sh ./scripts/protocgen.sh
 # generate the stubs for the proto files from the proto directory
 	@spawn stub-gen
+	@go mod tidy
 
 proto-format:
 	@echo "Formatting Protobuf files"
@@ -223,7 +224,7 @@ proto-check-breaking:
 ## --- Testnet Utilities ---
 get-localic:
 	@echo "Installing local-interchain"
-	git clone --branch v8.2.0 https://github.com/strangelove-ventures/interchaintest.git interchaintest-downloader
+	git clone --branch v8.5.0 https://github.com/strangelove-ventures/interchaintest.git interchaintest-downloader
 	cd interchaintest-downloader/local-interchain && make install
 	@echo ✅ local-interchain installed $(shell which local-ic)
 
@@ -300,12 +301,17 @@ testnet: setup-testnet
 
 sh-testnet: mod-tidy
 	CHAIN_ID="localchain-1" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
+	CHAIN_ID="localchain-1" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_ics_node.sh
 
 .PHONY: setup-testnet set-testnet-configs testnet testnet-basic sh-testnet
 
 ###############################################################################
 ###                                     help                                ###
 ###############################################################################
+
+.PHONY: explorer
+explorer:
+	docker compose up
 
 help:
 	@echo "Usage: make <target>"

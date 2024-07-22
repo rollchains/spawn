@@ -221,18 +221,18 @@ The chain will begin to mint new blocks, which you can interact with.
 
 ### Interaction
 
-Using the newly built binary (rolld from the --bin flag when we created the chain), we are going to execute the `set` transaction to "myname". This links user1's address (in the keyring) to the desired name in the keeper.
+Using the newly built binary (rolld from the --bin flag when we created the chain), we are going to execute the `set` transaction to "myname". This links acc1's address (in the keyring) to the desired name in the keeper.
 
-Then, we resolve this name with the nameservice lookup. `$(rolld keys show user1 -a)` is a substitute for the user1's address. You can also use just `roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87` here.
+Then, we resolve this name with the nameservice lookup. `$(rolld keys show acc1 -a)` is a substitute for the acc1's address. You can also use just `roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87` here.
 
 ```bash
-rolld tx nameservice set myname --from=user1 --yes
+rolld tx nameservice set myname --from=acc1 --yes
 
-# rolld q tx 088382C43C35440676438359B88899D97A8092F34BBDADD32345498297D332BA
+# rolld q tx 97BC4F78716C97038A4AA30BDA5BDA53A8B0CBF5B051AAFAF51E3AAAFE6256B1
 
 sleep 2
 
-rolld q nameservice resolve $(rolld keys show user1 -a) --output=json
+rolld q nameservice resolve $(rolld keys show acc1 -a) --output=json
 ```
 
 The expected result should be:
