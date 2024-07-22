@@ -5,7 +5,7 @@ go 1.22.3
 // overrides
 replace (
 	cosmossdk.io/core => cosmossdk.io/core v0.11.0
-	github.com/cosmos/cosmos-sdk => github.com/rollchains/cosmos-sdk v0.50.7
+	github.com/cosmos/cosmos-sdk => github.com/rollchains/cosmos-sdk v0.50.8
 	github.com/spf13/viper => github.com/spf13/viper v1.17.0 // v1.18+ breaks app overrides
 )
 
@@ -43,11 +43,11 @@ require (
 	github.com/CosmWasm/wasmd v0.50.0
 	github.com/CosmWasm/wasmvm v1.5.2
 	github.com/Stride-Labs/ibc-rate-limiting v1.0.2-0.20240426200051-b3513ab696e2
-	github.com/cometbft/cometbft v0.38.8
+	github.com/cometbft/cometbft v0.38.9
 	github.com/cosmos/cosmos-db v1.0.2
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5
-	github.com/cosmos/cosmos-sdk v0.50.6
-	github.com/cosmos/gogoproto v1.4.12
+	github.com/cosmos/cosmos-sdk v0.50.8
+	github.com/cosmos/gogoproto v1.5.0
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8 v8.0.2-0.20240228211029-91e486ec4dbb
 	github.com/cosmos/ibc-go/modules/capability v1.0.0
 	github.com/cosmos/ibc-go/modules/light-clients/08-wasm v0.1.1-0.20231213092650-57fcdb9a9a9d
@@ -62,18 +62,17 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.2
 	github.com/strangelove-ventures/globalfee v0.50.1
-	github.com/strangelove-ventures/poa v0.50.1
+	github.com/strangelove-ventures/poa v0.50.2
 	github.com/strangelove-ventures/tokenfactory v0.50.1
 	github.com/stretchr/testify v1.9.0
-	google.golang.org/genproto/googleapis/api v0.0.0-20240227224415-6ceb2ff114de
-	google.golang.org/grpc v1.63.2
-	google.golang.org/protobuf v1.33.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20240528184218-531527333157
+	google.golang.org/grpc v1.65.0
+	google.golang.org/protobuf v1.34.1
 )
 
 require (
 	cloud.google.com/go v0.112.0 // indirect
-	cloud.google.com/go/compute v1.24.0 // indirect
-	cloud.google.com/go/compute/metadata v0.2.3 // indirect
+	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	cloud.google.com/go/iam v1.1.6 // indirect
 	cloud.google.com/go/storage v1.36.0 // indirect
 	filippo.io/edwards25519 v1.0.0 // indirect
@@ -130,7 +129,7 @@ require (
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/gogo/status v1.1.0 // indirect
-	github.com/golang/glog v1.2.0 // indirect
+	github.com/golang/glog v1.2.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
@@ -215,19 +214,18 @@ require (
 	go.opentelemetry.io/otel/metric v1.22.0 // indirect
 	go.opentelemetry.io/otel/trace v1.22.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.22.0 // indirect
+	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/exp v0.0.0-20240404231335-c0f41cb1a7a0 // indirect
-	golang.org/x/net v0.24.0 // indirect
-	golang.org/x/oauth2 v0.18.0 // indirect
+	golang.org/x/net v0.25.0 // indirect
+	golang.org/x/oauth2 v0.20.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
-	golang.org/x/term v0.19.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/term v0.20.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/api v0.162.0 // indirect
-	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto v0.0.0-20240227224415-6ceb2ff114de // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240401170217-c3f982113cda // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
