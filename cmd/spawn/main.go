@@ -2,34 +2,51 @@ package main
 
 import (
 	"fmt"
-	"io/fs"
 	"log"
 	"log/slog"
 	"os"
-	"os/exec"
-	"path"
 	"strings"
 	"time"
 
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
+	"github.com/rollchains/spawn/spawn"
 	"github.com/spf13/cobra"
 )
 
-// Set in the makefile ld_flags on compile
-var SpawnVersion = ""
-
-var LogLevelFlag = "log-level"
+var (
+	// Set in the makefile ld_flags on compile
+	SpawnVersion = ""
+	LogLevelFlag = "log-level"
+	rootCmd      = &cobra.Command{
+		Use:   "spawn",
+		Short: "Entry into the Interchain | Contact us: support@rollchains.com",
+		CompletionOptions: cobra.CompletionOptions{
+			HiddenDefaultCmd: false,
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			if err := cmd.Help(); err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
+)
 
 func main() {
+	outOfDateChecker()
 
 	rootCmd.AddCommand(newChain)
 	rootCmd.AddCommand(LocalICCmd)
-	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(&cobra.Command{
+		Use:   "version",
+		Short: "Print the version number of spawn",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println(SpawnVersion)
+		},
+	})
 	rootCmd.AddCommand(ModuleCmd())
 	rootCmd.AddCommand(ProtoServiceGenerate())
 	rootCmd.AddCommand(DocsCmd)
-	rootCmd.AddCommand(contactCmd)
 
 	applyPluginCmds()
 
@@ -59,123 +76,41 @@ func GetLogger() *slog.Logger {
 	return slog.Default()
 }
 
-var PluginsCmd = &cobra.Command{
-	Use:     "plugins",
-	Short:   "Spawn Plugins",
-	Aliases: []string{"plugin", "plug", "pl"},
-	Run: func(cmd *cobra.Command, args []string) {
-		if err := cmd.Help(); err != nil {
-			log.Fatal(err)
-		}
-	},
-}
-
-func applyPluginCmds() {
-	for name, abspath := range loadPlugins() {
-		name := name
-		abspath := abspath
-
-		info, err := ParseCobraCLICmd(abspath)
-		if err != nil {
-			GetLogger().Warn("error parsing the CLI commands from the plugin", "name", name, "error", err)
-			continue
-		}
-
-		execCmd := &cobra.Command{
-			Use:   name,
-			Short: info.Description,
-			Run: func(cmd *cobra.Command, args []string) {
-				output, err := exec.Command(abspath, args...).CombinedOutput()
-				if err != nil {
-					fmt.Println(err.Error())
-				}
-				fmt.Println(string(output))
-			},
-		}
-		PluginsCmd.AddCommand(execCmd)
-	}
-
-	rootCmd.AddCommand(PluginsCmd)
-}
-
-// returns name and path
-func loadPlugins() map[string]string {
-	p := make(map[string]string)
-
+// outOfDateChecker checks if binaries are up to date and logs if they are not.
+// if not, it will prompt the user every command they run with spawn until they update.
+// else, it will wait 24h+ before checking again.
+func outOfDateChecker() {
 	logger := GetLogger()
 
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
+	if !spawn.DoOutdatedNotificationRunCheck(logger) {
+		return
 	}
 
-	pluginsDir := path.Join(homeDir, ".spawn", "plugins")
+	for _, program := range []string{"local-ic", "spawn"} {
+		releases, err := spawn.GetLatestGithubReleases(spawn.BinaryToGithubAPI[program])
+		if err != nil {
+			logger.Error("Error getting latest local-ic releases", "err", err)
+			return
+		}
+		latest := releases[0].TagName
 
-	d := os.DirFS(pluginsDir)
-	if _, err := d.Open("."); err != nil {
-		if os.IsNotExist(err) {
-			if err := os.MkdirAll(pluginsDir, 0755); err != nil {
-				panic(err)
+		current := spawn.GetLocalVersion(logger, program, latest)
+		if spawn.OutOfDateCheckLog(logger, program, current, latest) {
+			// write check to -24h from now to spam the user until it's resolved.
+
+			file, err := spawn.GetLatestVersionCheckFile(logger)
+			if err != nil {
+				return
 			}
-		} else {
-			panic(err)
+
+			if err := spawn.WriteLastTimeToFile(logger, file, time.Now().Add(-spawn.RunCheckInterval)); err != nil {
+				logger.Error("Error writing last check file", "err", err)
+				return
+			}
+
+			return
 		}
 	}
-
-	err = fs.WalkDir(d, ".", func(relPath string, d fs.DirEntry, e error) error {
-		if d.IsDir() {
-			return nil
-		}
-
-		// /home/username/.spawn/plugins/myplugin
-		absPath := path.Join(pluginsDir, relPath)
-
-		// ensure path exist
-		if _, err := os.Stat(absPath); os.IsNotExist(err) {
-			logger.Error(fmt.Sprintf("Plugin %s does not exist. Skipping", absPath))
-			return nil
-		}
-
-		name := path.Base(absPath)
-		p[name] = absPath
-		return nil
-	})
-	if err != nil {
-		logger.Error(fmt.Sprintf("Error walking the path %s: %v", pluginsDir, err))
-		panic(err)
-	}
-
-	return p
-}
-
-var rootCmd = &cobra.Command{
-	Use:   "spawn",
-	Short: "Entry into the Interchain",
-	CompletionOptions: cobra.CompletionOptions{
-		HiddenDefaultCmd: false,
-	},
-	Run: func(cmd *cobra.Command, args []string) {
-		if err := cmd.Help(); err != nil {
-			log.Fatal(err)
-		}
-	},
-}
-
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print the version number of spawn",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(SpawnVersion)
-	},
-}
-
-var contactCmd = &cobra.Command{
-	Use:     "email",
-	Aliases: []string{"contact"},
-	Short:   "Reach out and connect with us!",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Email us! support@rollchains.com")
-	},
 }
 
 func parseLogLevelFromFlags() slog.Level {

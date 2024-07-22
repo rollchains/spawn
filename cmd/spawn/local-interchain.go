@@ -2,8 +2,6 @@ package main
 
 import (
 	"os"
-	"os/exec"
-	"path"
 
 	"github.com/spf13/cobra"
 
@@ -16,6 +14,7 @@ const (
 
 func init() {
 	LocalICCmd.Flags().Bool(FlagLocationPath, false, "print the location of local-ic binary")
+
 }
 
 // ---
@@ -34,12 +33,7 @@ var LocalICCmd = &cobra.Command{
 
 		logger := GetLogger()
 
-		loc := whereIsLocalICInstalled()
-		if loc == "" {
-			logger.Error("local-ic not found. Please run `make get-localic`")
-			return
-		}
-
+		loc := spawn.WhereIsBinInstalled("local-ic")
 		if debugBinaryLoc {
 			logger.Debug("local-ic binary", "location", loc)
 			return
@@ -60,18 +54,4 @@ var LocalICCmd = &cobra.Command{
 			logger.Error("Error calling local-ic", "err", err)
 		}
 	},
-}
-
-func whereIsLocalICInstalled() string {
-	for _, path := range []string{"local-ic", path.Join("bin", "local-ic"), path.Join("local-interchain", "localic")} {
-		if _, err := os.Stat(path); err == nil {
-			return path
-		}
-	}
-
-	if path, err := exec.LookPath("local-ic"); err == nil {
-		return path
-	}
-
-	return ""
 }

@@ -36,6 +36,7 @@ func TestDisabledGeneration(t *testing.T) {
 	}
 
 	// custom cases
+	// NOTE: block-explorer is disabled for all cases.
 	disabledCases := []disabledCase{
 		{
 			// by default ICS is used
@@ -70,14 +71,14 @@ func TestDisabledGeneration(t *testing.T) {
 
 		disabledCases = append(disabledCases, disabledCase{
 			Name:     normalizedName,
-			Disabled: []string{f},
+			Disabled: []string{f, spawn.BlockExplorer},
 		})
 	}
 
 	for _, c := range disabledCases {
 		c := c
 		name := "spawnunittest" + c.Name
-		dc := c.Disabled
+		dc := append(c.Disabled, spawn.BlockExplorer)
 
 		fmt.Println("=====\ndisabled cases", name, dc)
 
