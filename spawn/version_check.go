@@ -107,7 +107,7 @@ func GetLatestGithubReleases(apiRepoURL string) ([]Release, error) {
 func GetLocalVersion(binName, latestVer string) string {
 	loc := WhereIsBinInstalled(binName)
 	if loc == "" {
-		fmt.Printf("%s not found. Please run `%s`\n", binName)
+		fmt.Printf("%s not found. Please run `%s`\n", binName, GetInstallMsg(howToInstallBinary[binName], latestVer))
 		return ""
 	}
 
@@ -153,10 +153,14 @@ func OutOfDateCheckLog(logger *slog.Logger, binName, current, latest string) boo
 			"New "+binName+" version available",
 			"current", current,
 			"latest", latest,
-			"install", strings.ReplaceAll(howToInstallBinary[binName], "__VERSION__", latest),
+			"install", GetInstallMsg(howToInstallBinary[binName], latest),
 		)
 	}
 	return isOutOfDate
+}
+
+func GetInstallMsg(msg, latestVer string) string {
+	return strings.ReplaceAll(msg, "__VERSION__", latestVer)
 }
 
 // DoOutdatedNotificationRunCheck returns true if it is time to run the check again.
