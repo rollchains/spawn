@@ -48,13 +48,18 @@ make install
 ```shell
 GITHUB_USERNAME=rollchains
 
+# Available Features:
+# * tokenfactory,globalfee,ibc-packetforward,ibc-ratelimit,cosmwasm,wasm-light-client,optimistic-execution,ignite-cli,block-explorer
+
 spawn new rollchain \
 --consensus=proof-of-authority `# proof-of-authority,proof-of-stake,interchain-security` \
 --bech32=roll `# the prefix for addresses` \
 --denom=uroll `# the coin denomination to create` \
 --bin=rolld `# the name of the binary` \
---disabled=cosmwasm,globalfee `# disable features. [tokenfactory,globalfee,ibc-packetforward,ibc-ratelimit,cosmwasm,wasm-light-client,ignite-cli]` \
+--disabled=cosmwasm,globalfee,block-explorer `# disable features.` \
 --org=${GITHUB_USERNAME} `# the github username or organization to use for the module imports, optional`
+
+
 ```
 
 > *NOTE:* `spawn` creates a ready to use repository complete with `git` and GitHub CI. It can be quickly pushed to a new repository getting you and your team up and running quickly.

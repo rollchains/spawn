@@ -207,6 +207,10 @@ func (cfg *NewChainConfig) CreateNewChain() error {
 		cfg.GitInitNewProjectRepo()
 	}
 
+	if !cfg.IsFeatureDisabled("block-explorer") {
+		cfg.NewPingPubExplorer()
+	}
+
 	return nil
 }
 

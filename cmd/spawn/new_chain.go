@@ -32,6 +32,7 @@ var (
 		{ID: "wasm-light-client", IsSelected: false, Details: "08 Wasm Light Client"},
 		{ID: "optimistic-execution", IsSelected: false, Details: "Pre-process blocks ahead of consensus request"},
 		{ID: "ignite-cli", IsSelected: false, Details: "Ignite-CLI Support"},
+		{ID: "block-explorer", IsSelected: true, Details: "Ping Pub Explorer"},
 	}...)
 
 	// parentDeps is a list of modules that are disabled if a parent module is disabled.

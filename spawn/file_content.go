@@ -88,9 +88,7 @@ func (fc *FileContent) DeleteFile(path string) {
 }
 
 func (fc *FileContent) DeleteDirectoryContents(path string) {
-	if fc.ContainsPath(path) && !AlreadyCheckedDeletion[path] {
-		AlreadyCheckedDeletion[path] = true
-
+	if fc.ContainsPath(path) {
 		fc.Logger.Debug("Deleting contents for", "path", path)
 		fc.Contents = ""
 	}
