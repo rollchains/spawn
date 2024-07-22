@@ -1,24 +1,6 @@
 # Nginx Explorer
 
-To run the explorer locally, this nginx configuration is required to get https to work locally.
-
-## PingPub Docker Build
-
-```dockerfile
-# docker build . -t pingpub:latest
-
-FROM node:20-alpine
-
-RUN apk add --no-cache yarn
-
-WORKDIR /app
-
-COPY . .
-
-EXPOSE 8080
-
-CMD [ "yarn", "--ignore-engines", "serve", "--host", "0.0.0.0" ]
-```
+To run the explorer locally, this nginx configuration is required to get local https to work.
 
 ## Running
 
@@ -30,5 +12,10 @@ Update your `/etc/hosts` file to include the following:
 127.0.0.1 pingpub.localhost
 ```
 
-Then `docker compose up` to start the reverse proxy, explorer, and the RPC/REST API Services. Then start the testnet (make sh-testnet)
+Start the testnet with: `make sh-testnet` or the full IBC network with `make testnet`
 
+Then `docker compose up` to start the reverse proxy, explorer, and the RPC/REST API Services.
+
+Visit: https://pingpub.localhost to view the explorer.
+
+> Attempting to view as a standard http:// instance will break the block explorer due to pesky CORS errors.

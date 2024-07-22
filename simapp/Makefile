@@ -305,17 +305,6 @@ sh-testnet: mod-tidy
 
 .PHONY: setup-testnet set-testnet-configs testnet testnet-basic sh-testnet
 
-################################s###############################################
-###                                   explorer                              ###
-###############################################################################
-
-.PHONY: explorer
-explorer:
-# curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash
-# nvm install node && nvm install-latest-npm && npm install --global yarn
-	@echo "Running explorer"
-	@cd explorer && yarn --ignore-engines && yarn serve
-
 ###############################################################################
 ###                                     help                                ###
 ###############################################################################
@@ -331,6 +320,5 @@ help:
 	@echo "  sh-testnet          : Shell local devnet"
 	@echo "  ictest-basic        : Basic end-to-end test"
 	@echo "  ictest-ibc          : IBC end-to-end test"
-	@echo "  explorer            : Visual Block Explorer"
 
 .PHONY: help
