@@ -1,6 +1,7 @@
 # flake8:noqa
 # Generate bash command matrixes for manual verification testing (due to the number of repos and testing required)
 # rm -rf ./matrix*/
+# cd sciprts && python3 matrix_generator.py
 
 import os
 import random
@@ -274,8 +275,9 @@ class CmdCreator:
 
         if len(self.disabled_features) == 0:
             text += " --bypass-prompt"
+            text += " --disable=explorer"
         else:
-            text += " --disable=" + ",".join(self.disabled_features)
+            text += " --disable=" + ",".join(self.disabled_features + ["explorer"])
 
         # if len(extraBashArgs) > 0:
         #     text += f" && {extraBashArgs}"

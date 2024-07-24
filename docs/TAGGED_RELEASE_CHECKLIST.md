@@ -18,3 +18,6 @@ This document outlines the steps required to verify the functionality of spawn a
 - `make template-*` has default chains configured for you to test on with different consensus values.
 - Create new modules and add some proto code to be auto generated on the next `make proto-gen`.
 - Ensure goreleaser runs for all instances like `goreleaser build --skip-validate --snapshot --clean -f .goreleaser.yaml`
+- Validate the explorer
+    - `make template-staking && cd myproject && make sh-testnet`
+    - `make explorer`
