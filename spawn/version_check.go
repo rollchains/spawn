@@ -128,6 +128,8 @@ func GetLocalVersion(logger *slog.Logger, binName, latestVer string) string {
 		out = "v0.0.0"
 	}
 
+	// strip out \n and \r
+	out = strings.Trim(out, "\n\r")
 	return out
 }
 
