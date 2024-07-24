@@ -1,7 +1,7 @@
 #!/bin/sh
 # sh scripts/bump_localic.sh
 
-NEW_VERSION=v8.6.0
+NEW_VERSION=v8.6.1
 
 find . -type f -name "*.yml" -exec sed -i "s/v[0-9]\.[0-9]\.[0-9]\/local-ic/$NEW_VERSION\/local-ic/g" {} \;
 find . -type f -name "*.yml.optional" -exec sed -i "s/v[0-9]\.[0-9]\.[0-9]\/local-ic/$NEW_VERSION\/local-ic/g" {} \;

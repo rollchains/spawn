@@ -224,7 +224,7 @@ proto-check-breaking:
 ## --- Testnet Utilities ---
 get-localic:
 	@echo "Installing local-interchain"
-	git clone --branch v8.6.0 https://github.com/strangelove-ventures/interchaintest.git interchaintest-downloader
+	git clone --branch v8.6.1 https://github.com/strangelove-ventures/interchaintest.git interchaintest-downloader
 	cd interchaintest-downloader/local-interchain && make install
 	@echo ✅ local-interchain installed $(shell which local-ic)
 
