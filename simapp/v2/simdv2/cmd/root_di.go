@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"context"
+	"log/slog"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -13,7 +15,11 @@ import (
 	"cosmossdk.io/log"
 	"cosmossdk.io/runtime/v2"
 	serverv2 "cosmossdk.io/server/v2"
-	"cosmossdk.io/server/v2/cometbft"
+
+	"github.com/rollchains/gordian/gcosmos/gserver"
+	"github.com/rollchains/gordian/gcosmos/gtx"
+
+	// "cosmossdk.io/server/v2/cometbft" // TODO: spawntag:cometbft
 	"cosmossdk.io/simapp/v2"
 	"cosmossdk.io/x/auth/tx"
 	authtxconfig "cosmossdk.io/x/auth/tx/config"
@@ -23,6 +29,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/std"
 )
 
@@ -34,11 +41,31 @@ func NewRootCmdWithServer[T transaction.Tx](
 
 // NewRootCmd creates a new root command for simd. It is called once in the main function.
 func NewRootCmd[T transaction.Tx]() *cobra.Command {
-	return NewRootCmdWithServer(func(cc client.Context) serverv2.ServerComponent[T] {
-		return cometbft.New[T](
-			&genericTxDecoder[T]{cc.TxConfig},
-			cometbft.DefaultServerOptions[T](),
-		)
+	// TODO: spawntag:cometbft multiline
+	// return NewRootCmdWithServer(func(cc client.Context) serverv2.ServerComponent[T] {
+	// 	return cometbft.New[T](
+	// 		&genericTxDecoder[T]{cc.TxConfig},
+	// 		cometbft.DefaultServerOptions[T](),
+	// 	)
+	// })
+
+	return NewRootCmdWithServer(func(cc client.Context) serverv2.ServerComponent[transaction.Tx] {
+		dc := server.NewDefaultContext() // "github.com/cosmos/cosmos-sdk/server"
+
+		ctx := context.WithValue(context.Background(), client.ClientContextKey, &client.Context{
+			ChainID: "gcosmos",
+			HomeDir: "/home/reece/.simappv2",
+		})
+		ctx = context.WithValue(ctx, server.ServerContextKey, dc)
+
+		log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
+		codec := gtx.NewTxDecoder(cc.TxConfig)
+		c, err := gserver.NewComponent(ctx, log, codec, cc.Codec)
+		if err != nil {
+			panic(err)
+		}
+		return c
 	})
 }
 
