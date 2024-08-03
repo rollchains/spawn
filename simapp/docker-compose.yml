@@ -1,0 +1,38 @@
+version: '3'
+
+# Runs the explorer & reverse proxy
+#
+# NOTE: Must add the following to your /etc/hosts file:
+#
+# 127.0.0.1 api.localhost
+# 127.0.0.1 rpc.localhost
+# 127.0.0.1:5173 pingpub.localhost
+#
+# Then:
+# docker compose up
+
+services:
+  nginx:
+    image: nginx
+    network_mode: "host"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+      - ./nginx/nginx-selfsigned.crt:/etc/nginx/nginx-selfsigned.crt
+      - ./nginx/nginx-selfsigned.key:/etc/nginx/nginx-selfsigned.key
+  pingpub:
+    depends_on:
+      - nginx
+    image: pingpub:latest
+    network_mode: "host"
+    build:
+      context: pingpub
+      dockerfile: ./explorer/Dockerfile
+
+    volumes:
+      - ./explorer/chains:/app/chains/
+    ports:
+      - "80:80"
+      - "443:443"
