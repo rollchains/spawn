@@ -23,6 +23,12 @@ var (
 		// {ID: "ics-ethos", IsSelected: false, IsConsensus: true, Details: "Interchain-Security with Ethos ETH restaking"},
 	}
 
+	ConsensusEngines = items{
+		// only 1 per app
+		{ID: "gordian", IsSelected: true, Details: "Modular BFT engine"}, // TODO: must be productionized to use default
+		{ID: "cometbft", IsSelected: false, Details: "Standard Tendermint Core engine"},
+	}
+
 	SupportedFeatures = append(ConsensusFeatures, items{
 		{ID: "tokenfactory", IsSelected: true, Details: "Native token minting, sending, and burning on the chain"},
 		{ID: "globalfee", IsSelected: true, Details: "Static minimum fee(s) for all transactions, controlled by governance"},
@@ -47,6 +53,7 @@ const (
 	FlagGithubOrg    = "org"
 	FlagDisabled     = "disable"
 	FlagConsensus    = "consensus"
+	FlagEngine       = "engine" // consensus-engine
 	FlagNoGit        = "skip-git"
 	FlagBypassPrompt = "bypass-prompt"
 )
@@ -54,6 +61,7 @@ const (
 func init() {
 	features := make([]string, 0)
 	consensus := make([]string, 0)
+	engines := make([]string, 0)
 
 	for _, feat := range SupportedFeatures {
 		if feat.IsConsensus {
@@ -63,12 +71,17 @@ func init() {
 		}
 	}
 
+	for _, feat := range ConsensusEngines {
+		engines = append(engines, feat.ID)
+	}
+
 	newChain.Flags().String(FlagWalletPrefix, "cosmos", "chain bech32 wallet prefix")
 	newChain.Flags().StringP(FlagBinDaemon, "b", "simd", "binary name")
 	newChain.Flags().String(FlagGithubOrg, "rollchains", "github organization")
 	newChain.Flags().String(FlagTokenDenom, "token", "bank token denomination")
 	newChain.Flags().StringSlice(FlagDisabled, []string{}, strings.Join(features, ","))
 	newChain.Flags().String(FlagConsensus, "", strings.Join(consensus, ",")) // must be set to nothing is nothing is set
+	newChain.Flags().String(FlagEngine, "", strings.Join(engines, ","))      // must be set to nothing is nothing is set
 	newChain.Flags().Bool(FlagDebugging, false, "enable debugging")
 	newChain.Flags().Bool(FlagNoGit, false, "ignore git init")
 	newChain.Flags().Bool(FlagBypassPrompt, false, "bypass UI prompt")
@@ -139,6 +152,38 @@ var newChain = &cobra.Command{
 		}
 		logger.Debug("Disabled Consensuses", "disabled", disabledConsensus, "using", consensus)
 
+		consensusEngine, _ := cmd.Flags().GetString(FlagEngine)
+		disabledEngines := make([]string, 0)
+		// Show a UI to select the consensus engines (Comet, Gordian) if one was not specified.
+		if !bypassPrompt {
+			if len(consensusEngine) == 0 {
+				text := "Engine Selector (( enter to toggle ))"
+				items, err := selectItems(text, 0, ConsensusEngines, false, false, true)
+				if err != nil {
+					logger.Error("Error selecting engine", "err", err)
+					return
+				}
+				consensusEngine = items.String()
+			}
+		}
+		fmt.Println("consensusEngine before", consensusEngine)
+		if len(consensusEngine) == 0 {
+			consensusEngine = spawn.CometBFT // TODO: (gordian) set the default if still none is provided
+		}
+		fmt.Println("consensusEngine", consensusEngine)
+
+		// set disabledEngines if not selected
+		for _, feat := range ConsensusEngines {
+			name := spawn.AliasName(feat.ID)
+			if name != consensusEngine {
+				disabledEngines = append(disabledEngines, name)
+			}
+		}
+		fmt.Println("disabledEngines", disabledEngines)
+
+		logger.Debug("Disabled Consensus Engines", "using", consensusEngine, "disabled", disabledEngines)
+		// TODO: get the difference for all disabled
+
 		// Disable all features not selected
 		// Show a UI if the user did not specific to bypass it, or if nothing is disabled.
 		if len(disabled) == 0 && !bypassPrompt {
@@ -153,6 +198,7 @@ var newChain = &cobra.Command{
 		}
 
 		disabled = append(disabled, disabledConsensus...)
+		disabled = append(disabled, disabledEngines...)
 		disabled = spawn.NormalizeDisabledNames(disabled, parentDeps)
 
 		logger.Debug("Disabled features final", "features", disabled)
@@ -192,6 +238,8 @@ func normalizeWhitelistVarRun(f *pflag.FlagSet, name string) pflag.NormalizedNam
 		name = FlagWalletPrefix
 	case "organization", "namespace":
 		name = FlagGithubOrg
+	case "consensus-engine", "cengine", "c-engine", "bft":
+		name = FlagEngine
 	}
 
 	return pflag.NormalizedName(name)

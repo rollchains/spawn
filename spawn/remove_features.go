@@ -11,15 +11,26 @@ import (
 // - Handle ComentSwaps before removing lines
 
 var (
-	TokenFactory        = "tokenfactory"
-	POA                 = "poa"
-	POS                 = "staking" // if ICS is used, we remove staking
-	GlobalFee           = "globalfee"
-	CosmWasm            = "cosmwasm"
-	WasmLC              = "wasmlc"
-	PacketForward       = "packetforward"
-	IBCRateLimit        = "ibc-ratelimit"
-	InterchainSecurity  = "ics"
+	// Consensus
+	POS                = "staking" // if ICS is used, we remove staking
+	POA                = "poa"
+	InterchainSecurity = "ics"
+
+	// consensus engines
+	CometBFT = "cometbft"
+	Gordian  = "gordian"
+
+	// modules
+	TokenFactory = "tokenfactory"
+	GlobalFee    = "globalfee"
+	CosmWasm     = "cosmwasm"
+	WasmLC       = "wasmlc"
+
+	// ibc
+	PacketForward = "packetforward"
+	IBCRateLimit  = "ibc-ratelimit"
+
+	// other
 	OptimisticExecution = "optimistic-execution"
 	BlockExplorer       = "block-explorer"
 
@@ -60,6 +71,10 @@ func AliasName(name string) string {
 		return InterchainSecurity
 	case BlockExplorer, "explorer", "pingpub":
 		return BlockExplorer
+	case CometBFT, "tendermint", "comet":
+		return CometBFT
+	case Gordian:
+		return Gordian
 	default:
 		panic(fmt.Sprintf("AliasName: unknown feature to remove: %s", name))
 	}
@@ -97,6 +112,12 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 			// fc.RemoveOptimisticExecution()
 		case BlockExplorer:
 			// fc.RemoveExplorer()
+
+			// Consensus Engines
+		case CometBFT:
+			fc.RemoveCometBFT()
+		case Gordian:
+			fc.RemoveGordian()
 		default:
 			panic(fmt.Sprintf("unknown feature to remove %s", name))
 		}
@@ -117,6 +138,28 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 
 	// remove any left over `// spawntag:` comments
 	fc.RemoveTaggedLines("", false)
+}
+
+func (fc *FileContent) RemoveCometBFT() {
+	text := "cometbft"
+	fc.HandleAllTagged(text)
+
+	fc.DeleteFile(path.Join("app", "cmd", "cometbft_decoder.go"))
+
+	fc.RemoveGoModImport("github.com/cometbft/cometbft")
+	fc.RemoveGoModImport("cosmossdk.io/server/v2/cometbft")
+	fc.RemoveGoModImport("buf.build/gen/go/cometbft/cometbft/protocolbuffers/go")
+	// github.com/cometbft/cometbft/api, github.com/cometbft/cometbft-db
+}
+
+func (fc *FileContent) RemoveGordian() {
+	text := "gordian"
+	fc.HandleAllTagged(text)
+
+	fc.DeleteFile(path.Join("app", "cmd", "gordian_patch.go")) // TODO: this is temp?
+
+	fc.RemoveGoModImport("github.com/rollchains/gordian")
+	fc.RemoveGoModImport("github.com/rollchains/gordian/gcosmos")
 }
 
 func (fc *FileContent) RemoveTokenFactory() {

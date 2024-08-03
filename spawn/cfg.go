@@ -233,8 +233,6 @@ func (cfg *NewChainConfig) SetupMainChainApp() error {
 		fc.ReplaceDockerFile(cfg)
 		// scripts/test_node.sh
 		fc.ReplaceTestNodeScript(cfg)
-		// app/app.go
-		fc.ReplaceApp(cfg)
 		// Makefile
 		fc.ReplaceMakeFile(cfg)
 		// *All Files

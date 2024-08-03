@@ -159,7 +159,5 @@ sed -i -e 's/timeout_commit = "5s"/timeout_commit = "'$BLOCK_TIME'"/g' $HOME_DIR
 
 # Start the node with 0 gas fees
 # TODO: disabled within the app rn: --pruning=nothing --minimum-gas-prices=0$DENOM
-# BINARY start --rpc.laddr="tcp://0.0.0.0:$RPC"
-
-# gordian
-BINARY start --g-http-addr=127.0.0.1:29998
+BINARY start --g-http-addr=127.0.0.1:29998 # spawntag:gordian
+BINARY start --rpc.laddr="tcp://0.0.0.0:$RPC" # spawntag:cometbft

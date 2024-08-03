@@ -127,15 +127,6 @@ func (fc *FileContent) ReplaceDockerFile(cfg *NewChainConfig) {
 	}
 }
 
-func (fc *FileContent) ReplaceApp(cfg *NewChainConfig) {
-	// TODO: move 9into replace everywhere
-	// app_di.go
-	fc.ReplaceAll(".simappv2", cfg.HomeDir)
-	// app_config.go
-	fc.ReplaceAll(`SimAppV2`, cfg.ProjectName)
-	fc.ReplaceAll(`mybechprefix`, cfg.Bech32Prefix)
-}
-
 // ReplaceEverywhereReplaces any file content that matches anywhere in the file regardless of location.
 func (fc *FileContent) ReplaceEverywhere(cfg *NewChainConfig) {
 	// go.mod & app/
@@ -149,15 +140,17 @@ func (fc *FileContent) ReplaceEverywhere(cfg *NewChainConfig) {
 
 	fc.ReplaceAll("app/application.go", fmt.Sprintf("app/%s.go", cfg.BinDaemon))
 
+	// app_di.go
+	fc.ReplaceAll(".simappv2", cfg.HomeDir)
+	// app_config.go
+	fc.ReplaceAll(`SimAppV2`, cfg.ProjectName)
+	fc.ReplaceAll(`mybechprefix`, cfg.Bech32Prefix)
+
 	fc.ReplaceAll("heighliner build -c wasmd", fmt.Sprintf(`heighliner build -c %s`, strings.ToLower(cfg.ProjectName)))
 	if fc.IsPath("chains.yaml") {
 		fc.ReplaceAll("myappname", strings.ToLower(cfg.ProjectName))
 		fc.ReplaceAll("/go/bin/appd", fmt.Sprintf("/go/bin/%s", cfg.BinDaemon))
 	}
-
-	// TODO: where is this>? (if anywhere)
-	// fc.ReplaceAll("docker build . -t wasmd:local", fmt.Sprintf(`docker build . -t %s:local`, strings.ToLower(cfg.ProjectName)))
-
 }
 
 func (fc *FileContent) ReplaceMakeFile(cfg *NewChainConfig) {

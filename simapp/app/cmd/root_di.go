@@ -58,8 +58,9 @@ func NewRootCmd[T transaction.Tx]() *cobra.Command {
 
 		var ctx context.Context = context.Background()
 		ctx = context.WithValue(ctx, client.ClientContextKey, client.Context{
+			// TODO:
 			ChainID: "gcosmos",
-			HomeDir: "/home/reece/.simappv2",
+			HomeDir: simapp.DefaultNodeHome,
 		})
 		// ctx = context.WithValue(ctx, server.ServerContextKey, server.NewDefaultContext())
 
