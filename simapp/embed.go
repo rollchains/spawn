@@ -6,9 +6,9 @@ import (
 
 // !IMPORTANT: interchaintest/ has its own `InterchainTest` embed.FS that will need to be iterated on.
 
-// TODO: proto/*.* *.*
+// TODO: proto/*.*
 //
-//go:embed .github/* app/* chains/* scripts/* Makefile Dockerfile nginx/* contrib/* go.mod go.sum *.go
+//go:embed .github/* app/* chains/* scripts/* Makefile Dockerfile nginx/* contrib/* *.*
 var SimAppFS embed.FS
 
 // To embed the interchaintest/ directory, rename the go.mod file to `go.mod_`
