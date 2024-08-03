@@ -7,8 +7,8 @@ import (
 	clientv2helpers "cosmossdk.io/client/v2/helpers"
 	"cosmossdk.io/core/transaction"
 	serverv2 "cosmossdk.io/server/v2"
-	"cosmossdk.io/simapp/v2"
-	"cosmossdk.io/simapp/v2/simdv2/cmd"
+	"github.com/rollchains/spawn/simapp"
+	"github.com/rollchains/spawn/simapp/app/cmd"
 )
 
 func main() {

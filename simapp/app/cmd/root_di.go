@@ -20,10 +20,10 @@ import (
 	"github.com/rollchains/gordian/gcosmos/gtx"
 
 	"cosmossdk.io/server/v2/cometbft"
-	"cosmossdk.io/simapp/v2"
 	"cosmossdk.io/x/auth/tx"
 	authtxconfig "cosmossdk.io/x/auth/tx/config"
 	"cosmossdk.io/x/auth/types"
+	"github.com/rollchains/spawn/simapp"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"

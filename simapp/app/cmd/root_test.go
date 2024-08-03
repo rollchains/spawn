@@ -8,8 +8,8 @@ import (
 
 	"cosmossdk.io/core/transaction"
 	svrcmd "cosmossdk.io/server/v2"
-	"cosmossdk.io/simapp/v2"
-	"cosmossdk.io/simapp/v2/simdv2/cmd"
+	"github.com/rollchains/spawn/simapp"
+	"github.com/rollchains/spawn/simapp/app/cmd"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
