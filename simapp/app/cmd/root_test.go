@@ -8,7 +8,7 @@ import (
 
 	"cosmossdk.io/core/transaction"
 	svrcmd "cosmossdk.io/server/v2"
-	"github.com/rollchains/spawn/simapp"
+	"github.com/rollchains/spawn/simapp" // TODO: rename me to just `github.com/rollchains/myunit`
 	"github.com/rollchains/spawn/simapp/app/cmd"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"

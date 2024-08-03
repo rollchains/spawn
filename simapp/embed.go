@@ -8,7 +8,7 @@ import (
 
 // TODO: proto/*.* *.*
 //
-//go:embed .github/* app/* chains/*  scripts/* Makefile Dockerfile nginx/* contrib/* go.mod go.sum
+//go:embed .github/* app/* chains/* scripts/* Makefile Dockerfile nginx/* contrib/* go.mod go.sum *.go
 var SimAppFS embed.FS
 
 // To embed the interchaintest/ directory, rename the go.mod file to `go.mod_`

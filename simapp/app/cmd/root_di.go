@@ -23,7 +23,7 @@ import (
 	"cosmossdk.io/x/auth/tx"
 	authtxconfig "cosmossdk.io/x/auth/tx/config"
 	"cosmossdk.io/x/auth/types"
-	"github.com/rollchains/spawn/simapp"
+	"github.com/rollchains/spawn/simapp" // TODO: rename me to just `github.com/rollchains/myunit`
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
@@ -50,7 +50,7 @@ func NewRootCmd[T transaction.Tx]() *cobra.Command {
 			cometbft.DefaultServerOptions[T](),
 		)
 	})
-	// cometbft:cometbft>
+	// spawntag:cometbft>
 
 	// <spawntag:gordian
 	cmd = NewRootCmdWithServer(func(cc client.Context) serverv2.ServerComponent[transaction.Tx] {

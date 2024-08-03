@@ -199,7 +199,7 @@ func (cfg *NewChainConfig) CreateNewChain() error {
 
 	// setup local-interchain testnets
 	// *testnet.json (chains/ directory)
-	cfg.SetupLocalInterchainJSON()
+	// cfg.SetupLocalInterchainJSON() // TODO:
 
 	cfg.MakeModTidy()
 
@@ -276,6 +276,7 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 			return nil
 		}
 
+		// TODO: pull this out?
 		if fc.IsPath(path.Join("interchaintest", "setup.go")) {
 			fc.ReplaceAll( // must be first
 				`ibc.NewDockerImage("wasmd", "local", "1025:1025")`,
@@ -305,35 +306,36 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 	})
 }
 
-// TODO: allow selecting for other chains to generate from (ethos, saga)
 // SetupLocalInterchainJSON sets up the local-interchain testnets configuration files.
+/*
 func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
-	// c := localictypes.NewChainBuilder(cfg.ProjectName, "localchain-1", cfg.BinDaemon, cfg.Denom, cfg.Bech32Prefix).
-	// 	SetBlockTime("2000ms").
-	// 	SetDockerImage(ibc.NewDockerImage(strings.ToLower(cfg.ProjectName), "local", "")).
-	// 	SetTrustingPeriod("336h").
-	// 	SetHostPortOverride(localictypes.BaseHostPortOverride()).
-	// 	SetDefaultSDKv47Genesis(2)
+	c := localictypes.NewChainBuilder(cfg.ProjectName, "localchain-1", cfg.BinDaemon, cfg.Denom, cfg.Bech32Prefix).
+		SetBlockTime("2000ms").
+		SetDockerImage(ibc.NewDockerImage(strings.ToLower(cfg.ProjectName), "local", "")).
+		SetTrustingPeriod("336h").
+		SetHostPortOverride(localictypes.BaseHostPortOverride()).
+		SetDefaultSDKv47Genesis(2)
 
-	// c.Genesis.Modify = []cosmos.GenesisKV{
-	// 	cosmos.NewGenesisKV("app_state.gov.params.voting_period", "10s"),
-	// 	cosmos.NewGenesisKV("app_state.gov.params.max_deposit_period", "10s"),
-	// 	cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.denom", c.Denom),
-	// 	cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.amount", "1"),
-	// }
+	c.Genesis.Modify = []cosmos.GenesisKV{
+		cosmos.NewGenesisKV("app_state.gov.params.voting_period", "10s"),
+		cosmos.NewGenesisKV("app_state.gov.params.max_deposit_period", "10s"),
+		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.denom", c.Denom),
+		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.amount", "1"),
+	}
 
-	// if cfg.isUsingICS {
-	// 	c.SetICSConsumerLink("localcosmos-1")
-	// } else {
-	// 	// make this is an IBC testnet for POA/POS chains
-	// 	c.SetAppendedIBCPathLink(CosmosHubProvider)
-	// }
+	if cfg.isUsingICS {
+		c.SetICSConsumerLink("localcosmos-1")
+	} else {
+		// make this is an IBC testnet for POA/POS chains
+		c.SetAppendedIBCPathLink(CosmosHubProvider)
+	}
 
-	// cc := localictypes.NewChainsConfig(c, CosmosHubProvider)
-	// if err := cc.SaveJSON(fmt.Sprintf("%s/chains/testnet.json", cfg.ProjectName)); err != nil {
-	// 	panic(err)
-	// }
+	cc := localictypes.NewChainsConfig(c, CosmosHubProvider)
+	if err := cc.SaveJSON(fmt.Sprintf("%s/chains/testnet.json", cfg.ProjectName)); err != nil {
+		panic(err)
+	}
 }
+*/
 
 // NormalizeDisabledNames normalizes the names, removes any parent dependencies, and removes duplicates.
 // It then returns the cleaned list of disabled modules.

@@ -73,6 +73,7 @@ type SimApp[T transaction.Tx] struct {
 
 func init() {
 	var err error
+	// TODO: rename me
 	DefaultNodeHome, err = clienthelpers.GetNodeHomeDirectory(".simappv2")
 	if err != nil {
 		panic(err)

@@ -5,7 +5,7 @@
   dockerfile: cosmos
   build-target: make install
   binaries:
-    - /go/bin/wasmd
+    - /go/bin/appd
   build-env:
     - LEDGER_ENABLED=false
     - BUILD_TAGS=muslc

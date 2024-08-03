@@ -89,11 +89,11 @@ ifeq ($(OS),Windows_NT)
 	$(error wasmd server not supported. Use "make build-windows-client" for client)
 	exit 1
 else
-	go build -mod=readonly $(BUILD_FLAGS) -o build/wasmd ./wasmd/simdv2.go
+	go build -mod=readonly $(BUILD_FLAGS) -o build/appd ./app/application.go
 endif
 
 build-windows-client: go.sum
-	GOOS=windows GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/wasmd.exe ./cmd/wasmd
+	GOOS=windows GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/appd.exe ./app/application.go
 
 build-contract-tests-hooks:
 ifeq ($(OS),Windows_NT)
@@ -103,7 +103,7 @@ else
 endif
 
 install: go.sum
-	go install -mod=readonly $(BUILD_FLAGS) ./wasmd/simdv2.go
+	go install -mod=readonly $(BUILD_FLAGS) ./app/application.go
 
 ########################################
 ### Tools & dependencies
