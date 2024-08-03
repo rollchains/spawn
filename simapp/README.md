@@ -1,28 +1,8 @@
-# Generated With [Spawn](https://github.com/rollchains/spawn)
+---
+sidebar_position: 1
+---
 
-## Module Scaffolding
+# `SimApp/v2`
 
-- `spawn module new <name>` *Generates a Cosmos module template*
-
-## Content Generation
-
-- `make proto-gen` *Generates golang code from proto files, stubs interfaces*
-
-## Testnet
-
-- `make testnet` *IBC testnet from chain <-> local cosmos-hub*
-- `make sh-testnet` *Single node, no IBC. quick iteration*
-
-## Local Images
-
-- `make install`      *Builds the chain's binary*
-- `make local-image`  *Builds the chain's docker image*
-
-## Testing
-
-- `go test ./... -v` *Unit test*
-- `make ictest-*`  *E2E testing*
-
-## Launch Block Explorer Locally
-
-[Reference Guide](./nginx/README.md)
+SimApp is an application built using the Cosmos SDK for testing and educational purposes.
+`SimApp/v2` demonstrate a runtime/v2, server/v2 and store/v2 wiring.
