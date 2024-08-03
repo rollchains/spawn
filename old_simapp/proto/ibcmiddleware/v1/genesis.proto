@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package ibcmiddleware.v1;
+
+option go_package = "github.com/rollchains/spawn/simapp/x/ibcmiddleware/types";
+
+import "gogoproto/gogo.proto";
+
+// GenesisState defines the middlewares genesis state.
+message GenesisState {}
