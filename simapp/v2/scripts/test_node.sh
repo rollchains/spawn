@@ -162,4 +162,4 @@ sed -i -e 's/timeout_commit = "5s"/timeout_commit = "'$BLOCK_TIME'"/g' $HOME_DIR
 # BINARY start --rpc.laddr="tcp://0.0.0.0:$RPC"
 
 # gordian
-BINARY start # --g-http-addr=127.0.0.1:26656
+BINARY start --g-http-addr=127.0.0.1:29998
