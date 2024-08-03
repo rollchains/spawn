@@ -31,7 +31,6 @@ var (
 		{ID: "cosmwasm", IsSelected: false, Details: "Cosmos smart contracts"},
 		{ID: "wasm-light-client", IsSelected: false, Details: "08 Wasm Light Client"},
 		{ID: "optimistic-execution", IsSelected: false, Details: "Pre-process blocks ahead of consensus request"},
-		{ID: "ignite-cli", IsSelected: false, Details: "Ignite-CLI Support"},
 		{ID: "block-explorer", IsSelected: true, Details: "Ping Pub Explorer"},
 	}...)
 

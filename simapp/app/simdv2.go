@@ -11,6 +11,11 @@ import (
 	"github.com/rollchains/spawn/simapp/app/cmd"
 )
 
+var (
+	NodeDir         = ".myapplicationd"
+	DefaultNodeHome = os.ExpandEnv("$HOME/") + NodeDir
+)
+
 func main() {
 	rootCmd := cmd.NewRootCmd[transaction.Tx]()
 	if err := serverv2.Execute(rootCmd, clientv2helpers.EnvPrefix, simapp.DefaultNodeHome); err != nil {

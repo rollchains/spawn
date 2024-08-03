@@ -180,7 +180,7 @@ format: format-tools
 
 mod-tidy:
 	go mod tidy
-	cd interchaintest && go mod tidy
+# cd interchaintest && go mod tidy # TODO:
 
 .PHONY: format-tools lint format mod-tidy
 

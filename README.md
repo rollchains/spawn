@@ -49,7 +49,7 @@ make install
 GITHUB_USERNAME=rollchains
 
 # Available Features:
-# * tokenfactory,globalfee,ibc-packetforward,ibc-ratelimit,cosmwasm,wasm-light-client,optimistic-execution,ignite-cli,block-explorer
+# * tokenfactory,globalfee,ibc-packetforward,ibc-ratelimit,cosmwasm,wasm-light-client,optimistic-execution,block-explorer
 
 spawn new rollchain \
 --consensus=proof-of-authority `# proof-of-authority,proof-of-stake,interchain-security` \

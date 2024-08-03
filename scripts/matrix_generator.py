@@ -17,7 +17,6 @@ SupportedFeatures = [
     "cosmwasm",
     "wasm-light-client",
     "optimistic-execution",
-    "ignite-cli",
 ]
 
 POS = "proof-of-stake"
@@ -47,7 +46,7 @@ def main():
         CmdCreator(
             "spawndefaultfeatures",
             POA,
-            "ibc-ratelimit,cosmwasm,wasm-light-client,ignite-cli".split(","),
+            "ibc-ratelimit,cosmwasm,wasm-light-client".split(","),
             "cosmos",
             "appd",
             "utoken",
