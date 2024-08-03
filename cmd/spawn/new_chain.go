@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -15,14 +16,15 @@ var (
 	// - UI: uses the IsSelected
 	// - CLI: all are enabled by default. Must opt out.
 
+	DefaultConsensus  = spawn.POA
 	ConsensusFeatures = items{
 		// Consensus (only 1 per app)
 		{ID: "proof-of-authority", IsSelected: true, IsConsensus: true, Details: "Proof-of-Authority consensus algorithm (permissioned network)"},
 		{ID: "proof-of-stake", IsSelected: false, IsConsensus: true, Details: "Proof-of-Stake consensus algorithm (permissionless network)"},
 		{ID: "interchain-security", IsSelected: false, IsConsensus: true, Details: "Cosmos Hub Interchain Security"},
-		// {ID: "ics-ethos", IsSelected: false, IsConsensus: true, Details: "Interchain-Security with Ethos ETH restaking"},
 	}
 
+	DefaultEngine    = spawn.Gordian // TODO: must be productionized to use default
 	ConsensusEngines = items{
 		// only 1 per app
 		{ID: "gordian", IsSelected: true, Details: "Modular BFT engine"}, // TODO: must be productionized to use default
@@ -106,102 +108,22 @@ var newChain = &cobra.Command{
 		projName := strings.ToLower(args[0])
 		homeDir := "." + projName
 
-		disabled, _ := cmd.Flags().GetStringSlice(FlagDisabled)
 		walletPrefix, _ := cmd.Flags().GetString(FlagWalletPrefix)
 		binName, _ := cmd.Flags().GetString(FlagBinDaemon)
 		denom, _ := cmd.Flags().GetString(FlagTokenDenom)
 		ignoreGitInit, _ := cmd.Flags().GetBool(FlagNoGit)
 		githubOrg, _ := cmd.Flags().GetString(FlagGithubOrg)
-		consensus, _ := cmd.Flags().GetString(FlagConsensus)
-
 		bypassPrompt, _ := cmd.Flags().GetBool(FlagBypassPrompt)
 
-		// Show a UI to select the consensus algorithm (POS, POA, ICS) if a custom one was not specified.
-		if !bypassPrompt {
-			if len(consensus) == 0 {
-				text := "Consensus Selector (( enter to toggle ))"
-				items, err := selectItems(text, 0, SupportedFeatures, false, true, true)
-				if err != nil {
-					logger.Error("Error selecting consensus", "err", err)
-					return
-				}
-				consensus = items.String()
-			}
-		}
-		if len(consensus) == 0 {
-			consensus = spawn.POA // set the default if still none is provided
-		}
+		_, disabled := getSelectedAndDisabledFeatures(cmd, logger, bypassPrompt)
+		_, disabledConsensusAlgos := getConsensusAlgoAndAllDisabled(cmd, logger, bypassPrompt)
+		_, disabledEngines := getConsensusEngineAndAllDisabled(cmd, logger, bypassPrompt)
 
-		consensus = spawn.AliasName(consensus)
-		logger.Debug("Consensus selected", "consensus", consensus)
-
-		// Disable all consensus algorithms except the one selected.
-		disabledConsensus := make([]string, 0)
-		for _, feat := range ConsensusFeatures {
-			name := spawn.AliasName(feat.ID)
-			if name != consensus {
-				// if consensus is proof-of-authority, allow proof of stake
-				if consensus == spawn.POA && name == spawn.POS {
-					continue
-				} else if consensus == spawn.InterchainSecurity && name == spawn.POS {
-					continue
-				}
-
-				disabledConsensus = append(disabledConsensus, name)
-			}
-		}
-		logger.Debug("Disabled Consensuses", "disabled", disabledConsensus, "using", consensus)
-
-		consensusEngine, _ := cmd.Flags().GetString(FlagEngine)
-		disabledEngines := make([]string, 0)
-		// Show a UI to select the consensus engines (Comet, Gordian) if one was not specified.
-		if !bypassPrompt {
-			if len(consensusEngine) == 0 {
-				text := "Engine Selector (( enter to toggle ))"
-				items, err := selectItems(text, 0, ConsensusEngines, false, false, true)
-				if err != nil {
-					logger.Error("Error selecting engine", "err", err)
-					return
-				}
-				consensusEngine = items.String()
-			}
-		}
-		fmt.Println("consensusEngine before", consensusEngine)
-		if len(consensusEngine) == 0 {
-			consensusEngine = spawn.CometBFT // TODO: (gordian) set the default if still none is provided
-		}
-		fmt.Println("consensusEngine", consensusEngine)
-
-		// set disabledEngines if not selected
-		for _, feat := range ConsensusEngines {
-			name := spawn.AliasName(feat.ID)
-			if name != consensusEngine {
-				disabledEngines = append(disabledEngines, name)
-			}
-		}
-		fmt.Println("disabledEngines", disabledEngines)
-
-		logger.Debug("Disabled Consensus Engines", "using", consensusEngine, "disabled", disabledEngines)
-		// TODO: get the difference for all disabled
-
-		// Disable all features not selected
-		// Show a UI if the user did not specific to bypass it, or if nothing is disabled.
-		if len(disabled) == 0 && !bypassPrompt {
-			text := "Feature Selector (( enter to toggle ))"
-			items, err := selectItems(text, 0, SupportedFeatures, true, false, false)
-			if err != nil {
-				logger.Error("Error selecting disabled", "err", err)
-				return
-			}
-			disabled = items.NOTSlice()
-
-		}
-
-		disabled = append(disabled, disabledConsensus...)
+		disabled = append(disabled, disabledConsensusAlgos...)
 		disabled = append(disabled, disabledEngines...)
 		disabled = spawn.NormalizeDisabledNames(disabled, parentDeps)
 
-		logger.Debug("Disabled features final", "features", disabled)
+		logger.Debug("Disabled features final", "features", disabledEngines)
 
 		cfg := &spawn.NewChainConfig{
 			ProjectName:     projName,
@@ -220,6 +142,109 @@ var newChain = &cobra.Command{
 			return
 		}
 	},
+}
+
+func getSelectedAndDisabledFeatures(cmd *cobra.Command, logger *slog.Logger, bypassPrompt bool) ([]string, []string) {
+	disabled, _ := cmd.Flags().GetStringSlice(FlagDisabled)
+
+	// Disable all features not selected
+	// Show a UI if the user did not specific to bypass it, or if nothing is disabled.
+	if len(disabled) == 0 && !bypassPrompt {
+		text := "Feature Selector (( enter to toggle ))"
+		items, err := selectItems(text, 0, SupportedFeatures, true, false, false)
+		if err != nil {
+			logger.Error("Error selecting disabled", "err", err)
+			return nil, nil
+		}
+		disabled = items.NOTSlice()
+	}
+
+	enabled := make([]string, 0)
+	for _, feat := range SupportedFeatures {
+		if !feat.IsSelected {
+			continue
+		}
+		enabled = append(enabled, feat.ID)
+	}
+
+	logger.Debug("Disabled features", "disabled", disabled)
+	logger.Debug("Enabled features", "enabled", enabled)
+	return enabled, disabled
+}
+
+func getConsensusAlgoAndAllDisabled(cmd *cobra.Command, logger *slog.Logger, bypassPrompt bool) (string, []string) {
+	consensus, _ := cmd.Flags().GetString(FlagConsensus)
+
+	// Show a UI to select the consensus algorithm (POS, POA, ICS) if a custom one was not specified.
+	if !bypassPrompt {
+		if len(consensus) == 0 {
+			text := "Consensus Selector (( enter to toggle ))"
+			items, err := selectItems(text, 0, SupportedFeatures, false, true, true)
+			if err != nil {
+				logger.Error("Error selecting consensus", "err", err)
+				return "", nil
+			}
+			consensus = items.String()
+		}
+	}
+	if len(consensus) == 0 {
+		consensus = DefaultConsensus // set the default if still none is provided
+	}
+
+	consensus = spawn.AliasName(consensus)
+	logger.Debug("Consensus selected", "consensus", consensus)
+
+	// Disable all consensus algorithms except the one selected.
+	disabledConsensus := make([]string, 0)
+	for _, feat := range ConsensusFeatures {
+		name := spawn.AliasName(feat.ID)
+		if name != consensus {
+			// if consensus is proof-of-authority, allow proof of stake
+			if consensus == spawn.POA && name == spawn.POS {
+				continue
+			} else if consensus == spawn.InterchainSecurity && name == spawn.POS {
+				continue
+			}
+
+			disabledConsensus = append(disabledConsensus, name)
+		}
+	}
+	logger.Debug("Disabled Consensuses", "disabled", disabledConsensus, "using", consensus)
+	return consensus, disabledConsensus
+}
+
+func getConsensusEngineAndAllDisabled(cmd *cobra.Command, logger *slog.Logger, bypassPrompt bool) (string, []string) {
+	consensusEngine, _ := cmd.Flags().GetString(FlagEngine)
+	disabledEngines := make([]string, 0)
+
+	// Show a UI to select the consensus engines (Comet, Gordian) if one was not specified.
+	if !bypassPrompt {
+		if len(consensusEngine) == 0 {
+			text := "Engine Selector (( enter to toggle ))"
+			items, err := selectItems(text, 0, ConsensusEngines, false, false, true)
+			if err != nil {
+				logger.Error("Error selecting engine", "err", err)
+				return "", nil
+			}
+			consensusEngine = items.String()
+		}
+	}
+
+	// set the default is still none was provided
+	if len(consensusEngine) == 0 {
+		consensusEngine = DefaultEngine
+	}
+
+	// get the unselected engines
+	for _, feat := range ConsensusEngines {
+		name := spawn.AliasName(feat.ID)
+		if name != consensusEngine {
+			disabledEngines = append(disabledEngines, name)
+		}
+	}
+
+	logger.Debug("Disabled Consensus Engines", "using", consensusEngine, "disabled", disabledEngines)
+	return consensusEngine, disabledEngines
 }
 
 func normalizeWhitelistVarRun(f *pflag.FlagSet, name string) pflag.NormalizedName {
