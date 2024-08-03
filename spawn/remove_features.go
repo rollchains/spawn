@@ -19,7 +19,6 @@ var (
 	WasmLC              = "wasmlc"
 	PacketForward       = "packetforward"
 	IBCRateLimit        = "ibc-ratelimit"
-	Ignite              = "ignite"
 	InterchainSecurity  = "ics"
 	OptimisticExecution = "optimistic-execution"
 	BlockExplorer       = "block-explorer"
@@ -31,7 +30,7 @@ var (
 // used for fuzz testing
 var AllFeatures = []string{
 	TokenFactory, POA, GlobalFee, CosmWasm, WasmLC,
-	PacketForward, IBCRateLimit, Ignite, InterchainSecurity, POS,
+	PacketForward, IBCRateLimit, InterchainSecurity, POS,
 }
 
 // Given a string, return the reduced name for the module
@@ -53,8 +52,6 @@ func AliasName(name string) string {
 		return WasmLC
 	case PacketForward, "ibc-packetforward", "pfm":
 		return PacketForward
-	case Ignite, "ignite-cli":
-		return Ignite
 	case OptimisticExecution, "optimisticexecution", "optimistic-exec":
 		return OptimisticExecution
 	case IBCRateLimit, "ibc-rate-limit", "ratelimit":
@@ -77,31 +74,29 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		switch strings.ToLower(base) {
 		// consensus
 		case POA:
-			fc.RemovePOA()
+			// fc.RemovePOA()
 		case POS:
-			fc.RemoveStaking()
+			// fc.RemoveStaking()
 		case InterchainSecurity:
-			fc.RemoveInterchainSecurity()
+			// fc.RemoveInterchainSecurity()
 		// modules
 		case TokenFactory:
-			fc.RemoveTokenFactory()
+			// fc.RemoveTokenFactory()
 		case GlobalFee:
-			fc.RemoveGlobalFee()
+			// fc.RemoveGlobalFee()
 		case CosmWasm:
-			fc.RemoveCosmWasm(cfg.IsFeatureDisabled(WasmLC))
+			// fc.RemoveCosmWasm(cfg.IsFeatureDisabled(WasmLC))
 		case WasmLC:
-			fc.RemoveWasmLightClient()
+			// fc.RemoveWasmLightClient()
 		case PacketForward:
-			fc.RemovePacketForward()
+			// fc.RemovePacketForward()
 		case IBCRateLimit:
-			fc.RemoveIBCRateLimit()
+			// fc.RemoveIBCRateLimit()
 		// other
-		case Ignite:
-			fc.RemoveIgniteCLI()
 		case OptimisticExecution:
-			fc.RemoveOptimisticExecution()
+			// fc.RemoveOptimisticExecution()
 		case BlockExplorer:
-			fc.RemoveExplorer()
+			// fc.RemoveExplorer()
 		default:
 			panic(fmt.Sprintf("unknown feature to remove %s", name))
 		}
@@ -254,10 +249,6 @@ func (fc *FileContent) RemoveIBCRateLimit() {
 	)
 
 	fc.DeleteFile(path.Join("interchaintest", "ibc_rate_limit_test.go"))
-}
-
-func (fc *FileContent) RemoveIgniteCLI() {
-	fc.RemoveLineWithAnyMatch("starport scaffolding")
 }
 
 func (fc *FileContent) RemoveOptimisticExecution() {
