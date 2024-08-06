@@ -8,13 +8,16 @@ import (
 )
 
 const (
-	DefaultWebsite             = "https://example.com"
-	DefaultLogo                = "https://www.shutterstock.com/image-illustration/colourful-business-logo-company-name-260nw-1779060299.jpg"
-	DefaultDescription         = "A short description of your project"
-	DefaultChainID             = "newchain-1"
-	DefaultNetworkType         = "testnet" // or mainnet
-	DefaultSlip44CoinType      = 118
-	DefaultChainRegistrySchema = "https://raw.githubusercontent.com/cosmos/chain-registry/master/chain.schema.json"
+	DefaultWebsite                   = "https://example.com"
+	DefaultLogo                      = "https://raw.githubusercontent.com/cosmos/chain-registry/master/cosmoshub/images/atom.png"
+	DefaultLogoSVG                   = "https://raw.githubusercontent.com/cosmos/chain-registry/master/cosmoshub/images/atom.svg"
+	DefaultDescription               = "A short description of your project"
+	DefaultChainID                   = "newchain-1"
+	DefaultNetworkType               = "testnet" // or mainnet
+	DefaultSlip44CoinType            = 118
+	DefaultChainRegistrySchema       = "https://raw.githubusercontent.com/cosmos/chain-registry/master/chain.schema.json"
+	DefaultChainRegistryAssetsSchema = "https://github.com/cosmos/chain-registry/blob/master/assetlist.schema.json"
+	DefaultThemeHexColor             = "#FF2D00"
 )
 
 func (cfg *NewChainConfig) MetadataFile() MetadataFile {

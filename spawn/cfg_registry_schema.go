@@ -2,6 +2,7 @@ package spawn
 
 import (
 	"fmt"
+	"strings"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -86,7 +87,7 @@ func (cfg NewChainConfig) ChainRegistryFile() types.ChainRegistryFormat {
 			{
 				Png: DefaultLogo,
 				Theme: types.Theme{
-					PrimaryColorHex: "#FF2D00",
+					PrimaryColorHex: DefaultThemeHexColor,
 				},
 			},
 		},
@@ -114,5 +115,51 @@ func (cfg NewChainConfig) ChainRegistryFile() types.ChainRegistryFormat {
 			},
 		},
 		Keywords: []string{"cosmos", "spawn"},
+	}
+}
+
+// The ICS MetadataFile is similar to this.
+func (cfg NewChainConfig) ChainRegistryAssetsFile() types.ChainRegistryAssetsList {
+	display := strings.TrimPrefix(strings.ToUpper(cfg.Denom), "U")
+
+	return types.ChainRegistryAssetsList{
+		Schema:    DefaultChainRegistryAssetsSchema,
+		ChainName: cfg.ProjectName,
+		Assets: []types.Assets{
+			{
+				Description: "The native token of " + cfg.ProjectName,
+				DenomUnits: []types.DenomUnits{
+					{
+						Denom:    cfg.Denom, // utoken
+						Exponent: 0,
+					},
+					{
+						Denom:    display, // TOKEN
+						Exponent: 6,
+					},
+				},
+				Base:    cfg.Denom, // utoken
+				Name:    fmt.Sprintf("%s %s", cfg.ProjectName, display),
+				Display: strings.ToLower(display), // token
+				Symbol:  display,                  // TOKEN
+				LogoURIs: types.LogoURIs{
+					Png: DefaultLogo,
+					Svg: DefaultLogoSVG,
+				},
+				Images: []types.ImagesAssetLists{
+					{
+						Png: DefaultLogo,
+						Svg: DefaultLogoSVG,
+						Theme: types.Theme{
+							PrimaryColorHex: DefaultThemeHexColor,
+						},
+					},
+				},
+				Socials: types.Socials{
+					Website: DefaultWebsite,
+					Twitter: "https://x.com/cosmoshub",
+				},
+			},
+		},
 	}
 }
