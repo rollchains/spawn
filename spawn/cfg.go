@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/rollchains/spawn/simapp"
+	"github.com/rollchains/spawn/spawn/types"
 	localictypes "github.com/strangelove-ventures/interchaintest/local-interchain/interchain/types"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
@@ -118,39 +119,39 @@ func (cfg *NewChainConfig) IsFeatureDisabled(featName string) bool {
 
 func (cfg *NewChainConfig) Validate() error {
 	if cfg.ProjectName == "" {
-		return ErrCfgEmptyProject
+		return types.ErrCfgEmptyProject
 	}
 
 	if strings.ContainsAny(cfg.ProjectName, `~!@#$%^&*()_+{}|:"<>?/.,;'[]\=-`) {
-		return ErrCfgProjSpecialChars
+		return types.ErrCfgProjSpecialChars
 	}
 
 	if cfg.GithubOrg == "" {
-		return ErrCfgEmptyOrg
+		return types.ErrCfgEmptyOrg
 	}
 
 	minDenomLen := 3
 	if len(cfg.Denom) < minDenomLen {
-		return ErrExpectedRange(ErrCfgDenomTooShort, minDenomLen, len(cfg.Denom))
+		return types.ErrExpectedRange(types.ErrCfgDenomTooShort, minDenomLen, len(cfg.Denom))
 	}
 
 	minBinLen := 2
 	if len(cfg.BinDaemon) < minBinLen {
-		return ErrExpectedRange(ErrCfgBinTooShort, minBinLen, len(cfg.BinDaemon))
+		return types.ErrExpectedRange(types.ErrCfgBinTooShort, minBinLen, len(cfg.BinDaemon))
 	}
 
 	if cfg.Bech32Prefix == "" {
-		return ErrCfgEmptyBech32
+		return types.ErrCfgEmptyBech32
 	}
 
 	cfg.Bech32Prefix = strings.ToLower(cfg.Bech32Prefix)
 	if !isAlphaFn(cfg.Bech32Prefix) {
-		return ErrCfgBech32Alpha
+		return types.ErrCfgBech32Alpha
 	}
 
 	minHomeLen := 2
 	if len(cfg.HomeDir) < minHomeLen {
-		return ErrExpectedRange(ErrCfgHomeDirTooShort, minHomeLen, len(cfg.HomeDir))
+		return types.ErrExpectedRange(types.ErrCfgHomeDirTooShort, minHomeLen, len(cfg.HomeDir))
 	}
 
 	if cfg.Logger == nil {
