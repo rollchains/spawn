@@ -58,11 +58,10 @@ func NewRootCmd[T transaction.Tx]() *cobra.Command {
 
 		var ctx context.Context = context.Background()
 		ctx = context.WithValue(ctx, client.ClientContextKey, client.Context{
-			// TODO:
-			ChainID: "gcosmos",
+			// ChainID: "gcosmos", // TODO:
 			HomeDir: simapp.DefaultNodeHome,
 		})
-		// ctx = context.WithValue(ctx, server.ServerContextKey, server.NewDefaultContext())
+		ctx = context.WithValue(ctx, server.ServerContextKey, server.NewDefaultContext())
 
 		log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
