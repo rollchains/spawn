@@ -203,6 +203,7 @@ func (cfg *NewChainConfig) CreateNewChain() error {
 	}
 
 	cfg.MetadataFile().SaveJSON(fmt.Sprintf("%s/chain_metadata.json", NewDirName))
+	cfg.ChainRegistryFile().SaveJSON(fmt.Sprintf("%s/chain_registry.json", NewDirName))
 
 	// setup local-interchain testnets
 	// *testnet.json (chains/ directory)

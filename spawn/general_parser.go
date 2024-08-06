@@ -8,12 +8,28 @@ import (
 	modfile "golang.org/x/mod/modfile"
 )
 
+func getModPath() string {
+	// used when you `spawn new`
+	goModPath := path.Join("simapp", "go.mod")
+
+	// testing mode:
+	if _, err := os.Stat(goModPath); os.IsNotExist(err) {
+		// specific unit test run
+		goModPath = path.Join("..", "simapp", "go.mod")
+		// go test ./...
+		if _, err := os.Stat(goModPath); os.IsNotExist(err) {
+			goModPath = path.Join("..", "..", "simapp", "go.mod")
+		}
+	}
+
+	return goModPath
+}
+
 // ParseVersionFromGoMod parses out the versions for a given goPath
 // Ex: ParseVersionFromGoMod("github.com/cosmos/cosmos-sdk", false) returns v0.50.X
 // Ex: ParseVersionFromGoMod("github.com/cosmos/cosmos-sdk", true) returns 0.50.X
 func ParseVersionFromGoMod(goPath string, removePrefixedV bool) (string, error) {
-	// open ../simapp/go.mod
-	goModPath := path.Join("..", "simapp", "go.mod")
+	goModPath := getModPath()
 
 	c, err := os.ReadFile(goModPath)
 	if err != nil {
