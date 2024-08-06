@@ -22,11 +22,6 @@ func getModPath() string {
 		}
 	}
 
-	// everything errored (i.e. spawn completion command), give up.
-	if _, err := os.Stat(goModPath); os.IsNotExist(err) {
-		return ""
-	}
-
 	return goModPath
 }
 

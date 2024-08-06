@@ -17,10 +17,6 @@ const (
 	DefaultChainRegistrySchema = "https://raw.githubusercontent.com/cosmos/chain-registry/master/chain.schema.json"
 )
 
-var (
-
-)
-
 func (cfg *NewChainConfig) MetadataFile() MetadataFile {
 	now := time.Now().UTC()
 	now = now.Round(time.Minute)
