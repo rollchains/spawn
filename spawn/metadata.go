@@ -7,6 +7,24 @@ import (
 	"time"
 )
 
+const (
+	DefaultWebsite             = "https://example.com"
+	DefaultLogo                = "https://www.shutterstock.com/image-illustration/colourful-business-logo-company-name-260nw-1779060299.jpg"
+	DefaultDescription         = "A short description of your project"
+	DefaultChainID             = "newchain-1"
+	DefaultNetworkType         = "testnet" // or mainnet
+	DefaultSlip44CoinType      = 118
+	DefaultChainRegistrySchema = "https://raw.githubusercontent.com/cosmos/chain-registry/master/chain.schema.json"
+)
+
+var (
+	DefaultSDKVersion        = MustParseVersionFromGoMod("github.com/cosmos/cosmos-sdk", true)
+	DefaultTendermintVersion = MustParseVersionFromGoMod("github.com/cometbft/cometbft", true)
+	DefaultIBCGoVersion      = MustParseVersionFromGoMod("github.com/cosmos/ibc-go/v8", true)
+	// TODO: sometimes this will be non existent
+	DefaultCosmWasmVersion = MustParseVersionFromGoMod("github.com/CosmWasm/wasmd", true)
+)
+
 func (cfg *NewChainConfig) MetadataFile() MetadataFile {
 	now := time.Now().UTC()
 	now = now.Round(time.Minute)
@@ -23,10 +41,10 @@ func (cfg *NewChainConfig) MetadataFile() MetadataFile {
 		Project: ProjectMeta{
 			Github:           cfg.GithubPath(),
 			TargetLaunchDate: now,
-			Logo:             "https://example.com/logo.png",
-			Website:          "https://example.com",
-			Description:      "A short description of your project",
-			ShortDescription: "A short description of your project",
+			Logo:             DefaultLogo,
+			Website:          DefaultWebsite,
+			Description:      DefaultDescription,
+			ShortDescription: DefaultDescription,
 			Whitepaper:       "https://example.com/whitepaper.pdf",
 			Contact: ContactMeta{
 				Email:    "",
@@ -43,8 +61,8 @@ func (cfg *NewChainConfig) MetadataFile() MetadataFile {
 		mf.ICS = ICSMeta{
 			SpawnTime: now,
 			Title:     cfg.BinDaemon,
-			Summary:   ".md description of your chain and all other relevant information",
-			ChainID:   "newchain-1",
+			Summary:   DefaultDescription + " ( in .md format)",
+			ChainID:   DefaultChainID,
 			InitialHeight: ICSClientTypes{
 				RevisionHeight: 0,
 				RevisionNumber: 1,

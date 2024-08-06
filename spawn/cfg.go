@@ -62,6 +62,12 @@ type NewChainConfig struct {
 	isUsingICS      bool
 }
 
+// NodeHome returns the full path to the node home directory
+// ex: $HOME/.simapp
+func (cfg NewChainConfig) NodeHome() string {
+	return path.Join("$HOME", cfg.HomeDir)
+}
+
 func (cfg NewChainConfig) ValidateAndRun(doAnnounce bool) error {
 	if err := cfg.Validate(); err != nil {
 		return fmt.Errorf("error validating config: %w", err)
@@ -391,6 +397,18 @@ func GetFileContent(logger *slog.Logger, newFilePath string, fs embed.FS, relPat
 	}
 
 	return fc, nil
+}
+
+func (cfg *NewChainConfig) IsCosmWasmEnabled() bool {
+	isDisabled := false
+	for _, d := range cfg.DisabledModules {
+		if AliasName(d) == CosmWasm {
+			isDisabled = true
+			break
+		}
+	}
+
+	return !isDisabled
 }
 
 // debugErrorFile saves the errored file to a debug directory for easier debugging.
