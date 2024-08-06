@@ -18,11 +18,7 @@ const (
 )
 
 var (
-	DefaultSDKVersion        = MustParseVersionFromGoMod("github.com/cosmos/cosmos-sdk", true)
-	DefaultTendermintVersion = MustParseVersionFromGoMod("github.com/cometbft/cometbft", true)
-	DefaultIBCGoVersion      = MustParseVersionFromGoMod("github.com/cosmos/ibc-go/v8", true)
-	// TODO: sometimes this will be non existent
-	DefaultCosmWasmVersion = MustParseVersionFromGoMod("github.com/CosmWasm/wasmd", true)
+
 )
 
 func (cfg *NewChainConfig) MetadataFile() MetadataFile {

@@ -12,6 +12,15 @@ import (
 var caser = cases.Title(language.English)
 
 func (cfg NewChainConfig) ChainRegistryFile() types.ChainRegistryFormat {
+	DefaultSDKVersion := MustParseVersionFromGoMod("github.com/cosmos/cosmos-sdk", true)
+	DefaultTendermintVersion := MustParseVersionFromGoMod("github.com/cometbft/cometbft", true)
+	DefaultIBCGoVersion := MustParseVersionFromGoMod("github.com/cosmos/ibc-go/v8", true)
+
+	DefaultCosmWasmVersion, err := ParseVersionFromGoMod("github.com/CosmWasm/wasmd", true)
+	if err != nil {
+		DefaultCosmWasmVersion = ""
+	}
+
 	return types.ChainRegistryFormat{
 		Schema:       DefaultChainRegistrySchema,
 		ChainName:    cfg.ProjectName,
