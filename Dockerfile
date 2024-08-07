@@ -30,7 +30,7 @@ COPY --from=builder /go/bin/local-ic /usr/local/bin/local-ic
 
 RUN apt update && apt install -y libc6-dev gcc make ca-certificates
 
-COPY --from=builder /usr/local/go/bin /usr/local/go/bin
+COPY --from=builder /usr/local/go/ /usr/local/go/
 ENV PATH="/usr/local/go/bin:${PATH}"
 
 CMD ["spawn"]
