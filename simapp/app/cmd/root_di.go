@@ -16,14 +16,14 @@ import (
 	"cosmossdk.io/runtime/v2"
 	serverv2 "cosmossdk.io/server/v2"
 
+	"github.com/rollchains/gordian/gcosmos/gccodec"
 	"github.com/rollchains/gordian/gcosmos/gserver"
-	"github.com/rollchains/gordian/gcosmos/gtx"
 
 	"cosmossdk.io/server/v2/cometbft"
-	"cosmossdk.io/simapp/v2"
 	"cosmossdk.io/x/auth/tx"
 	authtxconfig "cosmossdk.io/x/auth/tx/config"
 	"cosmossdk.io/x/auth/types"
+	"github.com/rollchains/spawn/simapp" // TODO: rename me to just `github.com/rollchains/myunit`
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
@@ -50,7 +50,7 @@ func NewRootCmd[T transaction.Tx]() *cobra.Command {
 			cometbft.DefaultServerOptions[T](),
 		)
 	})
-	// cometbft:cometbft>
+	// spawntag:cometbft>
 
 	// <spawntag:gordian
 	cmd = NewRootCmdWithServer(func(cc client.Context) serverv2.ServerComponent[transaction.Tx] {
@@ -58,14 +58,14 @@ func NewRootCmd[T transaction.Tx]() *cobra.Command {
 
 		var ctx context.Context = context.Background()
 		ctx = context.WithValue(ctx, client.ClientContextKey, client.Context{
-			ChainID: "gcosmos",
-			HomeDir: "/home/reece/.simappv2",
+			// ChainID: "gcosmos", // TODO:
+			HomeDir: simapp.DefaultNodeHome,
 		})
-		// ctx = context.WithValue(ctx, server.ServerContextKey, server.NewDefaultContext())
+		ctx = context.WithValue(ctx, server.ServerContextKey, server.NewDefaultContext())
 
 		log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-		codec := gtx.NewTxDecoder(cc.TxConfig)
+		codec := gccodec.NewTxDecoder(cc.TxConfig)
 		c, err := gserver.NewComponent(ctx, dc, log, codec, cc.Codec)
 		if err != nil {
 			panic(err)

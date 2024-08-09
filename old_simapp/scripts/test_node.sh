@@ -2,8 +2,8 @@
 # Run this script to quickly install, setup, and run the current version of the network without docker.
 #
 # Examples:
-# BINARY=simdv2 CHAIN_ID="localchain-1" HOME_DIR="~/.simapp" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
-# BINARY=simdv2 CHAIN_ID="localchain-2" HOME_DIR="~/.simapp" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_node.sh
+# CHAIN_ID="localchain-1" HOME_DIR="~/.simapp" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
+# CHAIN_ID="localchain-2" HOME_DIR="~/.simapp" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_node.sh
 
 export KEY="acc0"
 export KEY2="acc1"
@@ -158,8 +158,4 @@ sed -i -e 's/address = ":8080"/address = "0.0.0.0:'$ROSETTA'"/g' $HOME_DIR/confi
 sed -i -e 's/timeout_commit = "5s"/timeout_commit = "'$BLOCK_TIME'"/g' $HOME_DIR/config/config.toml
 
 # Start the node with 0 gas fees
-# TODO: disabled within the app rn: --pruning=nothing --minimum-gas-prices=0$DENOM
-# BINARY start --rpc.laddr="tcp://0.0.0.0:$RPC"
-
-# gordian
-BINARY start --g-http-addr=127.0.0.1:29998
+BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC"

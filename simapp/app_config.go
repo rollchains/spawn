@@ -71,6 +71,9 @@ import (
 )
 
 var (
+	AppName      = "SimAppV2"
+	Bech32Prefix = "mybechprefix"
+
 	// module account permissions
 	moduleAccPerms = []*authmodulev1.ModuleAccountPermission{
 		{Account: authtypes.FeeCollectorName},
@@ -104,7 +107,7 @@ var (
 			{
 				Name: runtime.ModuleName,
 				Config: appconfig.WrapAny(&runtimev2.Module{
-					AppName: "SimAppV2",
+					AppName: AppName,
 					// NOTE: upgrade module is required to be prioritized
 					PreBlockers: []string{
 						upgradetypes.ModuleName,
@@ -174,7 +177,7 @@ var (
 			{
 				Name: authtypes.ModuleName,
 				Config: appconfig.WrapAny(&authmodulev1.Module{
-					Bech32Prefix:             "cosmos",
+					Bech32Prefix:             Bech32Prefix,
 					ModuleAccountPermissions: moduleAccPerms,
 					// By default modules authority is the governance module. This is configurable with the following:
 					// Authority: "group", // A custom module authority can be set using a module name
@@ -196,8 +199,8 @@ var (
 				Config: appconfig.WrapAny(&stakingmodulev1.Module{
 					// NOTE: specifying a prefix is only necessary when using bech32 addresses
 					// If not specified, the auth Bech32Prefix appended with "valoper" and "valcons" is used by default
-					Bech32PrefixValidator: "cosmosvaloper",
-					Bech32PrefixConsensus: "cosmosvalcons",
+					Bech32PrefixValidator: Bech32Prefix + "valoper",
+					Bech32PrefixConsensus: Bech32Prefix + "valcons",
 				}),
 			},
 			{
