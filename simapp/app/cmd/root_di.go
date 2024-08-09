@@ -16,8 +16,8 @@ import (
 	"cosmossdk.io/runtime/v2"
 	serverv2 "cosmossdk.io/server/v2"
 
+	"github.com/rollchains/gordian/gcosmos/gccodec"
 	"github.com/rollchains/gordian/gcosmos/gserver"
-	"github.com/rollchains/gordian/gcosmos/gtx"
 
 	"cosmossdk.io/server/v2/cometbft"
 	"cosmossdk.io/x/auth/tx"
@@ -65,7 +65,7 @@ func NewRootCmd[T transaction.Tx]() *cobra.Command {
 
 		log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-		codec := gtx.NewTxDecoder(cc.TxConfig)
+		codec := gccodec.NewTxDecoder(cc.TxConfig)
 		c, err := gserver.NewComponent(ctx, dc, log, codec, cc.Codec)
 		if err != nil {
 			panic(err)

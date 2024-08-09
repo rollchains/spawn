@@ -5,7 +5,6 @@ go 1.22.3
 replace github.com/rollchains/spawn/simapp => ./simapp
 
 replace (
-
 	cosmossdk.io/api => /home/reece/Desktop/Programming/Go/gordian/gcosmos/_cosmosvendor/cosmos-sdk/api
 
 	// others (temp)
