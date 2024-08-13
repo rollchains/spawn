@@ -39,9 +39,10 @@ func NewRootCmdWithServer[T transaction.Tx](
 	return newRootCmd[T](makeComponent)
 }
 
+var cmd *cobra.Command
+
 // NewRootCmd creates a new root command for simd. It is called once in the main function.
 func NewRootCmd[T transaction.Tx]() *cobra.Command {
-	var cmd *cobra.Command
 
 	// <spawntag:cometbft
 	cmd = NewRootCmdWithServer(func(cc client.Context) serverv2.ServerComponent[T] {
@@ -54,11 +55,9 @@ func NewRootCmd[T transaction.Tx]() *cobra.Command {
 
 	// <spawntag:gordian
 	cmd = NewRootCmdWithServer(func(cc client.Context) serverv2.ServerComponent[transaction.Tx] {
-		dc := server.NewDefaultContext()
-
 		var ctx context.Context = context.Background()
 		ctx = context.WithValue(ctx, client.ClientContextKey, client.Context{
-			// ChainID: "gcosmos", // TODO:
+			ChainID: "gcosmos", // TODO:
 			HomeDir: simapp.DefaultNodeHome,
 		})
 		ctx = context.WithValue(ctx, server.ServerContextKey, server.NewDefaultContext())
@@ -66,7 +65,7 @@ func NewRootCmd[T transaction.Tx]() *cobra.Command {
 		log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 		codec := gccodec.NewTxDecoder(cc.TxConfig)
-		c, err := gserver.NewComponent(ctx, dc, log, codec, cc.Codec)
+		c, err := gserver.NewComponent(ctx, log, codec, cc.Codec)
 		if err != nil {
 			panic(err)
 		}

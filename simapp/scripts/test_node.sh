@@ -2,8 +2,8 @@
 # Run this script to quickly install, setup, and run the current version of the network without docker.
 #
 # Examples:
-# BINARY=simdv2 CHAIN_ID="localchain-1" HOME_DIR="~/.simapp" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
-# BINARY=simdv2 CHAIN_ID="localchain-2" HOME_DIR="~/.simapp" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_node.sh
+# BINARY=wasmd CHAIN_ID="localchain-1" HOME_DIR="~/.simapp" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
+# BINARY=wasmd CHAIN_ID="localchain-2" HOME_DIR="~/.simapp" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_node.sh
 
 export KEY="acc0"
 export KEY2="acc1"

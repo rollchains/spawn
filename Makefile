@@ -65,7 +65,7 @@ template-staking: install
 	spawn new myproject --consensus=proof-of-stake --debug --bech32=cosmos --bin=appd --bypass-prompt --log-level=debug --org=reece
 
 template-gordian-staking: install
-	spawn new myproject --consensus=pos --debug --bech32=cosmos --bin=appd --bypass-prompt --log-level=debug --org=reece --engine=gordian --disable=explorer
+	spawn new myproject --consensus=pos --debug --bech32=cosmos --bin=appd --bypass-prompt --log-level=debug --org=reecepbcups --engine=gordian --disable=explorer
 
 template-poa: install
 	spawn new myproject --consensus=proof-of-authority --debug --no-git --bin=rolld --bech32=roll --denom=uroll --bypass-prompt --log-level=debug

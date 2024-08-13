@@ -76,7 +76,7 @@ func initRootCmd[T transaction.Tx](
 		logger,
 		makeComponent(clientCtx),
 		grpc.New[T](),
-		store.New[T](),
+		store.New[T](newApp),
 	); err != nil {
 		panic(err)
 	}
