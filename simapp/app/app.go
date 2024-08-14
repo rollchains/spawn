@@ -754,6 +754,7 @@ func NewChainApp(
 		app.SlashingKeeper,
 		app.BankKeeper,
 		logger,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	// IBC Fee Module keeper

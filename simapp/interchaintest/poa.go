@@ -84,12 +84,6 @@ func SubmitGovernanceProposalForValidatorChanges(t *testing.T, ctx context.Conte
 	return txProp.ProposalID
 }
 
-func GetPOAParams(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain) poa.Params {
-	var res poa.ParamsResponse
-	ExecuteQuery(ctx, chain, []string{"query", "poa", "params"}, &res)
-	return res.Params
-}
-
 func GetPOAConsensusPower(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, valoperAddr string) int64 {
 	res, err := poa.NewQueryClient(chain.GetNode().GrpcConn).ConsensusPower(ctx, &poa.QueryConsensusPowerRequest{ValidatorAddress: valoperAddr})
 	require.NoError(t, err)
