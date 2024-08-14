@@ -754,6 +754,8 @@ func NewChainApp(
 		app.SlashingKeeper,
 		app.BankKeeper,
 		logger,
+		// override with POA_ADMIN_ADDRESS=mywalletaddresshere
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	// IBC Fee Module keeper

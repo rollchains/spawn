@@ -28,6 +28,11 @@ func POARemovePending(t *testing.T, ctx context.Context, chain *cosmos.CosmosCha
 	return ExecuteTransaction(ctx, chain, cmd)
 }
 
+func WithdrawDelegatorRewards(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user ibc.Wallet, valoper string) (sdk.TxResponse, error) {
+	cmd := TxCommandBuilder(ctx, chain, []string{"tx", "distribution", "withdraw-rewards", valoper}, user.KeyName())
+	return ExecuteTransaction(ctx, chain, cmd)
+}
+
 func POACreatePendingValidator(
 	t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, user ibc.Wallet,
 	ed25519PubKey string, moniker string, commissionRate string, commissionMaxRate string, commissionMaxChangeRate string,
@@ -82,12 +87,6 @@ func SubmitGovernanceProposalForValidatorChanges(t *testing.T, ctx context.Conte
 	require.NoError(t, err, "error submitting proposal")
 
 	return txProp.ProposalID
-}
-
-func GetPOAParams(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain) poa.Params {
-	var res poa.ParamsResponse
-	ExecuteQuery(ctx, chain, []string{"query", "poa", "params"}, &res)
-	return res.Params
 }
 
 func GetPOAConsensusPower(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, valoperAddr string) int64 {

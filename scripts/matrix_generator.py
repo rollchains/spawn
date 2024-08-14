@@ -1,7 +1,7 @@
 # flake8:noqa
 # Generate bash command matrixes for manual verification testing (due to the number of repos and testing required)
 # rm -rf ./matrix*/
-# cd sciprts && python3 matrix_generator.py
+# cd scripts && python3 matrix_generator.py
 
 import os
 import random

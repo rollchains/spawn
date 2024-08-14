@@ -13,6 +13,9 @@ import (
 	"golang.org/x/tools/imports"
 )
 
+// bech32 prefix found within the files
+const baseBech32Prefix = "wasm"
+
 var (
 	// AlreadyChecked allows for better debugging to reduce fc spam
 	AlreadyCheckedDeletion      = make(map[string]bool)
@@ -102,7 +105,7 @@ func (fc *FileContent) ReplaceTestNodeScript(cfg *NewChainConfig) {
 		fc.ReplaceAll(`export HOME_DIR=$(eval echo "${HOME_DIR:-"~/.simapp"}")`, fmt.Sprintf(`export HOME_DIR=$(eval echo "${HOME_DIR:-"~/%s"}")`, cfg.HomeDir))
 		fc.ReplaceAll(`HOME_DIR="~/.simapp"`, fmt.Sprintf(`HOME_DIR="~/%s"`, cfg.HomeDir))
 
-		fc.FindAndReplaceAddressBech32("wasm", cfg.Bech32Prefix)
+		fc.FindAndReplaceAddressBech32(baseBech32Prefix, cfg.Bech32Prefix)
 	}
 }
 
@@ -144,6 +147,10 @@ func (fc *FileContent) ReplaceEverywhere(cfg *NewChainConfig) {
 		fc.NewPath = strings.ReplaceAll(fc.NewPath, wasmBin, newBinPath)
 	}
 
+	if fc.IsPath(path.Join("interchaintest", "poa_test.go")) {
+		fc.FindAndReplaceAddressBech32(baseBech32Prefix, cfg.Bech32Prefix)
+	}
+
 }
 
 func (fc *FileContent) ReplaceMakeFile(cfg *NewChainConfig) {
@@ -164,7 +171,6 @@ func (fc *FileContent) ReplaceMakeFile(cfg *NewChainConfig) {
 		fc.ReplaceAll("myappname", strings.ToLower(cfg.ProjectName))
 		fc.ReplaceAll("/go/bin/wasmd", fmt.Sprintf("/go/bin/%s", bin))
 	}
-
 }
 
 // FindAndReplaceStandardWalletsBech32 finds a prefix1... address and replaces it with a new prefix1... address
