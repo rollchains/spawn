@@ -107,8 +107,6 @@ from_scratch () {
   # tokenfactory
   update_test_genesis '.app_state["tokenfactory"]["params"]["denom_creation_fee"]=[]'
   update_test_genesis '.app_state["tokenfactory"]["params"]["denom_creation_gas_consume"]=100000'
-  # poa
-  update_test_genesis '.app_state["poa"]["params"]["admins"]=["wasm10d07y265gmmuvt4z0w9aw880jnsr700js7zslc"]'
 
   # Allocate genesis accounts
   BINARY genesis add-genesis-account $KEY 10000000$DENOM,900test --keyring-backend $KEYRING --append
