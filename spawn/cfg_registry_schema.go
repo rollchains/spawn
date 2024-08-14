@@ -18,7 +18,7 @@ func (cfg NewChainConfig) ChainRegistryFile() types.ChainRegistryFormat {
 	DefaultTendermintVersion := "0.38"
 	DefaultIBCGoVersion := "8"
 	DefaultCosmWasmVersion := ""
-	if cfg.IsModuleEnabled(CosmWasm) {
+	if cfg.IsFeatureEnabled(CosmWasm) {
 		DefaultCosmWasmVersion = "0.50"
 	}
 	DefaultConsensus := "tendermint" // TODO: gordian in the future on gen
@@ -58,7 +58,7 @@ func (cfg NewChainConfig) ChainRegistryFile() types.ChainRegistryFormat {
 				Version: DefaultTendermintVersion,
 			},
 			CosmwasmVersion: DefaultCosmWasmVersion,
-			CosmwasmEnabled: cfg.IsModuleEnabled(CosmWasm),
+			CosmwasmEnabled: cfg.IsFeatureEnabled(CosmWasm),
 			IbcGoVersion:    DefaultIBCGoVersion,
 			IcsEnabled:      []string{"ics20-1"},
 			Genesis: types.Genesis{

@@ -60,7 +60,6 @@ type NewChainConfig struct {
 	IgnoreGitInit   bool
 	DisabledModules []string
 	Logger          *slog.Logger
-	isUsingICS      bool
 }
 
 // NodeHome returns the full path to the node home directory
@@ -91,30 +90,13 @@ func (cfg NewChainConfig) ValidateAndRun(doAnnounce bool) error {
 func (cfg *NewChainConfig) SetProperFeaturePairs() {
 	d := RemoveDuplicates(cfg.DisabledModules)
 
-	isUsingICS := true
-	for _, name := range d {
-		if AliasName(name) == InterchainSecurity {
-			isUsingICS = false
-		}
-	}
-	cfg.isUsingICS = isUsingICS
-
 	// remove POA if it is being used
-	if isUsingICS {
+	if cfg.IsFeatureEnabled(InterchainSecurity) {
 		d = append(d, POA)
 	}
 
 	cfg.DisabledModules = d
 	cfg.Logger.Debug("SetProperFeaturePairs Disabled features", "features", cfg.DisabledModules)
-}
-
-func (cfg *NewChainConfig) IsFeatureDisabled(featName string) bool {
-	for _, feat := range cfg.DisabledModules {
-		if AliasName(feat) == AliasName(featName) {
-			return true
-		}
-	}
-	return false
 }
 
 func (cfg *NewChainConfig) Validate() error {
@@ -216,7 +198,7 @@ func (cfg *NewChainConfig) CreateNewChain() error {
 		cfg.GitInitNewProjectRepo()
 	}
 
-	if !cfg.IsFeatureDisabled("block-explorer") {
+	if cfg.IsFeatureEnabled("block-explorer") {
 		cfg.NewPingPubExplorer()
 	}
 
@@ -331,7 +313,7 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.amount", "1"),
 	}
 
-	if cfg.isUsingICS {
+	if cfg.IsFeatureEnabled(InterchainSecurity) {
 		c.SetICSConsumerLink("localcosmos-1")
 	} else {
 		// make this is an IBC testnet for POA/POS chains
@@ -402,18 +384,14 @@ func GetFileContent(logger *slog.Logger, newFilePath string, fs embed.FS, relPat
 	return fc, nil
 }
 
-func (cfg *NewChainConfig) IsModuleEnabled(module string) bool {
-	moduleAlias := AliasName(module)
-
-	isDisabled := false
-	for _, d := range cfg.DisabledModules {
-		if AliasName(d) == moduleAlias {
-			isDisabled = true
-			break
+func (cfg *NewChainConfig) IsFeatureEnabled(feat string) bool {
+	featAlias := AliasName(feat)
+	for _, disabledFeat := range cfg.DisabledModules {
+		if AliasName(disabledFeat) == featAlias {
+			return false
 		}
 	}
-
-	return !isDisabled
+	return true
 }
 
 // debugErrorFile saves the errored file to a debug directory for easier debugging.

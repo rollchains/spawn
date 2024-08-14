@@ -52,7 +52,7 @@ func (cfg *NewChainConfig) MetadataFile() MetadataFile {
 		ICS: ICSMeta{},
 	}
 
-	if cfg.isUsingICS {
+	if cfg.IsFeatureEnabled(InterchainSecurity) {
 		mf.ICS = ICSMeta{
 			SpawnTime: now,
 			Title:     cfg.BinDaemon,
