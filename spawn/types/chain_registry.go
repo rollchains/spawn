@@ -10,10 +10,12 @@ import (
 // - Consensus: add omitempty
 // - Codebase.Consensus: add omitempty
 // - Peers: add omitempty
+// - added: ChainRegistryFormat ChainType string
 
 type ChainRegistryFormat struct {
 	Schema       string      `json:"$schema"`
 	ChainName    string      `json:"chain_name"`
+	ChainType    string      `json:"chain_type"`
 	Status       string      `json:"status"`
 	Website      string      `json:"website"`
 	NetworkType  string      `json:"network_type"`

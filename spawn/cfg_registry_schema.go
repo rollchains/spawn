@@ -13,18 +13,20 @@ import (
 var caser = cases.Title(language.English)
 
 func (cfg NewChainConfig) ChainRegistryFile() types.ChainRegistryFormat {
-	DefaultSDKVersion := MustParseVersionFromGoMod("github.com/cosmos/cosmos-sdk", true)
-	DefaultTendermintVersion := MustParseVersionFromGoMod("github.com/cometbft/cometbft", true)
-	DefaultIBCGoVersion := MustParseVersionFromGoMod("github.com/cosmos/ibc-go/v8", true)
-
-	DefaultCosmWasmVersion, err := ParseVersionFromGoMod("github.com/CosmWasm/wasmd", true)
-	if err != nil {
-		DefaultCosmWasmVersion = ""
+	// TODO: update as needed
+	DefaultSDKVersion := "0.50"
+	DefaultTendermintVersion := "0.38"
+	DefaultIBCGoVersion := "8"
+	DefaultCosmWasmVersion := ""
+	if cfg.IsModuleEnabled(CosmWasm) {
+		DefaultCosmWasmVersion = "0.50"
 	}
+	DefaultConsensus := "tendermint" // TODO: gordian in the future on gen
 
 	return types.ChainRegistryFormat{
 		Schema:       DefaultChainRegistrySchema,
 		ChainName:    cfg.ProjectName,
+		ChainType:    "cosmos",
 		Status:       "live",
 		Website:      DefaultWebsite,
 		NetworkType:  DefaultNetworkType,
@@ -47,17 +49,16 @@ func (cfg NewChainConfig) ChainRegistryFile() types.ChainRegistryFormat {
 			},
 		},
 		Codebase: types.Codebase{
-			// TODO: versions should be fetched from the repo go.mod
 			GitRepo:            "https://" + cfg.GithubPath(),
 			RecommendedVersion: "v1.0.0",
 			CompatibleVersions: []string{"v0.9.0"},
 			CosmosSdkVersion:   DefaultSDKVersion,
 			Consensus: types.Consensus{
-				Type:    "tendermint", // TODO: gordian in the future on gen
+				Type:    DefaultConsensus,
 				Version: DefaultTendermintVersion,
 			},
 			CosmwasmVersion: DefaultCosmWasmVersion,
-			CosmwasmEnabled: cfg.IsCosmWasmEnabled(),
+			CosmwasmEnabled: cfg.IsModuleEnabled(CosmWasm),
 			IbcGoVersion:    DefaultIBCGoVersion,
 			IcsEnabled:      []string{"ics20-1"},
 			Genesis: types.Genesis{

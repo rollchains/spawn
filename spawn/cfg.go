@@ -402,10 +402,12 @@ func GetFileContent(logger *slog.Logger, newFilePath string, fs embed.FS, relPat
 	return fc, nil
 }
 
-func (cfg *NewChainConfig) IsCosmWasmEnabled() bool {
+func (cfg *NewChainConfig) IsModuleEnabled(module string) bool {
+	moduleAlias := AliasName(module)
+
 	isDisabled := false
 	for _, d := range cfg.DisabledModules {
-		if AliasName(d) == CosmWasm {
+		if AliasName(d) == moduleAlias {
 			isDisabled = true
 			break
 		}

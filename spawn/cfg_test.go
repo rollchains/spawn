@@ -248,5 +248,7 @@ func TestChainRegistry(t *testing.T) {
 	cfg := goodCfg()
 	cr := cfg.ChainRegistryFile()
 	require.Equal(t, cfg.ProjectName, cr.ChainName)
-	// cr.SaveJSON("test.json")
+	require.Equal(t, bech, cr.Bech32Prefix)
+	require.Equal(t, bin, cr.DaemonName)
+	require.Equal(t, denom, cr.Fees.FeeTokens[0].Denom)
 }
