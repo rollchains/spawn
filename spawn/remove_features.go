@@ -361,9 +361,10 @@ func (fc *FileContent) RemoveStaking() {
 	fc.removePacketForwardTestOnly()
 
 	// fix: make sh-testnet
-	if fc.ContainsPath("Makefile") {
-		fc.ReplaceAll("test_node.sh", "test_ics_node.sh")
-	}
+	// We do not do this anymore since we just remove the bad line :)
+	// if fc.ContainsPath("Makefile") {
+	// 	fc.ReplaceAll("test_node.sh", "test_ics_node.sh")
+	// }
 }
 
 func (fc *FileContent) RemoveMint() {
