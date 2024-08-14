@@ -86,13 +86,19 @@ func (cfg NewChainConfig) Run(doAnnounce bool) error {
 func (cfg *NewChainConfig) SetProperFeaturePairs() {
 	d := RemoveDuplicates(cfg.DisabledModules)
 
+	// TODO: if ethos ics is used, isUsingICS == true
+
 	isUsingICS := true
+	isUsingEthos := true
 	for _, name := range d {
 		if AliasName(name) == InterchainSecurity {
 			isUsingICS = false
 		}
+		if AliasName(name) == EthosICS {
+			isUsingEthos = false
+		}
 	}
-	cfg.isUsingICS = isUsingICS
+	cfg.isUsingICS = isUsingEthos || isUsingICS
 
 	// remove POA if it is being used
 	if isUsingICS {
@@ -100,7 +106,7 @@ func (cfg *NewChainConfig) SetProperFeaturePairs() {
 	}
 
 	cfg.DisabledModules = d
-	cfg.Logger.Debug("SetProperFeaturePairs Disabled features", "features", cfg.DisabledModules)
+	cfg.Logger.Debug("SetProperFeaturePairs Disabled features", "features", cfg.DisabledModules, "isUsingICS", cfg.isUsingICS)
 }
 
 func RemoveDuplicates(disabled []string) []string {

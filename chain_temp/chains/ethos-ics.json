@@ -1,0 +1,182 @@
+{
+    "chains": [
+        {
+            "name": "myproject",
+            "chain_id": "localchain-1",
+            "docker_image": {
+                "repository": "myproject",
+                "version": "local",
+                "uid-gid": ""
+            },
+            "gas_prices": "0.0uroll",
+            "gas_adjustment": 2,
+            "genesis": {
+                "modify": [
+                    {
+                        "key": "app_state.gov.params.voting_period",
+                        "value": "10s"
+                    },
+                    {
+                        "key": "app_state.gov.params.max_deposit_period",
+                        "value": "10s"
+                    },
+                    {
+                        "key": "app_state.gov.params.min_deposit.0.denom",
+                        "value": "uroll"
+                    },
+                    {
+                        "key": "app_state.gov.params.min_deposit.0.amount",
+                        "value": "1"
+                    }
+                ],
+                "accounts": [
+                    {
+                        "name": "acc0",
+                        "amount": "25000000000%DENOM%",
+                        "address": "roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87",
+                        "mnemonic": "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry"
+                    },
+                    {
+                        "name": "acc1",
+                        "amount": "24000000000%DENOM%",
+                        "address": "roll1efd63aw40lxf3n4mhf7dzhjkr453axur57cawh",
+                        "mnemonic": "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise"
+                    },
+                    {
+                        "name": "user0",
+                        "amount": "100000%DENOM%",
+                        "address": "roll1f7hhwz497rk5fekurt2chw8q2yrnzvq62r8e7x",
+                        "mnemonic": "diagram glare accuse life latin snap frost reflect hawk utility brass swift post injury drift nice void fluid joy produce trial truth crack pear"
+                    },
+                    {
+                        "name": "user1",
+                        "amount": "100000%DENOM%",
+                        "address": "roll1g4am9vmm8j30cm00y977jqjp6v9aqvmp22fx2z",
+                        "mnemonic": "material earn lazy apple hockey survey quality receive health gate small catch abuse estate beauty identify midnight staff inch just dutch medal distance scare"
+                    }
+                ]
+            },
+            "number_vals": 1,
+            "number_node": 0,
+            "chain_type": "cosmos",
+            "coin_type": 118,
+            "binary": "rolld",
+            "bech32_prefix": "roll",
+            "denom": "uroll",
+            "trusting_period": "336h",
+            "debugging": false,
+            "block_time": "2000ms",
+            "host_port_override": {
+                "1317": "1317",
+                "26656": "26656",
+                "26657": "26657",
+                "9090": "9090"
+            },
+            "ics_consumer_link": "localethos-1",
+            "ics_version_override": {
+                "provider": "v5",
+                "consumer": "v5"
+            }
+        },
+        {
+            "name": "ethos",
+            "chain_id": "localethos-1",
+            "docker_image": {
+                "repository": "ethos",
+                "version": "local",
+                "uid-gid": "1025:1025"
+            },
+            "gas_prices": "0.0uethos",
+            "gas_adjustment": 2,
+            "genesis": {
+                "modify": [
+                    {
+                        "key": "app_state.gov.params.voting_period",
+                        "value": "10s"
+                    },
+                    {
+                        "key": "app_state.gov.params.max_deposit_period",
+                        "value": "10s"
+                    },
+                    {
+                        "key": "app_state.gov.params.min_deposit.0.denom",
+                        "value": "uethos"
+                    },
+                    {
+                        "key": "app_state.gov.params.min_deposit.0.amount",
+                        "value": "1"
+                    }
+                ],
+                "accounts": [
+                    {
+                        "name": "acc0",
+                        "amount": "25000000000%DENOM%",
+                        "address": "ethos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpzf7tw4",
+                        "mnemonic": "decorate bright ozone fork gallery riot bus exhaust worth way bone indoor calm squirrel merry zero scheme cotton until shop any excess stage laundry"
+                    },
+                    {
+                        "name": "acc1",
+                        "amount": "24000000000%DENOM%",
+                        "address": "ethos1efd63aw40lxf3n4mhf7dzhjkr453axur7ad08u",
+                        "mnemonic": "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise"
+                    },
+                    {
+                        "name": "user0",
+                        "amount": "100000%DENOM%",
+                        "address": "ethos18j30q3yhpuynxvtzek2fjv88y9yyerr4yv2ddk",
+                        "mnemonic": "garden ramp banana famous off hover pull angry globe sausage orchard close ghost cute away wet animal fabric defense young genre myself swap universe"
+                    },
+                    {
+                        "name": "user1",
+                        "amount": "100000%DENOM%",
+                        "address": "ethos1vzycavx96jhxjnglymxtrca0ex6e5wxe5xk0yw",
+                        "mnemonic": "crash glad lizard cover story flame sport punch cushion sadness net avoid fantasy client delay warrior critic number behind original segment dry problem stand"
+                    }
+                ]
+            },
+            "number_vals": 1,
+            "number_node": 0,
+            "chain_type": "cosmos",
+            "coin_type": 118,
+            "binary": "ethosd",
+            "bech32_prefix": "ethos",
+            "denom": "uethos",
+            "trusting_period": "336h",
+            "debugging": true,
+            "block_time": "2000ms",
+            "ics_version_override": {}
+        },
+        {
+            "name": "ethereum",
+            "chain_id": "31337",
+            "docker_image": {
+                "repository": "ghcr.io/foundry-rs/foundry",
+                "version": "latest",
+                "uid-gid": ""
+            },
+            "gas_prices": "0",
+            "gas_adjustment": 0,
+            "genesis": {},
+            "config_file_overrides": [
+                {
+                    "paths": {
+                        "--load-state": "chains/avs-and-eigenlayer-deployed-anvil-state.json"
+                    }
+                }
+            ],
+            "number_vals": 1,
+            "number_node": 0,
+            "chain_type": "ethereum",
+            "coin_type": 60,
+            "binary": "anvil",
+            "bech32_prefix": "0x",
+            "denom": "wei",
+            "trusting_period": "0",
+            "debugging": true,
+            "host_port_override": {
+                "8545": "8545"
+            },
+            "ics_version_override": {}
+        }
+    ]
+}
