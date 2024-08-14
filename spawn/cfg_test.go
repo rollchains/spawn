@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/rollchains/spawn/spawn"
+	"github.com/rollchains/spawn/spawn/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -208,22 +209,22 @@ func goodCfg() spawn.NewChainConfig {
 func TestBadConfigInputs(t *testing.T) {
 	chainCases := []cfgCase{
 		NewCfgCase("valid config", goodCfg(), nil),
-		NewCfgCase("no github org", goodCfg().WithOrg(""), spawn.ErrCfgEmptyOrg),
-		NewCfgCase("no project name", goodCfg().WithProjectName(""), spawn.ErrCfgEmptyProject),
-		NewCfgCase("project special chars -", goodCfg().WithProjectName("my-project"), spawn.ErrCfgProjSpecialChars),
-		NewCfgCase("project special chars /", goodCfg().WithProjectName("my/project"), spawn.ErrCfgProjSpecialChars),
-		NewCfgCase("binary name to short len 1", goodCfg().WithBinDaemon("a"), spawn.ErrCfgBinTooShort),
+		NewCfgCase("no github org", goodCfg().WithOrg(""), types.ErrCfgEmptyOrg),
+		NewCfgCase("no project name", goodCfg().WithProjectName(""), types.ErrCfgEmptyProject),
+		NewCfgCase("project special chars -", goodCfg().WithProjectName("my-project"), types.ErrCfgProjSpecialChars),
+		NewCfgCase("project special chars /", goodCfg().WithProjectName("my/project"), types.ErrCfgProjSpecialChars),
+		NewCfgCase("binary name to short len 1", goodCfg().WithBinDaemon("a"), types.ErrCfgBinTooShort),
 		NewCfgCase("success: binary name len 2", goodCfg().WithBinDaemon("ad"), nil),
-		NewCfgCase("token denom too short len 1", goodCfg().WithDenom("a"), spawn.ErrCfgDenomTooShort),
-		NewCfgCase("token denom too short len 2", goodCfg().WithDenom("ab"), spawn.ErrCfgDenomTooShort),
+		NewCfgCase("token denom too short len 1", goodCfg().WithDenom("a"), types.ErrCfgDenomTooShort),
+		NewCfgCase("token denom too short len 2", goodCfg().WithDenom("ab"), types.ErrCfgDenomTooShort),
 		NewCfgCase("success: token denom special chars", goodCfg().WithDenom("my-cool/token"), nil),
 		NewCfgCase("success: token denom 3", goodCfg().WithDenom("abc"), nil),
-		NewCfgCase("home dir too short", goodCfg().WithHomeDir("."), spawn.ErrCfgHomeDirTooShort),
+		NewCfgCase("home dir too short", goodCfg().WithHomeDir("."), types.ErrCfgHomeDirTooShort),
 		NewCfgCase("success: home dir valid", goodCfg().WithHomeDir(".a"), nil),
-		NewCfgCase("bech32 prefix to short", goodCfg().WithBech32Prefix(""), spawn.ErrCfgEmptyBech32),
-		NewCfgCase("bech32 not alpha", goodCfg().WithBech32Prefix("c919"), spawn.ErrCfgBech32Alpha),
-		NewCfgCase("bech32 not alpha", goodCfg().WithBech32Prefix("1"), spawn.ErrCfgBech32Alpha),
-		NewCfgCase("bech32 not alpha", goodCfg().WithBech32Prefix("---"), spawn.ErrCfgBech32Alpha),
+		NewCfgCase("bech32 prefix to short", goodCfg().WithBech32Prefix(""), types.ErrCfgEmptyBech32),
+		NewCfgCase("bech32 not alpha", goodCfg().WithBech32Prefix("c919"), types.ErrCfgBech32Alpha),
+		NewCfgCase("bech32 not alpha", goodCfg().WithBech32Prefix("1"), types.ErrCfgBech32Alpha),
+		NewCfgCase("bech32 not alpha", goodCfg().WithBech32Prefix("---"), types.ErrCfgBech32Alpha),
 		NewCfgCase("success: bech32 prefix", goodCfg().WithBech32Prefix("c"), nil),
 	}
 
@@ -241,4 +242,13 @@ func TestBadConfigInputs(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestChainRegistry(t *testing.T) {
+	cfg := goodCfg()
+	cr := cfg.ChainRegistryFile()
+	require.Equal(t, cfg.ProjectName, cr.ChainName)
+	require.Equal(t, bech, cr.Bech32Prefix)
+	require.Equal(t, bin, cr.DaemonName)
+	require.Equal(t, denom, cr.Fees.FeeTokens[0].Denom)
 }

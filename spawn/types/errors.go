@@ -1,4 +1,4 @@
-package spawn
+package types
 
 import (
 	"errors"

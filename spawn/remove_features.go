@@ -88,7 +88,7 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		case GlobalFee:
 			fc.RemoveGlobalFee()
 		case CosmWasm:
-			fc.RemoveCosmWasm(cfg.IsFeatureDisabled(WasmLC))
+			fc.RemoveCosmWasm(!cfg.IsFeatureEnabled(WasmLC))
 		case WasmLC:
 			fc.RemoveWasmLightClient()
 		case PacketForward:
@@ -107,7 +107,7 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		}
 	}
 
-	if cfg.isUsingICS {
+	if cfg.IsFeatureEnabled(InterchainSecurity) {
 		fc.RemoveStandardTestNodeScript()
 		fc.HandleAllTagged("not-ics") // interchaintest
 		fc.removePacketForwardTestOnly()

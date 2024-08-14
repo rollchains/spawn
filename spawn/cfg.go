@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/rollchains/spawn/simapp"
+	"github.com/rollchains/spawn/spawn/types"
 	localictypes "github.com/strangelove-ventures/interchaintest/local-interchain/interchain/types"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
@@ -59,7 +60,12 @@ type NewChainConfig struct {
 	IgnoreGitInit   bool
 	DisabledModules []string
 	Logger          *slog.Logger
-	isUsingICS      bool
+}
+
+// NodeHome returns the full path to the node home directory
+// ex: $HOME/.simapp
+func (cfg NewChainConfig) NodeHome() string {
+	return path.Join("$HOME", cfg.HomeDir)
 }
 
 func (cfg NewChainConfig) ValidateAndRun(doAnnounce bool) error {
@@ -84,16 +90,7 @@ func (cfg NewChainConfig) ValidateAndRun(doAnnounce bool) error {
 func (cfg *NewChainConfig) SetProperFeaturePairs() {
 	d := RemoveDuplicates(cfg.DisabledModules)
 
-	isUsingICS := true
-	for _, name := range d {
-		if AliasName(name) == InterchainSecurity {
-			isUsingICS = false
-		}
-	}
-	cfg.isUsingICS = isUsingICS
-
-	// remove POA if it is being used
-	if isUsingICS {
+	if cfg.IsFeatureEnabled(InterchainSecurity) {
 		d = append(d, POA)
 	}
 
@@ -101,50 +98,41 @@ func (cfg *NewChainConfig) SetProperFeaturePairs() {
 	cfg.Logger.Debug("SetProperFeaturePairs Disabled features", "features", cfg.DisabledModules)
 }
 
-func (cfg *NewChainConfig) IsFeatureDisabled(featName string) bool {
-	for _, feat := range cfg.DisabledModules {
-		if AliasName(feat) == AliasName(featName) {
-			return true
-		}
-	}
-	return false
-}
-
 func (cfg *NewChainConfig) Validate() error {
 	if cfg.ProjectName == "" {
-		return ErrCfgEmptyProject
+		return types.ErrCfgEmptyProject
 	}
 
 	if strings.ContainsAny(cfg.ProjectName, `~!@#$%^&*()_+{}|:"<>?/.,;'[]\=-`) {
-		return ErrCfgProjSpecialChars
+		return types.ErrCfgProjSpecialChars
 	}
 
 	if cfg.GithubOrg == "" {
-		return ErrCfgEmptyOrg
+		return types.ErrCfgEmptyOrg
 	}
 
 	minDenomLen := 3
 	if len(cfg.Denom) < minDenomLen {
-		return ErrExpectedRange(ErrCfgDenomTooShort, minDenomLen, len(cfg.Denom))
+		return types.ErrExpectedRange(types.ErrCfgDenomTooShort, minDenomLen, len(cfg.Denom))
 	}
 
 	minBinLen := 2
 	if len(cfg.BinDaemon) < minBinLen {
-		return ErrExpectedRange(ErrCfgBinTooShort, minBinLen, len(cfg.BinDaemon))
+		return types.ErrExpectedRange(types.ErrCfgBinTooShort, minBinLen, len(cfg.BinDaemon))
 	}
 
 	if cfg.Bech32Prefix == "" {
-		return ErrCfgEmptyBech32
+		return types.ErrCfgEmptyBech32
 	}
 
 	cfg.Bech32Prefix = strings.ToLower(cfg.Bech32Prefix)
 	if !isAlphaFn(cfg.Bech32Prefix) {
-		return ErrCfgBech32Alpha
+		return types.ErrCfgBech32Alpha
 	}
 
 	minHomeLen := 2
 	if len(cfg.HomeDir) < minHomeLen {
-		return ErrExpectedRange(ErrCfgHomeDirTooShort, minHomeLen, len(cfg.HomeDir))
+		return types.ErrExpectedRange(types.ErrCfgHomeDirTooShort, minHomeLen, len(cfg.HomeDir))
 	}
 
 	if cfg.Logger == nil {
@@ -196,6 +184,8 @@ func (cfg *NewChainConfig) CreateNewChain() error {
 	}
 
 	cfg.MetadataFile().SaveJSON(fmt.Sprintf("%s/chain_metadata.json", NewDirName))
+	cfg.ChainRegistryFile().SaveJSON(fmt.Sprintf("%s/chain_registry.json", NewDirName))
+	cfg.ChainRegistryAssetsFile().SaveJSON(fmt.Sprintf("%s/chain_registry_assets.json", NewDirName))
 
 	// setup local-interchain testnets
 	// *testnet.json (chains/ directory)
@@ -207,7 +197,7 @@ func (cfg *NewChainConfig) CreateNewChain() error {
 		cfg.GitInitNewProjectRepo()
 	}
 
-	if !cfg.IsFeatureDisabled("block-explorer") {
+	if cfg.IsFeatureEnabled("block-explorer") {
 		cfg.NewPingPubExplorer()
 	}
 
@@ -322,7 +312,7 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.amount", "1"),
 	}
 
-	if cfg.isUsingICS {
+	if cfg.IsFeatureEnabled(InterchainSecurity) {
 		c.SetICSConsumerLink("localcosmos-1")
 	} else {
 		// make this is an IBC testnet for POA/POS chains
@@ -391,6 +381,16 @@ func GetFileContent(logger *slog.Logger, newFilePath string, fs embed.FS, relPat
 	}
 
 	return fc, nil
+}
+
+func (cfg *NewChainConfig) IsFeatureEnabled(feat string) bool {
+	featAlias := AliasName(feat)
+	for _, disabledFeat := range cfg.DisabledModules {
+		if AliasName(disabledFeat) == featAlias {
+			return false
+		}
+	}
+	return true
 }
 
 // debugErrorFile saves the errored file to a debug directory for easier debugging.

@@ -7,6 +7,19 @@ import (
 	"time"
 )
 
+const (
+	DefaultWebsite                   = "https://example.com"
+	DefaultLogo                      = "https://raw.githubusercontent.com/cosmos/chain-registry/master/cosmoshub/images/atom.png"
+	DefaultLogoSVG                   = "https://raw.githubusercontent.com/cosmos/chain-registry/master/cosmoshub/images/atom.svg"
+	DefaultDescription               = "A short description of your project"
+	DefaultChainID                   = "newchain-1"
+	DefaultNetworkType               = "testnet" // or mainnet
+	DefaultSlip44CoinType            = 118
+	DefaultChainRegistrySchema       = "https://raw.githubusercontent.com/cosmos/chain-registry/master/chain.schema.json"
+	DefaultChainRegistryAssetsSchema = "https://github.com/cosmos/chain-registry/blob/master/assetlist.schema.json"
+	DefaultThemeHexColor             = "#FF2D00"
+)
+
 func (cfg *NewChainConfig) MetadataFile() MetadataFile {
 	now := time.Now().UTC()
 	now = now.Round(time.Minute)
@@ -23,10 +36,10 @@ func (cfg *NewChainConfig) MetadataFile() MetadataFile {
 		Project: ProjectMeta{
 			Github:           cfg.GithubPath(),
 			TargetLaunchDate: now,
-			Logo:             "https://example.com/logo.png",
-			Website:          "https://example.com",
-			Description:      "A short description of your project",
-			ShortDescription: "A short description of your project",
+			Logo:             DefaultLogo,
+			Website:          DefaultWebsite,
+			Description:      DefaultDescription,
+			ShortDescription: DefaultDescription,
 			Whitepaper:       "https://example.com/whitepaper.pdf",
 			Contact: ContactMeta{
 				Email:    "",
@@ -39,12 +52,12 @@ func (cfg *NewChainConfig) MetadataFile() MetadataFile {
 		ICS: ICSMeta{},
 	}
 
-	if cfg.isUsingICS {
+	if cfg.IsFeatureEnabled(InterchainSecurity) {
 		mf.ICS = ICSMeta{
 			SpawnTime: now,
 			Title:     cfg.BinDaemon,
-			Summary:   ".md description of your chain and all other relevant information",
-			ChainID:   "newchain-1",
+			Summary:   DefaultDescription + " ( in .md format)",
+			ChainID:   DefaultChainID,
 			InitialHeight: ICSClientTypes{
 				RevisionHeight: 0,
 				RevisionNumber: 1,
