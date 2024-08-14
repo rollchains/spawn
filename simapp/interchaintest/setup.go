@@ -45,8 +45,6 @@ var (
 		cosmos.NewGenesisKV("app_state.gov.params.max_deposit_period", MaxDepositPeriod),
 		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.denom", Denom),
 		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.amount", "1"),
-		// poa: gov & testing account
-		cosmos.NewGenesisKV("app_state.poa.params.admins", []string{"wasm10d07y265gmmuvt4z0w9aw880jnsr700js7zslc", "wasm1hj5fveer5cjtn4wd6wstzugjfdxzl0xpvsr89g"}),
 		// globalfee: set minimum fee requirements
 		cosmos.NewGenesisKV("app_state.globalfee.params.minimum_gas_prices", sdk.DecCoins{sdk.NewDecCoinFromDec(Denom, sdkmath.LegacyMustNewDecFromStr("0.0"))}),
 		// tokenfactory: set create cost in set denom or in gas usage.

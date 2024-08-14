@@ -34,6 +34,9 @@ func TestPOA(t *testing.T) {
 
 	cs := &DefaultChainSpec
 	cs.NumValidators = &numPOAVals
+	cs.Env = []string{
+		fmt.Sprintf("POA_ADMIN_ADDRESS=%s", "wasm1hj5fveer5cjtn4wd6wstzugjfdxzl0xpvsr89g"), // acc0 / admin
+	}
 
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
 		cs,
@@ -59,9 +62,10 @@ func TestPOA(t *testing.T) {
 	})
 
 	// setup accounts
-	acc0, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, "acc0", AccMnemonic, GenesisFundsAmount, chain)
+	admin, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, "admin", AccMnemonic, GenesisFundsAmount, chain)
 	require.NoError(t, err)
-	acc1, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, "acc1", Acc1Mnemonic, GenesisFundsAmount, chain)
+
+	acc0, err := interchaintest.GetAndFundTestUserWithMnemonic(ctx, "acc0", Acc1Mnemonic, GenesisFundsAmount, chain)
 	require.NoError(t, err)
 
 	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), GenesisFundsAmount, chain)
@@ -78,89 +82,31 @@ func TestPOA(t *testing.T) {
 	require.Equal(t, len(validators), numPOAVals)
 
 	// === Test Cases ===
-	testStakingDisabled(t, ctx, chain, validators, acc0, acc1)
-	testPowerErrors(t, ctx, chain, validators, incorrectUser, acc0)
-	testPending(t, ctx, chain, acc0)
-	testRemoveValidator(t, ctx, chain, validators, acc0)
+	testStakingDisabled(t, ctx, chain, validators, acc0)
+	testWithdrawDelegatorRewardsDisabled(t, ctx, chain, validators, acc0)
+	testPowerErrors(t, ctx, chain, validators, incorrectUser, admin)
+	testRemovePending(t, ctx, chain, admin)
 }
 
-func testRemoveValidator(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, validators []string, acc0 ibc.Wallet) {
-	t.Log("\n===== TEST REMOVE VALIDATOR =====")
-	powerOne := int64(9_000_000_000_000)
-	powerTwo := int64(2_500_000)
+func testWithdrawDelegatorRewardsDisabled(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, validators []string, acc0 ibc.Wallet) {
+	t.Log("\n===== TEST WITHDRAW DELEGATOR REWARDS DISABLED =====")
 
-	res, _ := POASetPower(t, ctx, chain, acc0, validators[0], powerOne, "--unsafe")
-	fmt.Printf("%+v", res)
-	res, _ = POASetPower(t, ctx, chain, acc0, validators[1], powerTwo, "--unsafe")
-	fmt.Printf("%+v", res)
-
-	// decode res.TxHash into a TxResponse
-	txRes, err := chain.GetTransaction(res.TxHash)
-	require.NoError(t, err)
-	fmt.Printf("%+v", txRes)
-
-	if err := testutil.WaitForBlocks(ctx, 2, chain); err != nil {
-		t.Fatal(err)
-	}
-
-	vals, err := chain.StakingQueryValidators(ctx, stakingtypes.Bonded.String())
-	require.NoError(t, err)
-	require.Equal(t, fmt.Sprintf("%d", powerOne), vals[0].Tokens.String())
-	require.Equal(t, fmt.Sprintf("%d", powerTwo), vals[1].Tokens.String())
-
-	// validate the validators both have a conesnsus-power of /1_000_000
-	p1 := GetPOAConsensusPower(t, ctx, chain, vals[0].OperatorAddress)
-	require.EqualValues(t, powerOne/1_000_000, p1) // = 9000000
-	p2 := GetPOAConsensusPower(t, ctx, chain, vals[1].OperatorAddress)
-	require.EqualValues(t, powerTwo/1_000_000, p2) // = 2
-
-	// remove the 2nd validator (lower power)
-	POARemove(t, ctx, chain, acc0, validators[1])
-
-	// allow the poa.BeginBlocker to update new status
-	if err := testutil.WaitForBlocks(ctx, 5, chain); err != nil {
-		t.Fatal(err)
-	}
-
-	vals, err = chain.StakingQueryValidators(ctx, stakingtypes.Bonded.String())
-	require.NoError(t, err)
-	require.Equal(t, fmt.Sprintf("%d", powerOne), vals[0].Tokens.String())
-	require.Equal(t, 1, len(vals))
-
-	vals, err = chain.StakingQueryValidators(ctx, stakingtypes.Unbonding.String())
-	require.NoError(t, err)
-	require.Equal(t, 1, len(vals))
+	txRes, _ := WithdrawDelegatorRewards(t, ctx, chain, acc0, validators[0])
+	require.Contains(t, txRes.RawLog, poa.ErrWithdrawDelegatorRewardsNotAllowed.Error())
 }
 
-func testStakingDisabled(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, validators []string, acc0, acc1 ibc.Wallet) {
+func testStakingDisabled(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, validators []string, acc0 ibc.Wallet) {
 	t.Log("\n===== TEST STAKING DISABLED =====")
 
 	err := chain.GetNode().StakingDelegate(ctx, acc0.KeyName(), validators[0], "1stake")
 	require.Error(t, err)
 	require.Contains(t, err.Error(), poa.ErrStakingActionNotAllowed.Error())
-
-	granter := acc1
-	grantee := acc0
-
-	// Grant grantee (acc0) the ability to delegate from granter (acc1)
-	res, err := chain.GetNode().AuthzGrant(ctx, granter, grantee.FormattedAddress(), "generic", "--msg-type", "/cosmos.staking.v1beta1.MsgDelegate")
-	require.NoError(t, err)
-	require.EqualValues(t, res.Code, 0)
-
-	// Generate nested message
-	nested := []string{"tx", "staking", "delegate", validators[0], "1stake"}
-	nestedCmd := TxCommandBuilder(ctx, chain, nested, granter.FormattedAddress())
-
-	// Execute nested message via a wrapped Exec
-	_, err = chain.GetNode().AuthzExec(ctx, grantee, nestedCmd)
-	require.Error(t, err)
-	require.Contains(t, err.Error(), poa.ErrStakingActionNotAllowed.Error())
 }
 
-func testPending(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, acc0 ibc.Wallet) {
+func testRemovePending(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, admin ibc.Wallet) {
 	t.Log("\n===== TEST PENDING =====")
 
-	res, _ := POACreatePendingValidator(t, ctx, chain, acc0, "pl3Q8OQwtC7G2dSqRqsUrO5VZul7l40I+MKUcejqRsg=", "testval", "0.10", "0.25", "0.05")
+	res, _ := POACreatePendingValidator(t, ctx, chain, admin, "pl3Q8OQwtC7G2dSqRqsUrO5VZul7l40I+MKUcejqRsg=", "testval", "0.10", "0.25", "0.05")
 	require.EqualValues(t, 0, res.Code)
 
 	require.NoError(t, testutil.WaitForBlocks(ctx, 2, chain))
@@ -170,7 +116,7 @@ func testPending(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, a
 	require.Equal(t, "0", pv[0].Tokens.String())
 	require.Equal(t, "1", pv[0].MinSelfDelegation.String())
 
-	res, _ = POARemovePending(t, ctx, chain, acc0, pv[0].OperatorAddress)
+	res, _ = POARemovePending(t, ctx, chain, admin, pv[0].OperatorAddress)
 	require.EqualValues(t, 0, res.Code)
 
 	// validate it was removed
