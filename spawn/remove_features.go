@@ -88,7 +88,7 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		case GlobalFee:
 			fc.RemoveGlobalFee()
 		case CosmWasm:
-			fc.RemoveCosmWasm(cfg.IsFeatureEnabled(WasmLC))
+			fc.RemoveCosmWasm(!cfg.IsFeatureEnabled(WasmLC))
 		case WasmLC:
 			fc.RemoveWasmLightClient()
 		case PacketForward:

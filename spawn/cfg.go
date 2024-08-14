@@ -90,7 +90,6 @@ func (cfg NewChainConfig) ValidateAndRun(doAnnounce bool) error {
 func (cfg *NewChainConfig) SetProperFeaturePairs() {
 	d := RemoveDuplicates(cfg.DisabledModules)
 
-	// remove POA if it is being used
 	if cfg.IsFeatureEnabled(InterchainSecurity) {
 		d = append(d, POA)
 	}
