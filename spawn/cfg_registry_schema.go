@@ -96,13 +96,13 @@ func (cfg NewChainConfig) ChainRegistryFile() types.ChainRegistryFormat {
 		Apis: types.Apis{
 			RPC: []types.RPC{
 				{
-					Address:  "tcp://127.0.0.1:26657",
+					Address:  "http://127.0.0.1:26657",
 					Provider: "localhost",
 				},
 			},
 			Rest: []types.Rest{
 				{
-					Address:  "tcp://127.0.0.1:1317",
+					Address:  "http://127.0.0.1:1317",
 					Provider: "localhost",
 				},
 			},
