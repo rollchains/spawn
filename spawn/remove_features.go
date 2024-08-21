@@ -265,7 +265,7 @@ func (fc *FileContent) RemoveOptimisticExecution() {
 }
 
 func (fc *FileContent) RemoveExplorer() {
-	fc.DeleteDirectoryContents("nginx")
+	// fc.DeleteDirectoryContents("nginx")
 }
 
 func (fc *FileContent) RemoveInterchainSecurity() {
