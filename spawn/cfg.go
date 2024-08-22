@@ -16,6 +16,7 @@ import (
 	localictypes "github.com/strangelove-ventures/interchaintest/local-interchain/interchain/types"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
+	"github.com/strangelove-ventures/interchaintest/v8/testutil"
 )
 
 var (
@@ -310,6 +311,21 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 		cosmos.NewGenesisKV("app_state.gov.params.max_deposit_period", "10s"),
 		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.denom", c.Denom),
 		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.amount", "1"),
+	}
+
+	c.ConfigFileOverrides = []localictypes.ConfigFileOverrides{
+		{
+			File: "config/app.toml",
+			Paths: testutil.Toml{
+				"api.enabled-unsafe-cors": true,
+			},
+		},
+		{
+			File: "config/config.toml",
+			Paths: testutil.Toml{
+				"rpc.cors_allowed_origins": []string{"*"},
+			},
+		},
 	}
 
 	if cfg.IsFeatureEnabled(InterchainSecurity) {

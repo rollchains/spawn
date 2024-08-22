@@ -98,8 +98,8 @@ func (cfg NewChainConfig) NewChainExplorerConfig() ChainExplorer {
 	logo := "https://img.freepik.com/free-vector/letter-s-box-logo-design-template_474888-3345.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1721260800&semt=ais_user"
 	return ChainExplorer{
 		ChainName:  cfg.ProjectName,
-		Api:        []Endpoint{NewEndpoint("api.localhost", "https://api.localhost")},
-		Rpc:        []Endpoint{NewEndpoint("rpc.localhost", "https://rpc.localhost")},
+		Api:        []Endpoint{NewEndpoint("api.localhost", "http://127.0.0.1:1317")},
+		Rpc:        []Endpoint{NewEndpoint("rpc.localhost", "http://127.0.0.1:26657")},
 		SdkVersion: "0.50",
 		CoinType:   "118",
 		MinTxFee:   "800",
