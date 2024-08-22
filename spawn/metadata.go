@@ -12,7 +12,7 @@ const (
 	DefaultLogo                      = "https://raw.githubusercontent.com/cosmos/chain-registry/master/cosmoshub/images/atom.png"
 	DefaultLogoSVG                   = "https://raw.githubusercontent.com/cosmos/chain-registry/master/cosmoshub/images/atom.svg"
 	DefaultDescription               = "A short description of your project"
-	DefaultChainID                   = "newchain-1"
+	DefaultChainID                   = "localchain-1"
 	DefaultNetworkType               = "testnet" // or mainnet
 	DefaultSlip44CoinType            = 118
 	DefaultChainRegistrySchema       = "https://raw.githubusercontent.com/cosmos/chain-registry/master/chain.schema.json"
