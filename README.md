@@ -39,8 +39,10 @@ In this tutorial, we'll create and interact with a new Cosmos-SDK blockchain cal
 ```shell
 git clone https://github.com/rollchains/spawn.git
 cd spawn
-git checkout v0.50.4
+git checkout v0.50.7
+
 make install
+make get-localic
 ```
 
 2. Create your chain using the `spawn` command and customize it to your needs!

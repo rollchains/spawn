@@ -49,6 +49,12 @@ get-heighliner:
 	cd heighliner && go install
 	@echo ✅ heighliner installed to $(shell which heighliner)
 
+get-localic:
+	@echo "Installing local-interchain"
+	git clone --branch v8.7.0 https://github.com/strangelove-ventures/interchaintest.git interchaintest-downloader
+	cd interchaintest-downloader/local-interchain && make install
+	@echo ✅ local-interchain installed $(shell which local-ic)
+
 .PHONY: get-heighliner
 
 help: Makefile
