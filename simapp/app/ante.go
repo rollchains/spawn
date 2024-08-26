@@ -19,9 +19,6 @@ import (
 	sdkmath "cosmossdk.io/math"
 	poaante "github.com/strangelove-ventures/poa/ante"
 
-	globalfeeante "github.com/strangelove-ventures/globalfee/x/globalfee/ante"
-	globalfeekeeper "github.com/strangelove-ventures/globalfee/x/globalfee/keeper"
-
 	consumerdemocracy "github.com/cosmos/interchain-security/v5/app/consumer-democracy"
 	ccvdemocracyante "github.com/cosmos/interchain-security/v5/app/consumer-democracy/ante"
 	ccvconsumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"
@@ -39,7 +36,6 @@ type HandlerOptions struct {
 	TXCounterStoreService corestoretypes.KVStoreService
 	CircuitKeeper         *circuitkeeper.Keeper
 
-	GlobalFeeKeeper      globalfeekeeper.Keeper
 	BypassMinFeeMsgTypes []string
 	ConsumerKeeper       ccvconsumerkeeper.Keeper
 }
@@ -83,8 +79,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		globalfeeante.NewFeeDecorator(options.BypassMinFeeMsgTypes, options.GlobalFeeKeeper, 2_000_000),
-		//ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker), // ?spawntag:globalfee
+		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		ante.NewSetPubKeyDecorator(options.AccountKeeper), // SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		ante.NewSigGasConsumeDecorator(options.AccountKeeper, options.SigGasConsumer),
