@@ -43,6 +43,10 @@ git checkout v0.50.7
 
 make install
 make get-localic
+
+# If you get "command 'spawn' not found", make sure to add go to your path
+# Run the following in your terminal to test, then add to your ~/.bashrc or similar
+export PATH="$PATH:$(go env GOPATH)/bin"
 ```
 
 2. Create your chain using the `spawn` command and customize it to your needs!
