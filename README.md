@@ -61,9 +61,8 @@ echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
 ```bash
 GITHUB_USERNAME=rollchains
 
-# Spawn a new chain with no interactions required
 # If the `--consensus` or `--disabled` flags are not present,
-# a selector UI will appear in your terminal.
+# a selector UI will appear in your terminal to see all options.
 spawn new rollchain \
 --consensus=proof-of-authority \
 --bech32=roll \
