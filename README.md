@@ -61,9 +61,9 @@ echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
 ```bash
 GITHUB_USERNAME=rollchains
 
-# Available Features:
-# * tokenfactory,globalfee,ibc-packetforward,ibc-ratelimit,cosmwasm,wasm-light-client,optimistic-execution,ignite-cli,block-explorer
-
+# Spawn a new chain with no interactions required
+# If the `--consensus` or `--disabled` flags are not present,
+# a selector UI will appear in your terminal.
 spawn new rollchain \
 --consensus=proof-of-authority \
 --bech32=roll \
@@ -71,8 +71,6 @@ spawn new rollchain \
 --bin=rolld \
 --disabled=cosmwasm,globalfee,block-explorer \
 --org=${GITHUB_USERNAME}
-
-
 ```
 
 > *NOTE:* `spawn` creates a ready to use repository complete with `git` and GitHub CI. It can be quickly pushed to a new repository getting you and your team up and running quickly.
