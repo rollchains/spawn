@@ -26,8 +26,13 @@ https://github.com/rollchains/spawn/assets/31943163/ecc21ce4-c42c-4ff2-8e73-897c
 
 - [`go 1.22+`](https://go.dev/doc/install)
 - [`Docker`](https://docs.docker.com/get-docker/)
+- [`git`](https://git-scm.com/)
 
-[MacOS + Ubuntu Setup](./docs/SYSTEM_SETUP.md)
+## System Setup
+
+* [MacOS](./docs/SYSTEM_SETUP.md#macos-setup)
+* [Ubuntu](./docs/SYSTEM_SETUP.md#ubuntu-setup)
+* [Windows](./docs/SYSTEM_SETUP.md#windows-setup)
 
 ---
 
@@ -36,7 +41,7 @@ In this tutorial, we'll create and interact with a new Cosmos-SDK blockchain cal
 
 1. Clone this repo and install
 
-```shell
+```bash
 git clone https://github.com/rollchains/spawn.git
 cd spawn
 git checkout v0.50.7
@@ -44,35 +49,34 @@ git checkout v0.50.7
 make install
 make get-localic
 
-# If you get "command 'spawn' not found", make sure to add go to your path
-# Run the following in your terminal to test, then add to your ~/.bashrc or similar
+# If you get "command 'spawn' not found", add to path
+# Run the following in your terminal to test
+# Then add to ~/.bashrc (linux) or ~/.zshrc (mac)
 export PATH="$PATH:$(go env GOPATH)/bin"
+echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
 ```
 
 2. Create your chain using the `spawn` command and customize it to your needs!
 
-```shell
+```bash
 GITHUB_USERNAME=rollchains
 
-# Available Features:
-# * tokenfactory,globalfee,ibc-packetforward,ibc-ratelimit,cosmwasm,wasm-light-client,optimistic-execution,ignite-cli,block-explorer
-
+# If the `--consensus` or `--disabled` flags are not present,
+# a selector UI will appear in your terminal to see all options.
 spawn new rollchain \
---consensus=proof-of-authority `# proof-of-authority,proof-of-stake,interchain-security` \
---bech32=roll `# the prefix for addresses` \
---denom=uroll `# the coin denomination to create` \
---bin=rolld `# the name of the binary` \
---disabled=cosmwasm,globalfee,block-explorer `# disable features.` \
---org=${GITHUB_USERNAME} `# the github username or organization to use for the module imports, optional`
-
-
+--consensus=proof-of-authority \
+--bech32=roll \
+--denom=uroll \
+--bin=rolld \
+--disabled=cosmwasm,globalfee,block-explorer \
+--org=${GITHUB_USERNAME}
 ```
 
 > *NOTE:* `spawn` creates a ready to use repository complete with `git` and GitHub CI. It can be quickly pushed to a new repository getting you and your team up and running quickly.
 
 3. Spin up a local testnet for your chain
 
-```shell
+```bash
 cd rollchain
 
 # Starts 2 networks for the IBC testnet at http://127.0.0.1:8080.
@@ -85,7 +89,7 @@ make testnet
 
 4. Open a new terminal window and send a transaction on your new chain
 
-```shell
+```bash
 # list the keys that have been provisioned with funds in genesis
 rolld keys list
 
@@ -93,13 +97,13 @@ rolld keys list
 rolld tx bank send acc0 $(rolld keys show acc1 -a) 1337uroll --chain-id=localchain-1
 
 # enter "y" to confirm the transaction
-# then query your balances tfor proof the transaction executed successfully
+# then query your balances for proof the transaction executed successfully
 rolld q bank balances $(rolld keys show acc1 -a)
 ```
 
 5. (optional) Send an IBC transaction
 
-```shell
+```bash
 # submit a cross chain transfer from acc0 to the other address
 rolld tx ibc-transfer transfer transfer channel-0 cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr 7uroll --from=acc0 --chain-id=localchain-1 --yes
 
@@ -114,7 +118,7 @@ local-ic interact localcosmos-1 query 'bank balances cosmos1hj5fveer5cjtn4wd6wst
 
 6. Push your new chain to a github repository
 
-```shell
+```bash
 # Create a new repository on GitHub from the gh cli
 gh repo create rollchain --source=. --remote=upstream --push --private
 ```

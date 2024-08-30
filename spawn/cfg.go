@@ -166,7 +166,7 @@ func (cfg *NewChainConfig) CreateNewChain() error {
 	// Set proper pairings for modules to be disabled if others are enabled
 	cfg.SetProperFeaturePairs()
 
-	logger.Debug("Spawning new app", "app", NewDirName)
+	logger.Info("Spawning new app", "name", NewDirName)
 	logger.Debug("NewChain Disabled features", "features", cfg.DisabledModules)
 
 	if err := os.MkdirAll(NewDirName, 0755); err != nil {

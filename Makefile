@@ -51,8 +51,12 @@ get-heighliner:
 
 get-localic:
 	@echo "Installing local-interchain"
-	git clone --branch v8.7.0 https://github.com/strangelove-ventures/interchaintest.git interchaintest-downloader
-	cd interchaintest-downloader/local-interchain && make install
+# git clone --branch v8.7.0 https://github.com/strangelove-ventures/interchaintest.git interchaintest-downloader
+# cd interchaintest-downloader/local-interchain && make install
+	wget https://github.com/strangelove-ventures/interchaintest/releases/download/v8.7.0/local-ic
+	chmod +x local-ic
+	mv local-ic $(shell go env GOPATH)/bin
+	@sleep 0.1
 	@echo ✅ local-interchain installed $(shell which local-ic)
 
 .PHONY: get-heighliner
