@@ -40,7 +40,7 @@ In this tutorial, we'll create and interact with a new Cosmos-SDK blockchain cal
 
 1. Clone this repo and install
 
-```shell
+```bash
 git clone https://github.com/rollchains/spawn.git
 cd spawn
 git checkout v0.50.7
@@ -57,7 +57,7 @@ echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
 
 2. Create your chain using the `spawn` command and customize it to your needs!
 
-```console
+```bash
 GITHUB_USERNAME=rollchains
 
 # Available Features:
@@ -78,7 +78,7 @@ spawn new rollchain \
 
 3. Spin up a local testnet for your chain
 
-```shell
+```bash
 cd rollchain
 
 # Starts 2 networks for the IBC testnet at http://127.0.0.1:8080.
@@ -91,7 +91,7 @@ make testnet
 
 4. Open a new terminal window and send a transaction on your new chain
 
-```shell
+```bash
 # list the keys that have been provisioned with funds in genesis
 rolld keys list
 
@@ -105,7 +105,7 @@ rolld q bank balances $(rolld keys show acc1 -a)
 
 5. (optional) Send an IBC transaction
 
-```shell
+```bash
 # submit a cross chain transfer from acc0 to the other address
 rolld tx ibc-transfer transfer transfer channel-0 cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr 7uroll --from=acc0 --chain-id=localchain-1 --yes
 
@@ -120,7 +120,7 @@ local-ic interact localcosmos-1 query 'bank balances cosmos1hj5fveer5cjtn4wd6wst
 
 6. Push your new chain to a github repository
 
-```shell
+```bash
 # Create a new repository on GitHub from the gh cli
 gh repo create rollchain --source=. --remote=upstream --push --private
 ```
