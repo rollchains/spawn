@@ -14,6 +14,8 @@ brew install go
 
 # Docker
 brew install docker
+
+# Continue to main README.md to install spawn & local-ic
 ```
 
 ## Windows Setup
@@ -53,6 +55,8 @@ git config --global user.name "Your Name"
 # Fix the path
 echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
 export PATH=$PATH:$(go env GOPATH)/bin
+
+# Continue to main README.md to install spawn & local-ic
 ```
 
 # Ubuntu Setup
@@ -80,4 +84,6 @@ sudo apt -y install docker.io
 # Setup base github config
 git config --global user.email "yourEmail@gmail.com"
 git config --global user.name "Your Name"
+
+# Continue to main README.md to install spawn & local-ic
 ```
