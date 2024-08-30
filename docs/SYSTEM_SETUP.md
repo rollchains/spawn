@@ -52,10 +52,6 @@ sudo chmod 666 /var/run/docker.sock
 git config --global user.email "yourEmail@gmail.com"
 git config --global user.name "Your Name"
 
-# Fix the path
-echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
-export PATH=$PATH:$(go env GOPATH)/bin
-
 # Continue to main README.md to install spawn & local-ic
 ```
 
@@ -73,10 +69,6 @@ gh auth login
 GO_VERSION=1.23.0
 wget https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz
 sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go$GO_VERSION.linux-amd64.tar.gz
-
-# fix paths
-echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
-export PATH=$PATH:$(go env GOPATH)/bin
 
 # Docker
 sudo apt -y install docker.io

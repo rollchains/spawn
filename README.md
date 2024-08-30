@@ -26,12 +26,13 @@ https://github.com/rollchains/spawn/assets/31943163/ecc21ce4-c42c-4ff2-8e73-897c
 
 - [`go 1.22+`](https://go.dev/doc/install)
 - [`Docker`](https://docs.docker.com/get-docker/)
+- [`git`](https://git-scm.com/)
 
-## Setup Guides
+## System Setup
 
-[MacOS](./docs/SYSTEM_SETUP.md#macos-setup)
-[Ubuntu](./docs/SYSTEM_SETUP.md#ubuntu-setup)
-[Windows](./docs/SYSTEM_SETUP.md#windows-setup)
+* [MacOS](./docs/SYSTEM_SETUP.md#macos-setup)
+* [Ubuntu](./docs/SYSTEM_SETUP.md#ubuntu-setup)
+* [Windows](./docs/SYSTEM_SETUP.md#windows-setup)
 
 ---
 
