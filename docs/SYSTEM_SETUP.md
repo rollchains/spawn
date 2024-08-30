@@ -18,7 +18,7 @@ brew install docker
 # Continue to main README.md to install spawn & local-ic
 ```
 
-## Windows Setup
+# Windows Setup
 
 ```bash
 # Install WSL in powershell
