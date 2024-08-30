@@ -23,7 +23,7 @@ brew install docker
 ```bash
 # Install WSL in powershell
 wsl --install
-reboot
+Restart-Computer
 
 # Setup WSL Ubuntu Image
 wsl.exe --install Ubuntu-24.04
@@ -45,7 +45,11 @@ sudo apt install make gcc git jq
 sudo snap install gh
 
 # Install docker
+https://docs.docker.com/desktop/wsl/#turn-on-docker-desktop-wsl-2
+# or snap:
 sudo snap install docker
+
+# Fix versioning for interaction of commands
 sudo chmod 666 /var/run/docker.sock
 
 # Setup base github config
