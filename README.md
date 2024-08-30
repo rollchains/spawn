@@ -57,7 +57,7 @@ echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
 
 2. Create your chain using the `spawn` command and customize it to your needs!
 
-```shell
+```console
 GITHUB_USERNAME=rollchains
 
 # Available Features:
