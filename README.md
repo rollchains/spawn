@@ -97,7 +97,7 @@ rolld keys list
 rolld tx bank send acc0 $(rolld keys show acc1 -a) 1337uroll --chain-id=localchain-1
 
 # enter "y" to confirm the transaction
-# then query your balances tfor proof the transaction executed successfully
+# then query your balances for proof the transaction executed successfully
 rolld q bank balances $(rolld keys show acc1 -a)
 ```
 
