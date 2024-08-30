@@ -27,7 +27,11 @@ https://github.com/rollchains/spawn/assets/31943163/ecc21ce4-c42c-4ff2-8e73-897c
 - [`go 1.22+`](https://go.dev/doc/install)
 - [`Docker`](https://docs.docker.com/get-docker/)
 
-[MacOS + Ubuntu Setup](./docs/SYSTEM_SETUP.md)
+## Setup Guides
+
+[MacOS](./docs/SYSTEM_SETUP.md#macos-setup)
+[Ubuntu](./docs/SYSTEM_SETUP.md#ubuntu-setup)
+[Windows](./docs/SYSTEM_SETUP.md#windows-setup)
 
 ---
 
@@ -44,9 +48,11 @@ git checkout v0.50.7
 make install
 make get-localic
 
-# If you get "command 'spawn' not found", make sure to add go to your path
-# Run the following in your terminal to test, then add to your ~/.bashrc or similar
+# If you get "command 'spawn' not found", add to path
+# Run the following in your terminal to test
+# Then add to ~/.bashrc (linux) or ~/.zshrc (mac)
 export PATH="$PATH:$(go env GOPATH)/bin"
+echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
 ```
 
 2. Create your chain using the `spawn` command and customize it to your needs!
@@ -58,12 +64,12 @@ GITHUB_USERNAME=rollchains
 # * tokenfactory,globalfee,ibc-packetforward,ibc-ratelimit,cosmwasm,wasm-light-client,optimistic-execution,ignite-cli,block-explorer
 
 spawn new rollchain \
---consensus=proof-of-authority `# proof-of-authority,proof-of-stake,interchain-security` \
---bech32=roll `# the prefix for addresses` \
---denom=uroll `# the coin denomination to create` \
---bin=rolld `# the name of the binary` \
---disabled=cosmwasm,globalfee,block-explorer `# disable features.` \
---org=${GITHUB_USERNAME} `# the github username or organization to use for the module imports, optional`
+--consensus=proof-of-authority \
+--bech32=roll \
+--denom=uroll \
+--bin=rolld \
+--disabled=cosmwasm,globalfee,block-explorer \
+--org=${GITHUB_USERNAME}
 
 
 ```
