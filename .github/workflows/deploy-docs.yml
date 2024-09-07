@@ -5,8 +5,8 @@ name: Deploy to GitHub Pages
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
     paths:
       - "docs/**"
       - .github/workflows/deploy-docs.yml
