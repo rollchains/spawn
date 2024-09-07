@@ -15,7 +15,7 @@ Install the Spawn CLI tool to your local machine
 
 ## Install Spawn
 
-Install Spawn from source
+Install Spawn from source.
 
 ```bash
 # Install from latest source

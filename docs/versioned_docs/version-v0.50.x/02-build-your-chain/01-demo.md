@@ -19,7 +19,7 @@ Build your first Cosmos-SDK blockchain with Spawn. This tutorials focuses on a '
 :::
 
 
-## Chain Scaffolding
+## Chain Generation
 
 Let's create a new chain called 'rollchain'. We are going to set some of the defining characteristics such as
 - Which modules to disable from the template *if any*
@@ -33,7 +33,7 @@ spawn new rollchain --disable=cosmwasm --bech32=roll --denom=uroll --bin=rolld
 
 The chain is now created and we can start to write our application logic on top.
 
-## Generate New Module
+## Module Scaffold
 
 Let's build a nameservice module for this example.
 
@@ -47,7 +47,7 @@ spawn module new nameservice
 
 This creates a new template module with the name `nameservice` in the `x` and `proto` directories. This is also automatically connected to your app.go and ready for application use.
 
-## Setup Messages
+## Data Structure
 
 The protobuf files have been automatically generated for you with a default `Params` section. Building off this, we are adding our new messages to query and set a wallets name.
 
@@ -100,7 +100,7 @@ make proto-gen
 ![make proto-gen](https://github.com/rollchains/spawn/assets/31943163/c51bf57c-e83a-4004-8041-9b1f3d3a24f4)
 
 
-# Keeper Storage Structure
+## Keeper Storage Structure
 
 Now set the data structure map in the keeper *x/nameservice/keeper/keeper.go* to store the wallet to name pair.
 
@@ -132,7 +132,7 @@ func NewKeeper() Keeper {
 
 ---
 
-# Application Logic
+## Application Logic
 
 Update the `x/nameservice/keeper/msg_server.go` now to set on the newly created map.
 
@@ -163,9 +163,9 @@ func (k Querier) ResolveName(goCtx context.Context, req *types.QueryResolveNameR
 
 ---
 
-# Setting the CLI Client
+## Setting the CLI Client
 
-The Cosmos-SDK recently introduced the AutoCLI. This method simplifies the setup of the CLI client for transactions and queries.
+Using the Cosmos-SDKs AutoCLI, we can easily set up the CLI client for transactions and queries.
 
 ### Query
 
@@ -223,7 +223,7 @@ And also for setting the Transaction
 
 ---
 
-# Testnet
+## Testnet
 
 With the module now completed, it is time to run the local testnet to validate our additions.
 
@@ -235,7 +235,7 @@ make sh-testnet
 
 The chain will begin to mint new blocks, which you can interact with.
 
-### Interaction
+### CLI Interaction
 
 Using the newly built binary (rolld from the --bin flag when we created the chain), we are going to execute the `set` transaction to "alice". This links acc1's address (in the keyring) to the desired name in the keeper.
 
@@ -258,3 +258,5 @@ The expected result should be:
   "name": "alice"
 }
 ```
+
+<!-- TODO: future add GRPC / REST / RPC interaction from outside. -->
