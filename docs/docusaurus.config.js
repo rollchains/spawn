@@ -276,7 +276,7 @@ const config = {
           {
             from: ["/", "/docs"],
             // to: "/v0.50/"
-            to: `$${projectName}/v0.50/`,
+            to: `/v0.50/`,
           }
         ],
       },
