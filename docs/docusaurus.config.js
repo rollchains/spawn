@@ -16,10 +16,10 @@ const config = {
   // Set the production url of your site here
   // for local production tests, set to http://localhost:3000/
   // url: "https://ibc.cosmos.network",
-  url: "http://localhost:3000/",
+  url: "https://rollchains.github.io",
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: "/",
+  baseUrl: "/spawn",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
