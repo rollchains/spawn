@@ -1,24 +1,28 @@
-# MacOS Setup
+---
+title: Setup Development Environment
+sidebar_label: System Setup
+sidebar_position: 1
+slug: /install/system-setup
+---
 
-```bash
-# Base
-brew install make
-brew install gcc
 
-# Github CLI - https://github.com/cli/cli
-brew install gh
-gh auth login
+# Overview
 
-# Golang
-brew install go
+:::note Synopsis
+Setup your development environment with the essentials to get started building your blockchain.
+:::
 
-# Docker
-brew install docker
 
-# Continue to main README.md to install spawn & local-ic
-```
+## System Requirements
 
-# Windows Setup
+Before we can install and interact with spawn, you must have the following core tools installed:
+* [`Go 1.22+`](https://go.dev/doc/install)
+* [`Docker`](https://docs.docker.com/get-docker/)
+* [`Git`](https://git-scm.com/)
+
+If you do not have these components installed, follow the instructions below to install them.
+
+## Windows
 
 ```bash
 # Install WSL in powershell
@@ -55,11 +59,33 @@ sudo chmod 666 /var/run/docker.sock
 # Setup base github config
 git config --global user.email "yourEmail@gmail.com"
 git config --global user.name "Your Name"
-
-# Continue to main README.md to install spawn & local-ic
 ```
 
-# Ubuntu Setup
+
+## MacOS
+
+```bash
+# Base
+brew install make
+brew install gcc
+
+# Github CLI - https://github.com/cli/cli
+brew install gh
+gh auth login
+
+# Golang
+brew install go
+
+# Docker
+brew install docker
+
+# Setup base github config
+git config --global user.email "yourEmail@gmail.com"
+git config --global user.name "Your Name"
+```
+
+
+## Linux (Ubuntu)
 
 ```bash
 # Base
@@ -80,6 +106,4 @@ sudo apt -y install docker.io
 # Setup base github config
 git config --global user.email "yourEmail@gmail.com"
 git config --global user.name "Your Name"
-
-# Continue to main README.md to install spawn & local-ic
 ```

@@ -109,13 +109,13 @@ const config = {
           //   docsPluginId: "adrs",
           //   label: "Architecture Decision Records",
           // },
-          {
-            type: "doc",
-            position: "left",
-            docId: "intro",
-            docsPluginId: "tutorials",
-            label: "Tutorials",
-          },
+          // {
+          //   type: "doc",
+          //   position: "left",
+          //   docId: "intro",
+          //   docsPluginId: "tutorials",
+          //   label: "Tutorials",
+          // },
           {
             type: "docsVersionDropdown",
             position: "right",
@@ -134,11 +134,11 @@ const config = {
       footer: {
         links: [
           {
-            items: [
-              {
-                html: `<a href="https://cosmos.network"><img src="/img/cosmos-logo-bw.svg" alt="Cosmos Logo"></a>`,
-              },
-            ],
+            // items: [
+            //   {
+            //     html: `<a href="https://cosmos.network"><img src="/img/cosmos-logo-bw.svg" alt="Cosmos Logo"></a>`,
+            //   },
+            // ],
           },
           // {
           //   title: "Documentation",
@@ -242,16 +242,16 @@ const config = {
         buttonStyle: 'dark',
       }
     ],
-    [
-      "@docusaurus/plugin-content-docs",
-      {
-        id: "tutorials",
-        path: "tutorials",
-        routeBasePath: "tutorials",
-        sidebarPath: require.resolve("./sidebars.js"),
-        exclude: ["**/*.template.md"],
-      },
-    ],
+    // [
+    //   "@docusaurus/plugin-content-docs",
+    //   {
+    //     id: "tutorials",
+    //     path: "tutorials",
+    //     routeBasePath: "tutorials",
+    //     sidebarPath: require.resolve("./sidebars.js"),
+    //     exclude: ["**/*.template.md"],
+    //   },
+    // ],
     [
       "@docusaurus/plugin-client-redirects",
       {

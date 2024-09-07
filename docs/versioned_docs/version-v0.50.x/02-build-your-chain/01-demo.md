@@ -1,30 +1,34 @@
 ---
-title: Spawn Tutorials
-sidebar_label: Spawn Tutorials
-sidebar_position: 0
-slug: /intro
+title: Your First Chain
+sidebar_label: "1: Build"
+sidebar_position: 1
+slug: /build/demo
 ---
 
-# Spawn Tutorials
 
-Welcome to Spawn Tutorials. This is a collection of tutorials that will help you get started with Spawn.
+# Overview
+
+:::note Synopsis
+Build your first Cosmos-SDK blockchain with Spawn. This tutorials focuses on a 'nameservice', where you can set a wallet address to a personal name.
+
+* Generating a new chain
+* Creating a new module
+* Setting up the application logic
+* Running a local testnet
+* Interacting with the network
+:::
 
 
-# Spawn Demo
-
-<!-- markdown-link-check-disable-next-line -->
-[Spawn Introduction Article](https://x.com/rollchains/status/1767218100242427952)
-
-Introducing spawn, the developer tool that gets your cosmos chain up and running quickly. Allowing you to focus on what matters: your product.
+## Chain Scaffolding
 
 Let's create a new chain called 'rollchain'. We are going to set some of the defining characteristics such as
-- which modules to disable from the template *if any*
+- Which modules to disable from the template *if any*
 - Wallet prefix (bech32)
-- Token name
-- and the binary
+- Token name (denom)
+- Binary executable (bin)
 
 ```bash
-spawn new rollchain --disable=globalfee --bech32=roll --denom=uroll --bin=rolld --org=rollchains
+spawn new rollchain --disable=cosmwasm --bech32=roll --denom=uroll --bin=rolld
 ```
 
 The chain is now created and we can start to write our application logic on top.
@@ -49,7 +53,7 @@ The protobuf files have been automatically generated for you with a default `Par
 
 Open the proto/nameservice directory. Edit `tx.proto` *(proto/nameservice/v1/tx.proto)* to add the transaction setter message.
 
-```proto
+```protobuf
 
   rpc SetServiceName(MsgSetServiceName) returns (MsgSetServiceNameResponse);
 }
@@ -69,7 +73,7 @@ message MsgSetServiceNameResponse {}
 
 Find `query.proto` *(proto/nameservice/v1/query.proto)* and add the following
 
-```proto
+```protobuf
 
   rpc ResolveName(QueryResolveNameRequest) returns (QueryResolveNameResponse) {
     option (google.api.http).get = "/nameservice/v1/names/{wallet}";
@@ -233,12 +237,12 @@ The chain will begin to mint new blocks, which you can interact with.
 
 ### Interaction
 
-Using the newly built binary (rolld from the --bin flag when we created the chain), we are going to execute the `set` transaction to "myname". This links acc1's address (in the keyring) to the desired name in the keeper.
+Using the newly built binary (rolld from the --bin flag when we created the chain), we are going to execute the `set` transaction to "alice". This links acc1's address (in the keyring) to the desired name in the keeper.
 
 Then, we resolve this name with the nameservice lookup. `$(rolld keys show acc1 -a)` is a substitute for the acc1's address. You can also use just `roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87` here.
 
 ```bash
-rolld tx nameservice set myname --from=acc1 --yes
+rolld tx nameservice set alice --from=acc1 --yes
 
 # rolld q tx 97BC4F78716C97038A4AA30BDA5BDA53A8B0CBF5B051AAFAF51E3AAAFE6256B1
 
@@ -251,6 +255,6 @@ The expected result should be:
 
 ```json
 {
-  "name": "myname"
+  "name": "alice"
 }
 ```
