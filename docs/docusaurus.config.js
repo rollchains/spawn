@@ -274,9 +274,8 @@ const config = {
           //   to: "/main/",
           // },
           {
-            from: ["/", "/docs"],
-            // to: "/v0.50/"
-            to: `/v0.50/`,
+            from: ["/", "/docs", "/spawn"],
+            to: `/spawn/v0.50/`,
           }
         ],
       },
