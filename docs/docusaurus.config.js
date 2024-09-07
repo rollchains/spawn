@@ -12,6 +12,7 @@ const config = {
   tagline: "Documentation for Spawn",
   favicon: "img/white-cosmos-icon.svg",
 
+  // TODO:
   // Set the production url of your site here
   // for local production tests, set to http://localhost:3000/
   // url: "https://ibc.cosmos.network",
@@ -24,7 +25,7 @@ const config = {
   // If you aren't using GitHub pages, you don't need these.
   organizationName: "rollchains", // Usually your GitHub org/user name.
   projectName: "spawn", // Usually your repo name.
-  deploymentBranch: "gh-pages",
+  // deploymentBranch: "gh-pages",
   trailingSlash: true,
 
   onBrokenLinks: "log",
@@ -214,7 +215,6 @@ const config = {
           srcDark: "img/white-large-ibc-logo.svg",
           width: 275,
         },
-        copyright: `<p>The development of IBC-Go is led primarily by <a href="https://interchain.berlin/">Interchain GmbH</a>. Funding for this development comes primarily from the Interchain Foundation, a Swiss non-profit.</p>`,
       },
       prism: {
         theme: lightCodeTheme,
@@ -250,16 +250,6 @@ const config = {
         buttonStyle: 'dark',
       }
     ],
-    // [
-    //   "@docusaurus/plugin-content-docs",
-    //   {
-    //     id: "adrs",
-    //     path: "architecture",
-    //     routeBasePath: "architecture",
-    //     sidebarPath: require.resolve("./sidebars.js"),
-    //     exclude: ["**/*.template.md"],
-    //   },
-    // ],
     [
       "@docusaurus/plugin-content-docs",
       {
@@ -270,26 +260,6 @@ const config = {
         exclude: ["**/*.template.md"],
       },
     ],
-    // [
-    //   "@docusaurus/plugin-content-docs",
-    //   {
-    //     id: "events",
-    //     path: "events",
-    //     routeBasePath: "events",
-    //     sidebarPath: false,
-    //     exclude: ["**/*.template.md"],
-    //   },
-    // ],
-    // [
-    //   "@docusaurus/plugin-content-docs",
-    //   {
-    //     id: "params",
-    //     path: "params",
-    //     routeBasePath: "params",
-    //     sidebarPath: false,
-    //     exclude: ["**/*.template.md"],
-    //   },
-    // ],
     [
       "@docusaurus/plugin-client-redirects",
       {
@@ -310,14 +280,14 @@ const config = {
       "@gracefullight/docusaurus-plugin-microsoft-clarity",
       { projectId: "idk9udvhuu" },
     ],
-    // [
-    //   require.resolve("@easyops-cn/docusaurus-search-local"),
-    //   {
-    //     indexBlog: false,
-    //     docsRouteBasePath: ["/", "architecture"],
-    //     highlightSearchTermsOnTargetPage: true,
-    //   },
-    // ],
+    [
+      require.resolve("@easyops-cn/docusaurus-search-local"),
+      {
+        indexBlog: false,
+        docsRouteBasePath: ["/"],
+        highlightSearchTermsOnTargetPage: true,
+      },
+    ],
     async function myPlugin(context, options) {
       return {
         name: "docusaurus-tailwindcss",
@@ -331,25 +301,6 @@ const config = {
       };
     },
   ],
-  // scripts: [
-  //   {
-  //     src: "https://widget.kapa.ai/kapa-widget.bundle.js",
-  //     "data-website-id": "806aa1dc-0d46-4563-a8b8-880eecac59f1",
-  //     "data-project-name": "Interchain",
-  //     "data-user-analytics-fingerprint-enabled": "true",
-  //     "data-project-color": "#1878FF",
-  //     "data-modal-title": "IBC Docs AI",
-  //     "data-modal-disclaimer": "This is a custom LLM for the Inter-Blockchain Communication Protocol in Golang (ibc-go). It is trained on the IBC developer documentation, code base, and resources. Answers are AI-generated. Please use your best judgment before implementing. The bot is not trained on documentation, code, or resources for the Cosmos SDK, CometBFT, CosmJS, CosmWasm, or interchain ecosystem blockchains. Please refer to those specific documentation sites for answers to those questions.",
-  //     "data-modal-ask-ai-input-placeholder": "Ask me a question about IBC...",
-  //     "data-modal-disclaimer-text-color": "#000000",
-  //     "data-modal-disclaimer-font-size": "14px",
-  //     "data-modal-image":
-  //       "/img/black-ibc-logo-400x400.svg",
-  //     "data-project-logo":
-  //       "/img/white-ibc-logo-400x400.svg",
-  //     async: true,
-  //   },
-  // ],
 };
 
 module.exports = config;
