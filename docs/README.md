@@ -2,33 +2,6 @@
 
 Welcome to the Spawn documentation! This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
 
-## Table of Contents
-
-- [IBC-Go Documentation](#ibc-go-documentation)
-    - [Table of Contents](#table-of-contents)
-    - [Configuration](#configuration)
-    - [Local Development and Deployment](#local-development-and-deployment)
-        - [Installation](#installation)
-        - [Local Development](#local-development)
-        - [Build](#build)
-        - [Serve](#serve)
-    - [Updating the Documentation](#updating-the-documentation)
-    - [Best practices](#best-practices)
-        - [File and Directory Naming Conventions](#file-and-directory-naming-conventions)
-        - [Code Blocks](#code-blocks)
-        - [Links](#links)
-            - [Multi-Documentation Linking](#multi-documentation-linking)
-            - [Static Assets](#static-assets)
-            - [Raw Assets](#raw-assets)
-        - [Technical writing course](#technical-writing-course)
-    - [Versioning](#versioning)
-        - [Terminology](#terminology)
-        - [Overview](#overview)
-        - [Tagging a new version](#tagging-a-new-version)
-        - [Adding a new version](#adding-a-new-version)
-        - [Updating an existing version](#updating-an-existing-version)
-        - [Deleting a version](#deleting-a-version)
-
 ## Configuration
 
 Docusaurus configuration file is located at `./docusaurus.config.js`. This file contains the configuration for the sidebar, navbar, footer, and other settings. Sidebars are created in `./sidebars.js`.
