@@ -269,10 +269,10 @@ const config = {
       {
         // makes the default page next in production
         redirects: [
-          {
-            from: ["/master", "/next"],
-            to: "/main/",
-          },
+          // {
+          //   from: ["/master", "/next"],
+          //   to: "/main/",
+          // },
           {
             from: ["/", "/docs"],
             // to: "/v0.50/"
