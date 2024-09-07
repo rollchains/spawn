@@ -50,7 +50,7 @@ const config = {
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
           // Routed the docs to the root path
-          routeBasePath: "/spawn",
+          routeBasePath: "/",
           // Exclude template markdown files from the docs
           exclude: ["**/*.template.md"],
           // Select the latest version
@@ -275,7 +275,7 @@ const config = {
           // },
           {
             from: ["/", "/docs", "/spawn"],
-            to: `/spawn/v0.50/`,
+            to: `/v0.50/`,
           }
         ],
       },
