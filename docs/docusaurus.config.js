@@ -87,12 +87,12 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      image: "img/ibc-go-docs-social-card.png",
+      // image: "img/ibc-go-docs-social-card.png",
       navbar: {
         logo: {
-          alt: "IBC Logo",
-          src: "img/black-ibc-logo.svg",
-          srcDark: "img/white-ibc-logo.svg",
+          alt: "Rollchains Logo",
+          src: "img/Rollchains-Logo-RC-Black.svg",
+          srcDark: "img/Rollchains-Logo-RC-White.svg",
           href: "/",
         },
         items: [
