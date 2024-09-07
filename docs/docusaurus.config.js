@@ -6,6 +6,9 @@ import { Highlight, themes } from "prism-react-renderer";
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
 
+const organizationName = "rollchains";
+const projectName = "spawn";
+
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: "Spawn",
@@ -16,15 +19,15 @@ const config = {
   // Set the production url of your site here
   // for local production tests, set to http://localhost:3000/
   // url: "https://ibc.cosmos.network",
-  url: "https://rollchains.github.io",
+  url: `https://${organizationName}.github.io`,
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: "/v0.50",
+  baseUrl: `/${projectName}/`,
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: "rollchains", // Usually your GitHub org/user name.
-  projectName: "spawn", // Usually your repo name.
+  organizationName: organizationName, // Usually your GitHub org/user name.
+  projectName: projectName, // Usually your repo name.
   deploymentBranch: "gh-pages",
   trailingSlash: true,
 
@@ -47,12 +50,13 @@ const config = {
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
           // Routed the docs to the root path
-          routeBasePath: "/",
+          routeBasePath: "/spawn",
           // Exclude template markdown files from the docs
           exclude: ["**/*.template.md"],
           // Select the latest version
           lastVersion: "v0.50.x",
           // Assign banners to specific versions
+          // editUrl: `https://github.com/${organizationName}/${projectName}/tree/main/`,
           versions: {
             current: {
               path: "main",
@@ -271,7 +275,8 @@ const config = {
           },
           {
             from: ["/", "/docs"],
-            to: "/v0.50/"
+            // to: "/v0.50/"
+            to: `$${projectName}/v0.50/`,
           }
         ],
       },
