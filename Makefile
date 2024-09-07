@@ -66,6 +66,10 @@ get-localic:
 build-docs:
 	@cd docs && npm ci && npm run build
 
+## serve-docs: Run docs server
+serve-docs:
+	@cd docs && npm run serve
+
 help: Makefile
 	@echo
 	@echo " Choose a command run in "spawn", or just run 'make' for install"
