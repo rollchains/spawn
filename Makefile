@@ -61,6 +61,19 @@ get-localic:
 
 .PHONY: get-heighliner
 
+.PHONY: build-docs
+## build-docs: Build the documentation.
+build-docs:
+	@cd docs && npm ci && npm run build
+
+## serve-docs: Run docs server
+serve-docs:
+	@cd docs && npm run serve
+
+## dev-docs: Run dev docs instance
+dev-docs:
+	@cd docs && npm run dev
+
 help: Makefile
 	@echo
 	@echo " Choose a command run in "spawn", or just run 'make' for install"

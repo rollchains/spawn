@@ -4,8 +4,8 @@
 
 1. Modify the simapp/ app.go, go.mod, etc to setup your module.
 2. Use [`spawntag`'s](#spawntag) to signal where to remove extra content from in the app.
-3. Add your module/feature to `SupportedFeatures` in [cmd/spawn/new_chain.go](../cmd/spawn/new_chain.go)
-4. Add the logic to [spawn/remove_features.go](../spawn/remove_features.go) to remove your feature from the simapp on generate.
+3. Add your module/feature to `SupportedFeatures` in [cmd/spawn/new_chain.go](../../cmd/spawn/new_chain.go)
+4. Add the logic to [spawn/remove_features.go](../../spawn/remove_features.go) to remove your feature from the simapp on generate.
 
 **note**: if your feature has a complex setup, reference removing `wasm` from the app for a good guide.
 
@@ -26,9 +26,7 @@ The following are supported:
 
 This example shows how to remove multiple lines if the wasm module is not being used. Notice, since the module name is `wasm` and the methods names are `wasm`, we do not have to wrap all code. Just the code that does not reference wasm directly. i.e. `if err != nil {` mentions no where it is for the wasmConfig err.
 
-```go
-// simapp app.go
-
+```go title="app.go"
 wasmDir := filepath.Join(homePath, "wasm")
 wasmConfig, err := wasm.ReadWasmConfig(appOpts)
 
@@ -43,8 +41,7 @@ if err != nil {
 
 Odd namespaces or designs can cause the app to not be able to find content to automatically remove. Since the module name is `tokenfactory` it does not know to also look for `token_factory`. This edge case is easier to cover by using a spawntag to remove the line. Just make sure the line is on it's own and formatted in a similar design style. On the first save of the file, it will format properly.
 
-```go
-// simapp test_helpers.go
+```go title="app.go"
 
 capabilities = strings.Join(
     []string{
@@ -60,7 +57,7 @@ If you wish to swap in a line (due to a fork of logic), you can use the `?` spaw
 
 If the user does not select to use globalfee, the `globalfeeante` line would be removed as expected. However the `globalfeeante.NewFeeDecorator` is a fork of `ante.NewDeductFeeDecorator`. So we can't leave it as it, and use the ?spawntag: line to default to the base logic.
 
-```go
+```go title="ante.go"
     // simapp ante.go
 
     globalfeeante.NewFeeDecorator(options.BypassMinFeeMsgTypes, options.GlobalFeeKeeper, options.StakingKeeper, 2_000_000),
