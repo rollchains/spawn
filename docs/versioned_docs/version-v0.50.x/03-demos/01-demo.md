@@ -1,8 +1,8 @@
 ---
 title: "IBC Demo"
-sidebar_label: "IBC Network"
+sidebar_label: "IBC Demo"
 sidebar_position: 1
-slug: /build/ibc-network
+slug: /demo/ibc
 ---
 
 # Getting Started
@@ -12,10 +12,13 @@ In this tutorial, we'll create and interact with a new Cosmos-SDK blockchain cal
 1. Clone this repo and install
 
 ```bash
-git clone https://github.com/rollchains/spawn.git --depth 1 --branch v0.50.7
+git clone https://github.com/rollchains/spawn.git --depth=1 --branch v0.50.7
 cd spawn
 
+# Install Spawn
 make install
+
+# Install Local-Interchain (testnet platform)
 make get-localic
 
 # If you get "command 'spawn' not found", add to path
@@ -70,7 +73,7 @@ rolld tx bank send acc0 $(rolld keys show acc1 -a) 1337uroll --chain-id=localcha
 rolld q bank balances $(rolld keys show acc1 -a)
 ```
 
-5. (optional) Send an IBC transaction
+5. Send an IBC transaction
 
 ```bash
 # submit a cross chain transfer from acc0 to the other address
@@ -85,7 +88,7 @@ sleep 10
 local-ic interact localcosmos-1 query 'bank balances cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr'
 ```
 
-6. Push your new chain to a github repository
+6. (optional) Push your new chain to a github repository
 
 ```bash
 # Create a new repository on GitHub from the gh cli
@@ -94,4 +97,6 @@ gh repo create rollchain --source=. --remote=upstream --push --private
 
 > You can also push it the old fashioned way with https://github.com/new
 
-In this tutorial, we configured a new custom chain, launched a testnet for it, tested a simple token transfer, and confirmed it was successful. This tutorial demonstrates just how easy it is to create a brand new custom Cosmos-SDK blockchain from scratch, saving developers time.
+## Conclusion
+
+In this tutorial, you configured a new custom chain, launched a testnet for it, tested a simple token transfer, and confirmed it was successful. This tutorial demonstrates just how easy it is to create a brand new custom Cosmos-SDK blockchain from scratch with spawn.

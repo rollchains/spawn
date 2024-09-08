@@ -70,6 +70,10 @@ build-docs:
 serve-docs:
 	@cd docs && npm run serve
 
+## dev-docs: Run dev docs instance
+dev-docs:
+	@cd docs && npm run dev
+
 help: Makefile
 	@echo
 	@echo " Choose a command run in "spawn", or just run 'make' for install"
