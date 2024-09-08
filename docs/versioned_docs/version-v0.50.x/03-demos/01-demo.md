@@ -5,15 +5,13 @@ sidebar_position: 1
 slug: /demo/ibc
 ---
 
-# Getting Started
+# IBC Demo
 
 In this tutorial, we'll create and interact with a new Cosmos-SDK blockchain called "rollchain", with the token denomination "uroll". This chain has tokenfactory and Proof of Authority, but we'll disable cosmwasm.
 
 ## Prerequisites
 - [System Setup](../01-setup/01-system-setup.md)
 - [Install Spawn](../01-setup/02-install-spawn.md)
-
-## Demo
 
 ## Create your chain
 
@@ -38,7 +36,9 @@ spawn new rollchain \
 
 > *NOTE:* `spawn` creates a ready to use repository complete with `git` and GitHub CI. It can be quickly pushed to a new repository getting you and your team up and running quickly.
 
-## Spin up a local testnet
+## Spin up an IBC testnet
+
+The `chains/testnet.json` file contains the configuration for the testnet. It is a simple JSON file that contains the chain configurations for the testnet. By default it starts 2 networks, configures a relayer, and connects the two chains via IBC.
 
 ```bash
 cd rollchain

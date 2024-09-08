@@ -11,9 +11,9 @@ Using the Cosmos-SDKs AutoCLI, you will easily set up the CLI client for transac
 
 ### Query
 
-Update the `x/nameservice/autocli.go` to allow someone to get the name of a wallet account.
+Update the autocli to allow someone to get the name of a wallet account.
 
-```go
+```go title="x/nameservice/autocli.go"
 		Query: &autocliv1.ServiceCommandDescriptor{
             Service: modulev1.Query_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
@@ -41,7 +41,7 @@ Update the `x/nameservice/autocli.go` to allow someone to get the name of a wall
 
 Also add interaction in `x/nameservice/autocli.go` to set the name of a wallet account.
 
-```go
+```go title="x/nameservice/autocli.go"
 		Tx: &autocliv1.ServiceCommandDescriptor{
 			Service: modulev1.Msg_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{

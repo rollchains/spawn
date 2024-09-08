@@ -18,7 +18,7 @@ It seems the nameservice will let you set any name length you want. Add a valida
 <summary>Solution</summary>
 
 If a user attempts to submit a name longer than 32 characters, it will return an error that is not allowed.
-```go
+```go title="x/nameservice/keeper/msg_server.go"
 // SetServiceName implements types.MsgServer.
 func (ms msgServer) SetServiceName(ctx context.Context, msg *types.MsgSetServiceName) (*types.MsgSetServiceNameResponse, error) {
 	if len(msg.Name) > 32 {

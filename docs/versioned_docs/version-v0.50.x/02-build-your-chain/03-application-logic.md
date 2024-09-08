@@ -7,9 +7,9 @@ slug: /build/name-service-application
 
 # Save Storage Structure
 
-You now need to set the data structure in the keeper *x/nameservice/keeper/keeper.go* to store the wallet to name pair. Keeper's are where the data is stored for future use.
+You now need to set the data structure in the keeper to store the wallet to name pair. Keeper's are where the data is stored for future use.
 
-```go
+```go title="x/nameservice/keeper/keeper.go"
 
 type Keeper struct {
 	...
