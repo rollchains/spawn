@@ -4,9 +4,10 @@ This document outlines the steps required to verify the functionality of spawn a
 
 ## Readme
 
-- Update the README document to be the next spawn tag version (i.e. v0.50.X) that the next release will be.
-- Verify the README running docs work as expected for the example chain
-- Verify docs/demo works
+- Run ./scripts/bump_docs.sh and ./scripts/bump_localic.sh to update spawn and local-ic versions in all markdown files, docker, and makefiles.
+- Verify the README is up to date
+- Ensure examples run in the [../versioned_docs/](../versioned_docs/) for this release as expected.
+
 
 ## Semi-Automatic Verification
 
@@ -21,3 +22,12 @@ This document outlines the steps required to verify the functionality of spawn a
 - Validate the explorer
     - `make template-staking && cd myproject && make sh-testnet`
     - `make explorer`
+
+
+## Future Verifications
+- Simulate cobra commands and ensure they work as expected, validate input
+- Validate user modules: https://github.com/rollchains/spawn/pull/172
+- Local Chain Validation (like the github pushes, but entire local w/ ICT): https://github.com/rollchains/spawn/pull/171
+- Run testnets with `make testnet` instead of just `sh-testnet`
+- https://github.com/rollchains/spawn/pull/143#discussion_r1619583860
+- Run other commands after new chain, before unit test (i.e. add module). Currently github CI does not like `make proto-gen` creation

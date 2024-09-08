@@ -27,6 +27,7 @@ ICS = "interchain-security"  # cosmoshub
 
 def main():
     current_dir = os.path.dirname(os.path.realpath(__file__))
+    print(f"Generating matrix.sh in {current_dir}")
 
     cmds: list[str] = [
         #
@@ -193,6 +194,7 @@ def main():
 
     with open(f"{current_dir}/matrix.sh", "w") as f:
         f.write("\n".join(cmds))
+        print("matrix.sh created")
 
 
 class CmdCreator:
