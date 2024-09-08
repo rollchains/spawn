@@ -236,7 +236,7 @@ const config = {
   plugins: [
     [
       'docusaurus-pushfeedback', {
-        project: '3mpmaho4fa',
+        project: 'paq392agxs',
         buttonPosition: 'center-right',
         modalPosition: 'sidebar-right',
         buttonStyle: 'dark',

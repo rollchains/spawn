@@ -63,7 +63,7 @@ func (cfg NewChainConfig) NewPingPubExplorer() error {
 	if err := os.Chdir(cfg.ProjectName); err != nil {
 		cfg.Logger.Error("chdir", "err", err)
 	}
-	if err := ExecCommand("git", "clone", "https://github.com/ping-pub/explorer.git"); err != nil {
+	if err := ExecCommand("git", "clone", "https://github.com/ping-pub/explorer.git", "--depth", "1"); err != nil {
 		cfg.Logger.Error("git clone", "err", err)
 	}
 	if err := os.Chdir(".."); err != nil {
