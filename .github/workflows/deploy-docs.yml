@@ -12,6 +12,7 @@ on:
   push:
     branches:
       - main
+      - release/v0.50
     paths:
       - "docs/**"
       - .github/workflows/deploy-docs.yml
