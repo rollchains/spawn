@@ -4,8 +4,8 @@
 
 1. Modify the simapp/ app.go, go.mod, etc to setup your module.
 2. Use [`spawntag`'s](#spawntag) to signal where to remove extra content from in the app.
-3. Add your module/feature to `SupportedFeatures` in [cmd/spawn/new_chain.go](../cmd/spawn/new_chain.go)
-4. Add the logic to [spawn/remove_features.go](../spawn/remove_features.go) to remove your feature from the simapp on generate.
+3. Add your module/feature to `SupportedFeatures` in [cmd/spawn/new_chain.go](../../cmd/spawn/new_chain.go)
+4. Add the logic to [spawn/remove_features.go](../../spawn/remove_features.go) to remove your feature from the simapp on generate.
 
 **note**: if your feature has a complex setup, reference removing `wasm` from the app for a good guide.
 

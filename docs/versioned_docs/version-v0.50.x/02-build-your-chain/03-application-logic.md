@@ -38,9 +38,9 @@ func NewKeeper() Keeper {
 
 ## Application Logic
 
-Update the `x/nameservice/keeper/msg_server.go` now to set on the newly created map.
+Update the msg_server logic to set the name upon request from a user.
 
-```go
+```go title="x/nameservice/keeper/msg_server.go"
 func (ms msgServer) SetServiceName(ctx context.Context, msg *types.MsgSetServiceName) (*types.MsgSetServiceNameResponse, error) {
 	if err := ms.k.NameMapping.Set(ctx, msg.Sender, msg.Name); err != nil {
 		return nil, err
@@ -50,9 +50,9 @@ func (ms msgServer) SetServiceName(ctx context.Context, msg *types.MsgSetService
 }
 ```
 
-and also for the query in `x/nameservice/keeper/query_server.go`
+and also for the query_server to retrieve the name.
 
-```go
+```go title="x/nameservice/keeper/query_server.go"
 func (k Querier) ResolveName(goCtx context.Context, req *types.QueryResolveNameRequest) (*types.QueryResolveNameResponse, error) {
 	v, err := k.Keeper.NameMapping.Get(goCtx, req.Wallet)
 	if err != nil {

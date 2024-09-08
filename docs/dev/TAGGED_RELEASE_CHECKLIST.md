@@ -10,7 +10,7 @@ This document outlines the steps required to verify the functionality of spawn a
 
 ## Semi-Automatic Verification
 
-- The [matrix generator](../scripts/matrix_generator.py) builds up a variety of test cases to verify chains build, test, and push to github without issue. Use this to verify that many different consensus, features, bech32s, and denominations generate and work as expected.
+- The [matrix generator](../../scripts/matrix_generator.py) builds up a variety of test cases to verify chains build, test, and push to github without issue. Use this to verify that many different consensus, features, bech32s, and denominations generate and work as expected.
 - Push some of these chains up to ensure all CI work as expected and end to end passes.
 
 ## Manual Verification

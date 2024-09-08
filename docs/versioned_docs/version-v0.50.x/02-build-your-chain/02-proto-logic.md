@@ -11,9 +11,9 @@ Extend the template module and add how to store and interact with data. Specific
 
 ### Set Name
 
-Open the `proto/nameservice/v1` directory. Edit `tx.proto` *(proto/nameservice/v1/tx.proto)* to add the transaction setter message.
+Open the `proto/nameservice/v1` directory. Edit `tx.proto` to add the transaction setter message.
 
-```protobuf
+```protobuf title="proto/nameservice/v1/tx.proto"
 
   // SetServiceName allows a user to set their accounts name.
   rpc SetServiceName(MsgSetServiceName) returns (MsgSetServiceNameResponse);
@@ -40,9 +40,9 @@ proto/nameservice/v1/tx.proto file
 
 ### Get Name
 
-Find `query.proto` *(proto/nameservice/v1/query.proto)* and add the following
+Find `query.proto` and add the following
 
-```protobuf
+```protobuf title="proto/nameservice/v1/query.proto"
 
   // ResolveName allows a user to resolve the name of an account.
   rpc ResolveName(QueryResolveNameRequest) returns (QueryResolveNameResponse) {
@@ -72,6 +72,7 @@ proto/nameservice/v1/query.proto
 These .proto file templates will be converted into Golang source code for you to use. Build the Go source code using the command:
 
 ```bash
+// highlight-next-line
 make proto-gen
 ```
 

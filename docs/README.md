@@ -84,31 +84,6 @@ slug: /ibc/upgrades/intro
 ---
 ```
 
-## Best practices
-
-- Check the spelling and grammar, even if you have to copy and paste from an external source.
-- Use simple sentences. Easy-to-read sentences mean the reader can quickly use the guidance you share.
-- Try to express your thoughts in a concise and clean way.
-- Either Leave a space or use a `-` between the acronyms ADR and ICS and the corresponding number (e.g. ADR 008 or ADR-008, and ICS 27 or ICS-27).
-- Don't overuse `code` format when writing in plain English.
-- Follow Google developer documentation [style guide](https://developers.google.com/style).
-- Check the meaning of words in Microsoft's [A-Z word list and term collections](https://docs.microsoft.com/en-us/style-guide/a-z-word-list-term-collections/term-collections/accessibility-terms) (use the search input!).
-- We recommend using RFC keywords in user documentation (lowercase). The RFC keywords are: "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL. They are to be interpreted as described in [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
-- Lint the markdown files for documentation with [markdownlint-cli](https://github.com/igorshubovych/markdownlint-cli). Run `make docs-lint` (you will need to have `markdownlint-cli` installed, so please follow the [installation instructions](https://github.com/igorshubovych/markdownlint-cli#installation)).
-
-### File and Directory Naming Conventions
-
-Inside `/docs/docs/`:
-
-- All files should be named in `kebab-case`.
-- All files should have a two digit prefix, indicating the order in which they should be read and displayed in their respective categories. For example, `01-overview.md` should be read before `02-integration.md`. If this order changes, the prefix should be updated. Note that the ordering is enforced by the frontmatter and not the file name.
-- **All files that end in `.template.md` will be ignored by the build process.**
-- The prefix `00-` is reserved for root links of categories (if a category has a root link this should be defined in `_category_.json`). For example, see [`docs/01-ibc/05-upgrades/00-intro.md`](./docs/01-ibc/05-upgrades/00-intro.md) and [`docs/01-ibc/05-upgrades/_category_.json`](./docs/01-ibc/05-upgrades/_category_.json).
-- All category directories should be named in `kebab-case`.
-- All category directories must have a `_category_.json` file.
-- All category directories should have a two digit prefix (except for the root `./docs` category), indicating the order in which they should be read and displayed in their respective categories. For example, contents of `./docs/01-ibc/03-apps/` should be read before `./docs/01-ibc/07-relayer.md`. If this order changes, the prefix should be updated. Note that the ordering is enforced by the frontmatter of the markdown files and `_category_.json` files, not the file name.
-- The images for each documentation should be kept in the same directory as the markdown file that uses them. This will likely require creating a new directory for each new category. The goal of this is to make versioning easier, discourage repeated use of the image, and make it easier to find images.
-
 ### Code Blocks
 
 Code blocks in docusaurus are super-powered, read more about them [here](https://docusaurus.io/docs/markdown-features/code-blocks). Three most important features for us are:
@@ -145,21 +120,6 @@ In docusaurus, there are three ways to link to other pages:
 
 In this section, we will discuss when to use each.
 
-#### Multi-Documentation Linking
-
-Technically, there are four docs being maintained in this repo:
-
-1. Found in `docs/docs/` (this is the one displayed on the website in the "Documentation" tab)
-2. Found in `docs/architecture/` (this is the one displayed on the website in the "Architecture Decision Records" tab)
-3. Found in `docs/events/` (depreciated, this is not displayed on the website, but is hosted under `/events/` url)
-4. Found in `docs/params/` (depreciated, this is not displayed on the website, but is hosted under `/params/` url)
-
-When referencing a markdown file, you should use relative file paths if they are in the same docs directory from above. For example, if you are in `docs/docs/01-ibc` and want to link to `docs/docs/02-apps/01-transfer/01-overview.md`, you should use the relative link `../02-apps/01-transfer/01-overview.md`.
-
-If the file you are referencing is in a different docs directory, you should use an absolute URL. For example, if you are in `docs/docs/01-ibc` and want to link to `docs/architecture/adr-001-coin-source-tracing.md`, you should use the absolute URL (not absolute file path), in this case `/architecture/adr-001-coin-source-tracing`. You can find the absolute URL by looking at the slug in the frontmatter of the markdown file you want to link to. If the frontmatter slug is not set (such as in `docs/architecture/adr-001-coin-source-tracing.md`), you should use the url that docusaurus generates for it. You can find this by looking at the url of the page in the browser.
-
-Note that when referencing any file outside of the parent `docs/` directory, you should always use a hyperlink.
-
 #### Static Assets
 
 Static assets are the non-code files that are directly copied to the build output. They include **images**, stylesheets, favicons, fonts, etc.
@@ -175,10 +135,6 @@ If you want to link a raw file, you should link to it using `@site` + its base p
 ### Technical writing course
 
 Google provides a free [course](https://developers.google.com/tech-writing/overview) for technical writing.
-
-## Versioning
-
-Versioning only applies to documentation and not the ADRs found in the `./architecture/` directory.
 
 ### Terminology
 
