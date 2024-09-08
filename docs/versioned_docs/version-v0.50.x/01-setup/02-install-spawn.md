@@ -35,13 +35,13 @@ spawn
 
 local-ic
 
-# TODO: not tested
 # If you get "command 'spawn' not found", run the following
 if [ `ps -p $$ -o 'comm='` == "bash" ]; then
   echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
   source ~/.bashrc
-else if [ `ps -p $$ -o 'comm='` == "zsh" ]; then
+elif [ `ps -p $$ -o 'comm='` == "zsh" ]; then
   echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.zshrc
   source ~/.zshrc
 fi
+
 ```

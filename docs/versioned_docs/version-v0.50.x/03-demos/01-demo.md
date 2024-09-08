@@ -9,26 +9,18 @@ slug: /demo/ibc
 
 In this tutorial, we'll create and interact with a new Cosmos-SDK blockchain called "rollchain", with the token denomination "uroll". This chain has tokenfactory and Proof of Authority, but we'll disable cosmwasm.
 
-1. Clone this repo and install
+## Prerequisites
+- [System Setup](../01-setup/01-system-setup.md)
+- [Install Spawn](../01-setup/02-install-spawn.md)
 
-```bash
-git clone https://github.com/rollchains/spawn.git --depth=1 --branch v0.50.7
-cd spawn
+## Demo
 
-# Install Spawn
-make install
+## Create your chain
 
-# Install Local-Interchain (testnet platform)
-make get-localic
+Create your chain using the spawn command line tool. Change the `GITHUB_USERNAME` to your github username.
+If you do not have a github, leaving it as default is fine.
 
-# If you get "command 'spawn' not found", add to path
-# Run the following in your terminal to test
-# Then add to ~/.bashrc (linux) or ~/.zshrc (mac)
-export PATH="$PATH:$(go env GOPATH)/bin"
-echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
-```
-
-2. Create your chain using the `spawn` command and customize it to your needs!
+We create a [Proof of Authority](https://en.wikipedia.org/wiki/Proof_of_authority) network to focus on our application logic rather than worry about the security model. This is a great starting point for new chains.
 
 ```bash
 GITHUB_USERNAME=rollchains
@@ -46,7 +38,7 @@ spawn new rollchain \
 
 > *NOTE:* `spawn` creates a ready to use repository complete with `git` and GitHub CI. It can be quickly pushed to a new repository getting you and your team up and running quickly.
 
-3. Spin up a local testnet for your chain
+## Spin up a local testnet
 
 ```bash
 cd rollchain
@@ -59,10 +51,10 @@ cd rollchain
 make testnet
 ```
 
-4. Open a new terminal window and send a transaction on your new chain
+## Send a Transaction
 
 ```bash
-# list the keys that have been provisioned with funds in genesis
+# list the keys that have been provisioned with funds at launch
 rolld keys list
 
 # send a transaction from one account to another
@@ -73,7 +65,7 @@ rolld tx bank send acc0 $(rolld keys show acc1 -a) 1337uroll --chain-id=localcha
 rolld q bank balances $(rolld keys show acc1 -a)
 ```
 
-5. Send an IBC transaction
+## Send an IBC transaction
 
 ```bash
 # submit a cross chain transfer from acc0 to the other address
@@ -88,7 +80,7 @@ sleep 10
 local-ic interact localcosmos-1 query 'bank balances cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr'
 ```
 
-6. (optional) Push your new chain to a github repository
+## (optional) Push to GitHub
 
 ```bash
 # Create a new repository on GitHub from the gh cli
@@ -99,4 +91,4 @@ gh repo create rollchain --source=. --remote=upstream --push --private
 
 ## Conclusion
 
-In this tutorial, you configured a new custom chain, launched a testnet for it, tested a simple token transfer, and confirmed it was successful. This tutorial demonstrates just how easy it is to create a brand new custom Cosmos-SDK blockchain from scratch with spawn.
+In this tutorial, you configured a new custom chain, launched a testnet for it, tested a cross chain token transfer, and confirmed it was successful. This tutorial demonstrates just how easy it is to create a brand new custom Cosmos-SDK blockchain from scratch with spawn.
