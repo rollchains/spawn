@@ -5,7 +5,6 @@ sidebar_position: 5
 slug: /build/name-service-testnet
 ---
 
-
 # Running your Application
 
 :::note Synopsis

@@ -5,7 +5,7 @@ sidebar_position: 4
 slug: /build/name-service-client
 ---
 
-## Set the CLI Client
+# Command Line Client
 
 Using the Cosmos-SDKs AutoCLI, you will easily set up the CLI client for transactions and queries.
 
