@@ -108,6 +108,8 @@ func RemoveSpawnTagLineComment(line string, tag string) string {
 	// QOL for us to not tear our hair out if we have a space or not
 	// Could do this for all contents on load?
 	line = strings.ReplaceAll(line, "//spawntag:", ExpectedFormat)
+	line = strings.ReplaceAll(line, "#spawntag:", ExpectedFormat) // test_node.sh for gordian / cometbft
+	line = strings.ReplaceAll(line, "# spawntag:", ExpectedFormat)
 
 	line = strings.Split(line, fmt.Sprintf("// %s", tag))[0]
 	return strings.TrimRight(line, " ")

@@ -1,23 +1,14 @@
-FROM golang:1.23-alpine AS go-builder
-
-# cp -r /home/reece/Desktop/Programming/Go/gordian/gcosmos/_cosmosvendor/cosmos-sdk .
-# cp -r /home/reece/Desktop/Programming/Go/gordian .
-# docker build . -t myproject:local
+FROM golang:1.22-alpine AS go-builder
 
 SHELL ["/bin/sh", "-ecuxo", "pipefail"]
 
 RUN apk add --no-cache ca-certificates build-base git
-
-RUN mkdir -p /home/reece/Desktop/Programming/Go/gordian/gcosmos/_cosmosvendor/cosmos-sdk
-COPY gordian /home/reece/Desktop/Programming/Go/gordian
-COPY cosmos-sdk /home/reece/Desktop/Programming/Go/gordian/gcosmos/_cosmosvendor/cosmos-sdk
 
 WORKDIR /code
 
 ADD go.mod go.sum ./
 RUN set -eux; \
     export ARCH=$(uname -m); \
-    # TODO: fix for wasmv2
     WASM_VERSION=$(go list -m all | grep github.com/CosmWasm/wasmvm || true); \
     if [ ! -z "${WASM_VERSION}" ]; then \
       WASMVM_REPO=$(echo $WASM_VERSION | awk '{print $1}');\

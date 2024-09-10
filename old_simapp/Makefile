@@ -89,11 +89,11 @@ ifeq ($(OS),Windows_NT)
 	$(error wasmd server not supported. Use "make build-windows-client" for client)
 	exit 1
 else
-	go build -mod=readonly $(BUILD_FLAGS) -o build/appd ./app/application.go
+	go build -mod=readonly $(BUILD_FLAGS) -o build/wasmd ./cmd/wasmd
 endif
 
 build-windows-client: go.sum
-	GOOS=windows GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/appd.exe ./app/application.go
+	GOOS=windows GOARCH=amd64 go build -mod=readonly $(BUILD_FLAGS) -o build/wasmd.exe ./cmd/wasmd
 
 build-contract-tests-hooks:
 ifeq ($(OS),Windows_NT)
@@ -103,7 +103,7 @@ else
 endif
 
 install: go.sum
-	go install -mod=readonly $(BUILD_FLAGS) ./app/application.go
+	go install -mod=readonly $(BUILD_FLAGS) ./cmd/wasmd
 
 ########################################
 ### Tools & dependencies
@@ -180,7 +180,7 @@ format: format-tools
 
 mod-tidy:
 	go mod tidy
-# cd interchaintest && go mod tidy # TODO:
+	cd interchaintest && go mod tidy
 
 .PHONY: format-tools lint format mod-tidy
 
@@ -188,7 +188,7 @@ mod-tidy:
 ###############################################################################
 ###                                Protobuf                                 ###
 ###############################################################################
-protoVer=0.14.0
+protoVer=0.13.2
 protoImageName=ghcr.io/cosmos/proto-builder:$(protoVer)
 protoImage=$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName)
 
@@ -300,8 +300,8 @@ testnet: setup-testnet
 	spawn local-ic start testnet
 
 sh-testnet: mod-tidy
-	BINARY=appd CHAIN_ID="localchain-1" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
-	BINARY=appd CHAIN_ID="localchain-1" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_ics_node.sh
+	CHAIN_ID="localchain-1" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
+	CHAIN_ID="localchain-1" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_ics_node.sh
 
 .PHONY: setup-testnet set-testnet-configs testnet testnet-basic sh-testnet
 

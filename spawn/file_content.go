@@ -95,6 +95,7 @@ func (fc *FileContent) DeleteDirectoryContents(path string) {
 }
 
 func (fc *FileContent) ReplaceTestNodeScript(cfg *NewChainConfig) {
+	// TODO: replace depending on cometbft vs gordian starter
 	if fc.IsPath(path.Join("scripts", "test_node.sh")) || fc.IsPath(path.Join("scripts", "test_ics_node.sh")) {
 		fc.ReplaceAll("export BINARY=${BINARY:-wasmd}", fmt.Sprintf("export BINARY=${BINARY:-%s}", cfg.BinDaemon))
 		fc.ReplaceAll("export DENOM=${DENOM:-token}", fmt.Sprintf("export DENOM=${DENOM:-%s}", cfg.Denom))
@@ -126,24 +127,30 @@ func (fc *FileContent) ReplaceDockerFile(cfg *NewChainConfig) {
 	}
 }
 
-func (fc *FileContent) ReplaceApp(cfg *NewChainConfig) {
-	if fc.IsPath(path.Join("app", "app.go")) {
-		fc.ReplaceAll(".myapplicationd", cfg.HomeDir)
-		fc.ReplaceAll(`CosmosSimApp`, cfg.ProjectName)
-		fc.ReplaceAll(`mybechprefix`, cfg.Bech32Prefix)
-	}
-}
-
 // ReplaceEverywhereReplaces any file content that matches anywhere in the file regardless of location.
 func (fc *FileContent) ReplaceEverywhere(cfg *NewChainConfig) {
-	fc.ReplaceAll("github.com/rollchains/spawn/simapp", cfg.GithubPath())
+	// go.mod & app/
+	// fc.ReplaceAll(`github.com/rollchains/spawn/simapp`, cfg.GithubPath()) // TODO: it updates the go.mod, but not the app namespace. Then uses the old
 
-	wasmBin := path.Join("cmd", "wasmd")
-	if fc.ContainsPath(wasmBin) {
-		newBinPath := path.Join("cmd", cfg.BinDaemon)
-		fc.NewPath = strings.ReplaceAll(fc.NewPath, wasmBin, newBinPath)
+	bin := path.Join("app", "application.go")
+	if fc.ContainsPath(bin) {
+		newBinPath := path.Join("app", cfg.BinDaemon+".go")
+		fc.NewPath = strings.ReplaceAll(fc.NewPath, bin, newBinPath)
 	}
 
+	fc.ReplaceAll("app/application.go", fmt.Sprintf("app/%s.go", cfg.BinDaemon))
+
+	// app_di.go
+	fc.ReplaceAll(".simappv2", cfg.HomeDir)
+	// app_config.go
+	fc.ReplaceAll(`SimAppV2`, cfg.ProjectName)
+	fc.ReplaceAll(`mybechprefix`, cfg.Bech32Prefix)
+
+	fc.ReplaceAll("heighliner build -c wasmd", fmt.Sprintf(`heighliner build -c %s`, strings.ToLower(cfg.ProjectName)))
+	if fc.IsPath("chains.yaml") {
+		fc.ReplaceAll("myappname", strings.ToLower(cfg.ProjectName))
+		fc.ReplaceAll("/go/bin/appd", fmt.Sprintf("/go/bin/%s", cfg.BinDaemon))
+	}
 }
 
 func (fc *FileContent) ReplaceMakeFile(cfg *NewChainConfig) {
@@ -153,18 +160,9 @@ func (fc *FileContent) ReplaceMakeFile(cfg *NewChainConfig) {
 	fc.ReplaceAll("version.Name=wasm", fmt.Sprintf("version.Name=%s", cfg.ProjectName)) // ldflags
 	fc.ReplaceAll("version.AppName=wasmd", fmt.Sprintf("version.AppName=%s", bin))
 	fc.ReplaceAll("cmd/wasmd", fmt.Sprintf("cmd/%s", bin))
-	fc.ReplaceAll("build/wasmd", fmt.Sprintf("build/%s", bin))
+	fc.ReplaceAll("build/appd", fmt.Sprintf("build/%s", bin))
 	fc.ReplaceAll("wasmd keys", fmt.Sprintf("%s keys", bin))     // for testnet
 	fc.ReplaceAll("wasmd config", fmt.Sprintf("%s config", bin)) // for local config
-
-	fc.ReplaceAll("docker build . -t wasmd:local", fmt.Sprintf(`docker build . -t %s:local`, strings.ToLower(cfg.ProjectName)))
-
-	fc.ReplaceAll("heighliner build -c wasmd", fmt.Sprintf(`heighliner build -c %s`, strings.ToLower(cfg.ProjectName)))
-	if fc.IsPath("chains.yaml") {
-		fc.ReplaceAll("myappname", strings.ToLower(cfg.ProjectName))
-		fc.ReplaceAll("/go/bin/wasmd", fmt.Sprintf("/go/bin/%s", bin))
-	}
-
 }
 
 // FindAndReplaceStandardWalletsBech32 finds a prefix1... address and replaces it with a new prefix1... address

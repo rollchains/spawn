@@ -158,6 +158,4 @@ sed -i -e 's/address = ":8080"/address = "0.0.0.0:'$ROSETTA'"/g' $HOME_DIR/confi
 sed -i -e 's/timeout_commit = "5s"/timeout_commit = "'$BLOCK_TIME'"/g' $HOME_DIR/config/config.toml
 
 # Start the node with 0 gas fees
-# TODO: disabled within the app rn: --pruning=nothing --minimum-gas-prices=0$DENOM
-BINARY start --g-http-addr=127.0.0.1:$RPC --g-grpc-addr 127.0.0.1:9092  # spawntag:gordian
-BINARY start --rpc.laddr="tcp://0.0.0.0:$RPC" # spawntag:cometbft
+BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC"

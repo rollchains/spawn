@@ -12,33 +12,33 @@ import (
 	"time"
 
 	"github.com/rollchains/spawn/simapp"
-	localictypes "github.com/strangelove-ventures/interchaintest/local-interchain/interchain/types"
-	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
-	"github.com/strangelove-ventures/interchaintest/v8/ibc"
+	// TODO:
+	// localictypes "github.com/strangelove-ventures/interchaintest/local-interchain/interchain/types"
+	// "github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 )
 
 var (
 	// errFileText is used to store the contents of a failed file on save to help with debugging
-	errFileText       = ""
-	CosmosHubProvider *localictypes.Chain
-	IgnoredFiles      = []string{"embed.go", "heighliner/"}
-	isAlphaFn         = regexp.MustCompile(`^[A-Za-z]+$`).MatchString
+	errFileText = ""
+	// CosmosHubProvider *localictypes.Chain
+	IgnoredFiles = []string{"embed.go", "heighliner/"}
+	isAlphaFn    = regexp.MustCompile(`^[A-Za-z]+$`).MatchString
 )
 
 func init() {
-	CosmosHubProvider = localictypes.
-		ChainCosmosHub("localcosmos-1").
-		SetDockerImage(ibc.NewDockerImage("", "v15.1.0", "1025:1025")).
-		SetBlockTime("2000ms").
-		SetDefaultSDKv47Genesis(2)
+	// CosmosHubProvider = localictypes.
+	// 	ChainCosmosHub("localcosmos-1").
+	// 	SetDockerImage(ibc.NewDockerImage("", "v15.1.0", "1025:1025")).
+	// 	SetBlockTime("2000ms").
+	// 	SetDefaultSDKv47Genesis(2)
 
-	// override default genesis
-	CosmosHubProvider.Genesis.Modify = []cosmos.GenesisKV{
-		cosmos.NewGenesisKV("app_state.gov.params.voting_period", "10s"),
-		cosmos.NewGenesisKV("app_state.gov.params.max_deposit_period", "10s"),
-		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.denom", CosmosHubProvider.Denom),
-		cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.amount", "1"),
-	}
+	// // override default genesis
+	// CosmosHubProvider.Genesis.Modify = []cosmos.GenesisKV{
+	// 	cosmos.NewGenesisKV("app_state.gov.params.voting_period", "10s"),
+	// 	cosmos.NewGenesisKV("app_state.gov.params.max_deposit_period", "10s"),
+	// 	cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.denom", CosmosHubProvider.Denom),
+	// 	cosmos.NewGenesisKV("app_state.gov.params.min_deposit.0.amount", "1"),
+	// }
 }
 
 type NewChainConfig struct {
@@ -199,7 +199,7 @@ func (cfg *NewChainConfig) CreateNewChain() error {
 
 	// setup local-interchain testnets
 	// *testnet.json (chains/ directory)
-	cfg.SetupLocalInterchainJSON()
+	// cfg.SetupLocalInterchainJSON() // TODO:
 
 	cfg.MakeModTidy()
 
@@ -233,8 +233,6 @@ func (cfg *NewChainConfig) SetupMainChainApp() error {
 		fc.ReplaceDockerFile(cfg)
 		// scripts/test_node.sh
 		fc.ReplaceTestNodeScript(cfg)
-		// app/app.go
-		fc.ReplaceApp(cfg)
 		// Makefile
 		fc.ReplaceMakeFile(cfg)
 		// *All Files
@@ -276,6 +274,7 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 			return nil
 		}
 
+		// TODO: pull this out?
 		if fc.IsPath(path.Join("interchaintest", "setup.go")) {
 			fc.ReplaceAll( // must be first
 				`ibc.NewDockerImage("wasmd", "local", "1025:1025")`,
@@ -305,8 +304,8 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 	})
 }
 
-// TODO: allow selecting for other chains to generate from (ethos, saga)
 // SetupLocalInterchainJSON sets up the local-interchain testnets configuration files.
+/*
 func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 	c := localictypes.NewChainBuilder(cfg.ProjectName, "localchain-1", cfg.BinDaemon, cfg.Denom, cfg.Bech32Prefix).
 		SetBlockTime("2000ms").
@@ -334,6 +333,7 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 		panic(err)
 	}
 }
+*/
 
 // NormalizeDisabledNames normalizes the names, removes any parent dependencies, and removes duplicates.
 // It then returns the cleaned list of disabled modules.

@@ -11,16 +11,26 @@ import (
 // - Handle ComentSwaps before removing lines
 
 var (
-	TokenFactory        = "tokenfactory"
-	POA                 = "poa"
-	POS                 = "staking" // if ICS is used, we remove staking
-	GlobalFee           = "globalfee"
-	CosmWasm            = "cosmwasm"
-	WasmLC              = "wasmlc"
-	PacketForward       = "packetforward"
-	IBCRateLimit        = "ibc-ratelimit"
-	Ignite              = "ignite"
-	InterchainSecurity  = "ics"
+	// Consensus
+	POS                = "staking" // if ICS is used, we remove staking
+	POA                = "poa"
+	InterchainSecurity = "ics"
+
+	// consensus engines
+	CometBFT = "cometbft"
+	Gordian  = "gordian"
+
+	// modules
+	TokenFactory = "tokenfactory"
+	GlobalFee    = "globalfee"
+	CosmWasm     = "cosmwasm"
+	WasmLC       = "wasmlc"
+
+	// ibc
+	PacketForward = "packetforward"
+	IBCRateLimit  = "ibc-ratelimit"
+
+	// other
 	OptimisticExecution = "optimistic-execution"
 	BlockExplorer       = "block-explorer"
 
@@ -31,7 +41,7 @@ var (
 // used for fuzz testing
 var AllFeatures = []string{
 	TokenFactory, POA, GlobalFee, CosmWasm, WasmLC,
-	PacketForward, IBCRateLimit, Ignite, InterchainSecurity, POS,
+	PacketForward, IBCRateLimit, InterchainSecurity, POS,
 }
 
 // Given a string, return the reduced name for the module
@@ -53,8 +63,6 @@ func AliasName(name string) string {
 		return WasmLC
 	case PacketForward, "ibc-packetforward", "pfm":
 		return PacketForward
-	case Ignite, "ignite-cli":
-		return Ignite
 	case OptimisticExecution, "optimisticexecution", "optimistic-exec":
 		return OptimisticExecution
 	case IBCRateLimit, "ibc-rate-limit", "ratelimit":
@@ -63,6 +71,10 @@ func AliasName(name string) string {
 		return InterchainSecurity
 	case BlockExplorer, "explorer", "pingpub":
 		return BlockExplorer
+	case CometBFT, "tendermint", "comet":
+		return CometBFT
+	case Gordian:
+		return Gordian
 	default:
 		panic(fmt.Sprintf("AliasName: unknown feature to remove: %s", name))
 	}
@@ -77,31 +89,35 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		switch strings.ToLower(base) {
 		// consensus
 		case POA:
-			fc.RemovePOA()
+			// fc.RemovePOA()
 		case POS:
-			fc.RemoveStaking()
+			// fc.RemoveStaking()
 		case InterchainSecurity:
-			fc.RemoveInterchainSecurity()
+			// fc.RemoveInterchainSecurity()
 		// modules
 		case TokenFactory:
-			fc.RemoveTokenFactory()
+			// fc.RemoveTokenFactory()
 		case GlobalFee:
-			fc.RemoveGlobalFee()
+			// fc.RemoveGlobalFee()
 		case CosmWasm:
-			fc.RemoveCosmWasm(cfg.IsFeatureDisabled(WasmLC))
+			// fc.RemoveCosmWasm(cfg.IsFeatureDisabled(WasmLC))
 		case WasmLC:
-			fc.RemoveWasmLightClient()
+			// fc.RemoveWasmLightClient()
 		case PacketForward:
-			fc.RemovePacketForward()
+			// fc.RemovePacketForward()
 		case IBCRateLimit:
-			fc.RemoveIBCRateLimit()
+			// fc.RemoveIBCRateLimit()
 		// other
-		case Ignite:
-			fc.RemoveIgniteCLI()
 		case OptimisticExecution:
-			fc.RemoveOptimisticExecution()
+			// fc.RemoveOptimisticExecution()
 		case BlockExplorer:
-			fc.RemoveExplorer()
+			// fc.RemoveExplorer()
+
+			// Consensus Engines
+		case CometBFT:
+			fc.RemoveCometBFT()
+		case Gordian:
+			fc.RemoveGordian()
 		default:
 			panic(fmt.Sprintf("unknown feature to remove %s", name))
 		}
@@ -122,6 +138,28 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 
 	// remove any left over `// spawntag:` comments
 	fc.RemoveTaggedLines("", false)
+}
+
+func (fc *FileContent) RemoveCometBFT() {
+	text := "cometbft"
+	fc.HandleAllTagged(text)
+
+	fc.DeleteFile(path.Join("app", "cmd", "cometbft_decoder.go"))
+
+	fc.RemoveGoModImport("github.com/cometbft/cometbft")
+	fc.RemoveGoModImport("cosmossdk.io/server/v2/cometbft")
+	fc.RemoveGoModImport("buf.build/gen/go/cometbft/cometbft/protocolbuffers/go")
+	// github.com/cometbft/cometbft/api, github.com/cometbft/cometbft-db
+}
+
+func (fc *FileContent) RemoveGordian() {
+	text := "gordian"
+	fc.HandleAllTagged(text)
+
+	fc.DeleteFile(path.Join("app", "cmd", "gordian_patch.go")) // TODO: this is temp?
+
+	fc.RemoveGoModImport("github.com/rollchains/gordian")
+	fc.RemoveGoModImport("github.com/rollchains/gordian/gcosmos")
 }
 
 func (fc *FileContent) RemoveTokenFactory() {
@@ -256,10 +294,6 @@ func (fc *FileContent) RemoveIBCRateLimit() {
 	fc.DeleteFile(path.Join("interchaintest", "ibc_rate_limit_test.go"))
 }
 
-func (fc *FileContent) RemoveIgniteCLI() {
-	fc.RemoveLineWithAnyMatch("starport scaffolding")
-}
-
 func (fc *FileContent) RemoveOptimisticExecution() {
 	fc.RemoveTaggedLines(OptimisticExecution, true)
 }
@@ -327,9 +361,10 @@ func (fc *FileContent) RemoveStaking() {
 	fc.removePacketForwardTestOnly()
 
 	// fix: make sh-testnet
-	if fc.ContainsPath("Makefile") {
-		fc.ReplaceAll("test_node.sh", "test_ics_node.sh")
-	}
+	// We do not do this anymore since we just remove the bad line :)
+	// if fc.ContainsPath("Makefile") {
+	// 	fc.ReplaceAll("test_node.sh", "test_ics_node.sh")
+	// }
 }
 
 func (fc *FileContent) RemoveMint() {
