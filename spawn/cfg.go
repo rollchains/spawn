@@ -350,6 +350,7 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 			SetDefaultSDKv47Genesis(2)
 
 		// make this is an IBC testnet for POA/POS chains
+		c.SetIBCPaths([]string{}) // clear IBC paths
 		c.SetAppendedIBCPathLink(chainB)
 
 		cc = localictypes.NewChainsConfig(c, chainB)
