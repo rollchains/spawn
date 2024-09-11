@@ -8,7 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// InitGenesis initializes the middlewares state from a specified GenesisState.
+// InitGenesis initializes the modules state from a specified GenesisState.
 func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) {
 	k.SetPort(ctx, types.PortID)
 
@@ -23,7 +23,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) {
 	}
 }
 
-// ExportGenesis exports the middlewares state.
+// ExportGenesis exports the modules state.
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	port := k.GetPort(ctx)
 	return &types.GenesisState{

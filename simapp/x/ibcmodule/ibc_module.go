@@ -1,35 +1,40 @@
 package ibcmodule
 
 import (
+	"context"
+	"fmt"
+	"strings"
+
 	"github.com/rollchains/spawn/simapp/x/ibcmodule/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
+	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	"github.com/rollchains/spawn/simapp/x/ibcmodule/types"
 )
 
-var _ porttypes.IBCModule = &IBCModule{}
+var _ porttypes.IBCModule = (*ExampleIBCModule)(nil)
 
-// IBCModule implements the ICS26 callbacks for the middleware given the
-// keeper and the underlying application.
-type IBCModule struct {
+// ExampleIBCModule implements all the callbacks
+// that modules must define as specified in ICS-26
+type ExampleIBCModule struct {
 	app    porttypes.IBCModule
 	keeper keeper.Keeper
 }
 
-// NewIBCMiddleware creates a new IBCMiddleware given the keeper and underlying application.
-func NewIBCMiddleware(app porttypes.IBCModule, k keeper.Keeper) IBCModule {
-	return IBCModule{
+// NewExampleIBCModule creates a new IBCModule given the keeper and underlying application.
+func NewExampleIBCModule(app porttypes.IBCModule, k keeper.Keeper) ExampleIBCModule {
+	return ExampleIBCModule{
 		app:    app,
 		keeper: k,
 	}
 }
 
-// OnChanOpenInit implements the IBCMiddleware interface.
-func (im IBCModule) OnChanOpenInit(
+func (im ExampleIBCModule) OnChanOpenInit(
 	ctx sdk.Context,
 	order channeltypes.Order,
 	connectionHops []string,
@@ -39,20 +44,27 @@ func (im IBCModule) OnChanOpenInit(
 	counterparty channeltypes.Counterparty,
 	version string,
 ) (string, error) {
-	return im.app.OnChanOpenInit(
-		ctx,
-		order,
-		connectionHops,
-		portID,
-		channelID,
-		chanCap,
-		counterparty,
-		version,
-	)
+	if strings.TrimSpace(version) == "" {
+		version = types.Version
+	}
+
+	// if order != channeltypes.UNORDERED {
+	// 	return "", fmt.Errorf("invalid channel order; expected UNORDERED")
+	// }
+
+	if counterparty.PortId != types.ModuleName {
+		return "", fmt.Errorf("invalid counterparty port ID; expected %s, got %s", types.ModuleName, counterparty.PortId)
+	}
+
+	// OpenInit must claim the channelCapability that IBC passes into the callback
+	if err := im.keeper.ClaimCapability(ctx, chanCap, host.ChannelCapabilityPath(portID, channelID)); err != nil {
+		return "", fmt.Errorf("failed to claim capability: %w", err)
+	}
+
+	return version, nil
 }
 
-// OnChanOpenTry implements the IBCMiddleware interface.
-func (im IBCModule) OnChanOpenTry(
+func (im ExampleIBCModule) OnChanOpenTry(
 	ctx sdk.Context,
 	order channeltypes.Order,
 	connectionHops []string,
@@ -61,67 +73,169 @@ func (im IBCModule) OnChanOpenTry(
 	counterparty channeltypes.Counterparty,
 	counterpartyVersion string,
 ) (version string, err error) {
-	return im.app.OnChanOpenTry(
-		ctx,
-		order,
-		connectionHops,
-		portID,
-		channelID,
-		chanCap,
-		counterparty,
-		counterpartyVersion,
-	)
+	// OpenTry must claim the channelCapability that IBC passes into the callback
+	if err := im.keeper.ClaimCapability(ctx, chanCap, host.ChannelCapabilityPath(portID, channelID)); err != nil {
+		return "", err
+	}
+
+	if counterpartyVersion != types.Version {
+		fmt.Println("invalid counterparty version, proposing current app version", "counterpartyVersion", counterpartyVersion, "version", types.Version)
+		return types.Version, nil // TODO: err here?
+	}
+
+	return types.Version, nil
 }
 
-// OnChanOpenAck implements the IBCMiddleware interface.
-func (im IBCModule) OnChanOpenAck(
+func (im ExampleIBCModule) OnChanOpenAck(
 	ctx sdk.Context,
 	portID, channelID string,
 	counterpartyChannelID string,
 	counterpartyVersion string,
 ) error {
-	return im.app.OnChanOpenAck(ctx, portID, channelID, counterpartyChannelID, counterpartyVersion)
+	if counterpartyVersion != types.Version {
+		return fmt.Errorf("invalid counterparty version: expected %s, got %s", types.Version, counterpartyVersion)
+	}
+	return nil
 }
 
-// OnChanOpenConfirm implements the IBCMiddleware interface.
-func (im IBCModule) OnChanOpenConfirm(ctx sdk.Context, portID, channelID string) error {
-	return im.app.OnChanOpenConfirm(ctx, portID, channelID)
+// OnChanOpenConfirm implements the IBCModule interface.
+func (im ExampleIBCModule) OnChanOpenConfirm(ctx sdk.Context, portID, channelID string) error {
+	return nil
 }
 
-// OnChanCloseInit implements the IBCMiddleware interface.
-func (im IBCModule) OnChanCloseInit(ctx sdk.Context, portID, channelID string) error {
-	return im.app.OnChanCloseInit(ctx, portID, channelID)
+// OnChanCloseInit implements the IBCModule interface.
+func (im ExampleIBCModule) OnChanCloseInit(ctx sdk.Context, portID, channelID string) error {
+	return fmt.Errorf("channel close is disabled for this module")
 }
 
-// OnChanCloseConfirm implements the IBCMiddleware interface.
-func (im IBCModule) OnChanCloseConfirm(ctx sdk.Context, portID, channelID string) error {
-	return im.app.OnChanCloseConfirm(ctx, portID, channelID)
+// OnChanCloseConfirm implements the IBCModule interface.
+func (im ExampleIBCModule) OnChanCloseConfirm(ctx sdk.Context, portID, channelID string) error {
+	return nil
 }
 
-// OnRecvPacket implements the IBCMiddleware interface.
-func (im IBCModule) OnRecvPacket(
+// OnRecvPacket implements the IBCModule interface.
+func (im ExampleIBCModule) OnRecvPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
-	return im.app.OnRecvPacket(ctx, packet, relayer)
+	logger := im.keeper.Logger(ctx)
+	ack := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
+
+	var data types.ExamplePacketData
+	var ackErr error
+	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
+		ackErr = fmt.Errorf("cannot unmarshal example packet data: %v", err)
+		logger.Error(fmt.Sprintf("%s sequence %d", ackErr.Error(), packet.Sequence))
+		ack = channeltypes.NewErrorAcknowledgement(ackErr)
+	}
+
+	// only attempt the application logic if the packet data was successfully decoded
+	if ack.Success() {
+		// TODO: perform your logic here
+		err := im.handleOnRecvLogic(ctx)
+		if err != nil {
+			ack = channeltypes.NewErrorAcknowledgement(err)
+			ackErr = err
+			logger.Error(fmt.Sprintf("%s sequence %d", ackErr.Error(), packet.Sequence))
+		} else {
+			logger.Info("successfully handled example packet", "sequence", packet.Sequence)
+		}
+	}
+
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypePacket,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+			sdk.NewAttribute(sdk.AttributeKeySender, data.Sender),
+			sdk.NewAttribute("some_data", data.SomeData),
+			sdk.NewAttribute("ack_success", fmt.Sprintf("%t", ack.Success())),
+		),
+	)
+
+	return ack
 }
 
-// OnAcknowledgementPacket implements the IBCMiddleware interface.
-func (im IBCModule) OnAcknowledgementPacket(
+func (im ExampleIBCModule) handleOnRecvLogic(ctx context.Context) error {
+	v, err := im.keeper.ExampleStore.Get(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = im.keeper.ExampleStore.Set(ctx, v+1)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// OnAcknowledgementPacket implements the IBCModule interface.
+func (im ExampleIBCModule) OnAcknowledgementPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-	return im.app.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	var ack channeltypes.Acknowledgement
+	if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
+		return fmt.Errorf("cannot unmarshal example packet acknowledgement: %v", err)
+	}
+
+	var data types.ExamplePacketData
+	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
+		return fmt.Errorf("cannot unmarshal example packet data: %v", err)
+	}
+
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypePacket,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+			sdk.NewAttribute(sdk.AttributeKeySender, data.Sender),
+			sdk.NewAttribute("some_data", data.SomeData),
+		),
+	)
+
+	switch resp := ack.Response.(type) {
+	case *channeltypes.Acknowledgement_Result:
+		ctx.EventManager().EmitEvent(
+			sdk.NewEvent(
+				types.EventTypePacket,
+				sdk.NewAttribute("success", string(resp.Result)),
+			),
+		)
+	case *channeltypes.Acknowledgement_Error:
+		ctx.EventManager().EmitEvent(
+			sdk.NewEvent(
+				types.EventTypePacket,
+				sdk.NewAttribute("error", resp.Error),
+			),
+		)
+	}
+
+	return nil
 }
 
 // OnTimeoutPacket implements the IBCMiddleware interface.
-func (im IBCModule) OnTimeoutPacket(
+func (im ExampleIBCModule) OnTimeoutPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
-	return im.app.OnTimeoutPacket(ctx, packet, relayer)
+	var data types.ExamplePacketData
+	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
+		return fmt.Errorf("cannot unmarshal example packet data: %v", err)
+	}
+
+	// Handle timeout logic here as necessary (i.e. refunds for example) or nothing at all.
+
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			"timeout",
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+			sdk.NewAttribute("sender", data.Sender),
+		),
+	)
+
+	return nil
 }

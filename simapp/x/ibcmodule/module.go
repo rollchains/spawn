@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/rollchains/spawn/simapp/x/example/client/cli"
 	"github.com/rollchains/spawn/simapp/x/ibcmodule/keeper"
 	"github.com/rollchains/spawn/simapp/x/ibcmodule/types"
 	"github.com/spf13/cobra"
@@ -57,7 +58,7 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *r
 
 // GetTxCmd implements AppModuleBasic interface.
 func (AppModuleBasic) GetTxCmd() *cobra.Command {
-	return nil
+	return cli.NewTxCmd()
 }
 
 // GetQueryCmd implements AppModuleBasic interface.
@@ -90,7 +91,9 @@ func NewAppModule(keeper keeper.Keeper) *AppModule {
 func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {}
 
 // RegisterServices registers module services.
-func (am AppModule) RegisterServices(cfg module.Configurator) {}
+func (am AppModule) RegisterServices(cfg module.Configurator) {
+	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
+}
 
 // InitGenesis performs genesis initialization for the ibc-router module. It returns
 // no validator updates.
@@ -102,6 +105,8 @@ func (am AppModule) InitGenesis(
 	var genesisState types.GenesisState
 	cdc.MustUnmarshalJSON(data, &genesisState)
 	am.keeper.InitGenesis(ctx, genesisState)
+
+	am.keeper.ExampleStore.Set(ctx, 0)
 
 	return []abci.ValidatorUpdate{}
 }

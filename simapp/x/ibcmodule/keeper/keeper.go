@@ -13,22 +13,22 @@ import (
 	"cosmossdk.io/log"
 
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
-	channelkeeper "github.com/cosmos/ibc-go/v8/modules/core/04-channel/keeper"
 	portkeeper "github.com/cosmos/ibc-go/v8/modules/core/05-port/keeper"
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 )
 
-// Keeper defines the middleware keeper.
+// Keeper defines the module keeper.
 type Keeper struct {
 	storeKey         storetypes.StoreKey
 	cdc              codec.BinaryCodec
 	msgServiceRouter *baseapp.MsgServiceRouter
-	Schema           collections.Schema
+	schema           collections.Schema
 
-	ChannelKeeper channelkeeper.Keeper // TODO: this or use ics4Wrapper?
-	PortKeeper    *portkeeper.Keeper
-	ScopedKeeper  capabilitykeeper.ScopedKeeper
+	PortKeeper   *portkeeper.Keeper
+	ScopedKeeper capabilitykeeper.ScopedKeeper
+
+	ExampleStore collections.Item[uint64]
 
 	// used to send the packet, usually the IBC channel keeper.
 	ics4Wrapper porttypes.ICS4Wrapper
@@ -42,7 +42,6 @@ func NewKeeper(
 	ics4Wrapper porttypes.ICS4Wrapper,
 	scopedKeeper capabilitykeeper.ScopedKeeper,
 	portKeeper *portkeeper.Keeper,
-	channelKeeper channelkeeper.Keeper,
 ) Keeper {
 	sb := collections.NewSchemaBuilder(storeService)
 
@@ -51,10 +50,11 @@ func NewKeeper(
 		msgServiceRouter: msgServiceRouter,
 		ics4Wrapper:      ics4Wrapper,
 
-		storeKey:      storetypes.NewKVStoreKey(types.StoreKey), // TODO: remove me
-		ChannelKeeper: channelKeeper,
-		PortKeeper:    portKeeper,
-		ScopedKeeper:  scopedKeeper,
+		storeKey:     storetypes.NewKVStoreKey(types.StoreKey), // TODO: remove me
+		PortKeeper:   portKeeper,
+		ScopedKeeper: scopedKeeper,
+
+		ExampleStore: collections.NewItem(sb, collections.NewPrefix(1), "example", collections.Uint64Value),
 	}
 
 	schema, err := sb.Build()
@@ -62,13 +62,13 @@ func NewKeeper(
 		panic(err)
 	}
 
-	k.Schema = schema
+	k.schema = schema
 
 	return k
 }
 
 // WithICS4Wrapper sets the ICS4Wrapper. This function may be used after
-// the keeper's creation to set the middleware which is above this module
+// the keeper's creation to set the module which is above this module
 // in the IBC application stack.
 func (k *Keeper) WithICS4Wrapper(wrapper porttypes.ICS4Wrapper) {
 	k.ics4Wrapper = wrapper

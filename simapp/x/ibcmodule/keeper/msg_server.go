@@ -23,14 +23,6 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 // SendTx implements types.MsgServer.
 func (ms msgServer) SendTx(ctx context.Context, msg *types.MsgSendTx) (*types.MsgSendTxResponse, error) {
-	// ctx := sdk.UnwrapSDKContext(goCtx)
-	// panic("SendTx is unimplemented")
-
-	// sender, err := sdk.AccAddressFromBech32(msg.Sender)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	sequence, err := ms.sendPacket(
 		ctx, msg.SourcePort, msg.SourceChannel, msg.Sender, msg.SomeData, msg.TimeoutTimestamp)
 	if err != nil {
@@ -45,18 +37,6 @@ func (ms msgServer) SendTx(ctx context.Context, msg *types.MsgSendTx) (*types.Ms
 func (ms msgServer) sendPacket(ctx context.Context, sourcePort, sourceChannel, sender, someData string, timeoutTimestamp uint64) (sequence uint64, err error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	channel, found := ms.ChannelKeeper.GetChannel(sdkCtx, sourcePort, sourceChannel)
-	if !found {
-		return 0, fmt.Errorf("channel not found: port ID (%s) channel ID (%s)", sourcePort, sourceChannel)
-	}
-
-	destinationPort := channel.GetCounterparty().GetPortID()
-	destinationChannel := channel.GetCounterparty().GetChannelID()
-
-	fmt.Printf("destinationPort: %s\n", destinationPort)
-	fmt.Printf("destinationChannel: %s\n", destinationChannel)
-	fmt.Printf("Channel Information: %+v\n", channel)
-
 	// begin createOutgoingPacket logic
 	// See spec for this logic: https://github.com/cosmos/ibc/tree/master/spec/app/ics-020-fungible-token-transfer#packet-relay
 	channelCap, ok := ms.ScopedKeeper.GetCapability(sdkCtx, host.ChannelCapabilityPath(sourcePort, sourceChannel))
@@ -64,15 +44,13 @@ func (ms msgServer) sendPacket(ctx context.Context, sourcePort, sourceChannel, s
 		return 0, fmt.Errorf("module does not own channel capability")
 	}
 
-	// TODO(future): lock up the nameservice name in an escrow.
-
 	packetData := types.ExamplePacketData{
 		Sender:   sender,
 		SomeData: someData,
 	}
 	// packetDataBz := types.EncodePacketData(packetData)
 
-	sequence, err = ms.ics4Wrapper.SendPacket(sdkCtx, channelCap, sourcePort, sourceChannel, clienttypes.ZeroHeight(), timeoutTimestamp, packetData.GetBytes())
+	sequence, err = ms.ics4Wrapper.SendPacket(sdkCtx, channelCap, sourcePort, sourceChannel, clienttypes.ZeroHeight(), timeoutTimestamp, packetData.MustGetBytes())
 	if err != nil {
 		return 0, err
 	}
