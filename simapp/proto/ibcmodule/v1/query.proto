@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package ibcmodule.v1;
+
+option go_package = "github.com/rollchains/spawn/simapp/x/ibcmodule/types";
+
+import "gogoproto/gogo.proto";
