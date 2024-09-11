@@ -328,6 +328,7 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 		},
 	}
 
+	// Create a chain that is thisnetwork -> cosmoshub
 	if cfg.IsFeatureEnabled(InterchainSecurity) {
 		c.SetICSConsumerLink("localcosmos-1")
 	} else {
@@ -339,6 +340,24 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 	if err := cc.SaveJSON(fmt.Sprintf("%s/chains/testnet.json", cfg.ProjectName)); err != nil {
 		panic(err)
 	}
+
+	// Create a testnet that is thisnetwork -> thisnetwork (great for IBC module testing)
+	if !cfg.IsFeatureEnabled(InterchainSecurity) {
+		chainB := localictypes.NewChainBuilder(cfg.ProjectName, "localchain-2", cfg.BinDaemon, cfg.Denom, cfg.Bech32Prefix).
+			SetBlockTime("2000ms").
+			SetDockerImage(ibc.NewDockerImage(strings.ToLower(cfg.ProjectName), "local", "")).
+			SetTrustingPeriod("336h").
+			SetDefaultSDKv47Genesis(2)
+
+		// make this is an IBC testnet for POA/POS chains
+		c.SetAppendedIBCPathLink(chainB)
+
+		cc = localictypes.NewChainsConfig(c, chainB)
+		if err := cc.SaveJSON(fmt.Sprintf("%s/chains/self-ibc.json", cfg.ProjectName)); err != nil {
+			panic(err)
+		}
+	}
+
 }
 
 // NormalizeDisabledNames normalizes the names, removes any parent dependencies, and removes duplicates.
