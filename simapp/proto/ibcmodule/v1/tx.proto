@@ -7,7 +7,7 @@ option go_package = "github.com/rollchains/spawn/simapp/x/ibcmodule/types";
 import "gogoproto/gogo.proto";
 import "cosmos/msg/v1/msg.proto";
 
-// Msg defines the 27-interchain-accounts/controller Msg service.
+// Msg defines the Msg service.
 service Msg {
   option (cosmos.msg.v1.service) = true;
 

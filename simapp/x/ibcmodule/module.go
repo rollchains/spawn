@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/rollchains/spawn/simapp/x/example/client/cli"
+	cli "github.com/rollchains/spawn/simapp/x/ibcmodule/client"
 	"github.com/rollchains/spawn/simapp/x/ibcmodule/keeper"
 	"github.com/rollchains/spawn/simapp/x/ibcmodule/types"
 	"github.com/spf13/cobra"
@@ -37,7 +37,9 @@ func (AppModuleBasic) Name() string {
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {}
 
 // RegisterInterfaces registers module concrete types into protobuf Any.
-func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {}
+func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
+	types.RegisterInterfaces(registry)
+}
 
 // DefaultGenesis returns default genesis state as raw bytes for the swap module.
 func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {

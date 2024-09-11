@@ -22,14 +22,12 @@ var _ porttypes.IBCModule = (*ExampleIBCModule)(nil)
 // ExampleIBCModule implements all the callbacks
 // that modules must define as specified in ICS-26
 type ExampleIBCModule struct {
-	app    porttypes.IBCModule
 	keeper keeper.Keeper
 }
 
 // NewExampleIBCModule creates a new IBCModule given the keeper and underlying application.
-func NewExampleIBCModule(app porttypes.IBCModule, k keeper.Keeper) ExampleIBCModule {
+func NewExampleIBCModule(k keeper.Keeper) ExampleIBCModule {
 	return ExampleIBCModule{
-		app:    app,
 		keeper: k,
 	}
 }

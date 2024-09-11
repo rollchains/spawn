@@ -5,8 +5,6 @@ import (
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/store"
-	storetypes "cosmossdk.io/store/types"
-	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -20,10 +18,9 @@ import (
 
 // Keeper defines the module keeper.
 type Keeper struct {
-	storeKey         storetypes.StoreKey
-	cdc              codec.BinaryCodec
-	msgServiceRouter *baseapp.MsgServiceRouter
-	schema           collections.Schema
+	storeService store.KVStoreService
+	cdc          codec.BinaryCodec
+	schema       collections.Schema
 
 	PortKeeper   *portkeeper.Keeper
 	ScopedKeeper capabilitykeeper.ScopedKeeper
@@ -32,29 +29,33 @@ type Keeper struct {
 
 	// used to send the packet, usually the IBC channel keeper.
 	ics4Wrapper porttypes.ICS4Wrapper
+
+	authority string
 }
 
 // NewKeeper creates a new swap Keeper instance.
 func NewKeeper(
-	cdc codec.BinaryCodec,
+	appCodec codec.BinaryCodec,
 	storeService store.KVStoreService,
-	msgServiceRouter *baseapp.MsgServiceRouter,
+
 	ics4Wrapper porttypes.ICS4Wrapper,
-	scopedKeeper capabilitykeeper.ScopedKeeper,
 	portKeeper *portkeeper.Keeper,
+	scopedKeeper capabilitykeeper.ScopedKeeper,
+
+	authority string,
 ) Keeper {
 	sb := collections.NewSchemaBuilder(storeService)
 
 	k := Keeper{
-		cdc:              cdc,
-		msgServiceRouter: msgServiceRouter,
-		ics4Wrapper:      ics4Wrapper,
+		cdc:          appCodec,
+		ics4Wrapper:  ics4Wrapper,
+		storeService: storeService,
 
-		storeKey:     storetypes.NewKVStoreKey(types.StoreKey), // TODO: remove me
 		PortKeeper:   portKeeper,
 		ScopedKeeper: scopedKeeper,
 
 		ExampleStore: collections.NewItem(sb, collections.NewPrefix(1), "example", collections.Uint64Value),
+		authority:    authority,
 	}
 
 	schema, err := sb.Build()

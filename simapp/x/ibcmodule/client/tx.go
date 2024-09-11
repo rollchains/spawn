@@ -14,7 +14,7 @@ import (
 // NewTxCmd creates and returns the tx command
 func NewTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:                        "ibcmodule", // todo: rename me on generate
+		Use:                        "ibcmodule",
 		Short:                      "ibcmodule subcommands",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,

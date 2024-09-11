@@ -32,14 +32,21 @@ func (k Keeper) BindPort(ctx sdk.Context, portID string) error {
 
 // GetPort returns the portID for the IBC app module. Used in ExportGenesis
 func (k Keeper) GetPort(ctx sdk.Context) string {
-	store := ctx.KVStore(k.storeKey)
-	return string(store.Get(types.PortKey))
+	store := k.storeService.OpenKVStore(ctx)
+	res, err := store.Get([]byte(types.PortKey))
+	if err != nil {
+		panic(err)
+	}
+	return string(res)
 }
 
 // SetPort sets the portID for the IBC app module. Used in InitGenesis
 func (k Keeper) SetPort(ctx sdk.Context, portID string) {
-	store := ctx.KVStore(k.storeKey)
-	store.Set(types.PortKey, []byte(portID))
+	store := k.storeService.OpenKVStore(ctx)
+	err := store.Set([]byte(types.PortKey), []byte(portID))
+	if err != nil {
+		panic(err)
+	}
 }
 
 // AuthenticateCapability wraps the scopedKeeper's AuthenticateCapability function
