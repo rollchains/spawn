@@ -356,9 +356,9 @@ func AddModuleToAppGo(logger *slog.Logger, extName string, feats *features) erro
 		runtime.NewKVStoreService(keys[%stypes.StoreKey]),
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
-		%s,
+		scoped%s,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-	)`+"\n", extName, extNameTitle, extName, extName, fmt.Sprintf("scoped%s", extNameTitle))
+	)`+"\n", extName, extNameTitle, extName, extName, extNameTitle)
 	} else {
 		keeperText = fmt.Sprintf(`	// Create the %s Keeper
 	app.%sKeeper = %skeeper.NewKeeper(

@@ -37,8 +37,6 @@ func (ms msgServer) SendExampleTx(ctx context.Context, msg *types.MsgSendExample
 func (ms msgServer) sendPacket(ctx context.Context, sourcePort, sourceChannel, sender, someData string, timeoutTimestamp uint64) (sequence uint64, err error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	// begin createOutgoingPacket logic
-	// See spec for this logic: https://github.com/cosmos/ibc/tree/master/spec/app/ics-020-fungible-token-transfer#packet-relay
 	channelCap, ok := ms.ScopedKeeper.GetCapability(sdkCtx, host.ChannelCapabilityPath(sourcePort, sourceChannel))
 	if !ok {
 		return 0, fmt.Errorf("module does not own channel capability")

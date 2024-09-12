@@ -25,7 +25,7 @@ var (
 	_ module.AppModuleSimulation = AppModule{}
 )
 
-// AppModuleBasic is the middleware AppModuleBasic.
+// AppModuleBasic is the module AppModuleBasic.
 type AppModuleBasic struct{}
 
 // Name implements AppModuleBasic interface.
@@ -70,7 +70,7 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 	return nil
 }
 
-// AppModule is the middleware AppModule.
+// AppModule is the module AppModule.
 type AppModule struct {
 	AppModuleBasic
 	keeper keeper.Keeper
@@ -84,7 +84,7 @@ func (AppModule) IsAppModule() {
 func (AppModule) IsOnePerModuleType() {
 }
 
-// NewAppModule initializes a new AppModule for the middleware.
+// NewAppModule initializes a new AppModule for the module.
 func NewAppModule(keeper keeper.Keeper) *AppModule {
 	return &AppModule{
 		keeper: keeper,

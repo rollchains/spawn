@@ -1,3 +1,3 @@
-# ibc-middleware-template
+# ibc-module-template
 
-Template for an IBC middleware compliant with the [ics-30 spec](https://github.com/cosmos/ibc/tree/a4b29b7cdae6c548eb17187545f167d5d37c23a1/spec/app/ics-030-middleware)
+Template for an IBC module compliant with [ICS-26 Spec](https://github.com/cosmos/ibc/blob/main/spec/core/ics-026-routing-module/README.md)

@@ -38,7 +38,7 @@ var defaultTimeout = uint64((time.Duration(10) * time.Minute).Nanoseconds())
 func NewSomeDataTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "example-tx [src-port] [src-channel] [data]",
-		Short: "Send a packet for some data",
+		Short: "Send a packet with some data",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -72,7 +72,7 @@ func NewSomeDataTxCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().Uint64(flagPacketTimeoutTimestamp, defaultTimeout, "Packet timeout timestamp in nanoseconds from now. Default is 10 minutes. The timeout is disabled when set to 0.")
+	cmd.Flags().Uint64(flagPacketTimeoutTimestamp, defaultTimeout, "Packet timeout timestamp in nanoseconds from now. Default is 10 minutes.")
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd

@@ -342,6 +342,7 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 	}
 
 	// Create a testnet that is thisnetwork -> thisnetwork (great for IBC module testing)
+	// To complex for now to support (ICS1+Chain & ICS2+Chain2)
 	if !cfg.IsFeatureEnabled(InterchainSecurity) {
 		chainB := localictypes.NewChainBuilder(cfg.ProjectName, "localchain-2", cfg.BinDaemon, cfg.Denom, cfg.Bech32Prefix).
 			SetBlockTime("2000ms").
@@ -349,7 +350,6 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 			SetTrustingPeriod("336h").
 			SetDefaultSDKv47Genesis(2)
 
-		// make this is an IBC testnet for POA/POS chains
 		c.SetIBCPaths([]string{}) // clear IBC paths
 		c.SetAppendedIBCPathLink(chainB)
 

@@ -22,13 +22,11 @@ type Keeper struct {
 	cdc          codec.BinaryCodec
 	schema       collections.Schema
 
+	ics4Wrapper  porttypes.ICS4Wrapper
 	PortKeeper   *portkeeper.Keeper
 	ScopedKeeper capabilitykeeper.ScopedKeeper
 
 	ExampleStore collections.Item[uint64]
-
-	// used to send the packet, usually the IBC channel keeper.
-	ics4Wrapper porttypes.ICS4Wrapper
 
 	authority string
 }
@@ -38,7 +36,7 @@ func NewKeeper(
 	appCodec codec.BinaryCodec,
 	storeService store.KVStoreService,
 
-	ics4Wrapper porttypes.ICS4Wrapper,
+	ics4Wrapper porttypes.ICS4Wrapper, // usually the IBC ChannelKeeper
 	portKeeper *portkeeper.Keeper,
 	scopedKeeper capabilitykeeper.ScopedKeeper,
 

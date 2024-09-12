@@ -2,7 +2,7 @@ package types
 
 import host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 
-// DefaultGenesisState returns the default middleware GenesisState.
+// DefaultGenesisState returns the default module GenesisState.
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
 		PortId: PortID,
