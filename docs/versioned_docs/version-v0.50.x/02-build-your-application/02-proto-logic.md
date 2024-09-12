@@ -46,7 +46,7 @@ Find `query.proto` and add the following
 
   // ResolveName allows a user to resolve the name of an account.
   rpc ResolveName(QueryResolveNameRequest) returns (QueryResolveNameResponse) {
-    option (google.api.http).get = "/nameservice/v1/names/{wallet}";
+    option (google.api.http).get = "/nameservice/v1/name/{wallet}";
   }
 }
 
@@ -72,7 +72,6 @@ proto/nameservice/v1/query.proto
 These .proto file templates will be converted into Golang source code for you to use. Build the Go source code using the command:
 
 ```bash
-// highlight-next-line
 make proto-gen
 ```
 

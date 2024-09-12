@@ -13,6 +13,7 @@ You now need to set the data structure in the keeper to store the wallet to name
 
 type Keeper struct {
 	...
+	// highlight-next-line
 	NameMapping collections.Map[string, string]
 }
 
@@ -23,7 +24,7 @@ func NewKeeper() Keeper {
 
   k := Keeper{
     ...
-
+	// highlight-next-line
     NameMapping: collections.NewMap(sb, collections.NewPrefix(1), "name_mapping", collections.StringKey, collections.StringValue),
   }
 
@@ -40,11 +41,13 @@ Update the msg_server logic to set the name upon request from a user.
 
 ```go title="x/nameservice/keeper/msg_server.go"
 func (ms msgServer) SetServiceName(ctx context.Context, msg *types.MsgSetServiceName) (*types.MsgSetServiceNameResponse, error) {
+	// highlight-start
 	if err := ms.k.NameMapping.Set(ctx, msg.Sender, msg.Name); err != nil {
 		return nil, err
 	}
 
 	return &types.MsgSetServiceNameResponse{}, nil
+	// highlight-end
 }
 ```
 
@@ -52,6 +55,7 @@ and also for the query_server to retrieve the name.
 
 ```go title="x/nameservice/keeper/query_server.go"
 func (k Querier) ResolveName(goCtx context.Context, req *types.QueryResolveNameRequest) (*types.QueryResolveNameResponse, error) {
+	// highlight-start
 	v, err := k.Keeper.NameMapping.Get(goCtx, req.Wallet)
 	if err != nil {
 		return nil, err
@@ -60,6 +64,7 @@ func (k Querier) ResolveName(goCtx context.Context, req *types.QueryResolveNameR
 	return &types.QueryResolveNameResponse{
 		Name: v,
 	}, nil
+	// highlight-end
 }
 ```
 

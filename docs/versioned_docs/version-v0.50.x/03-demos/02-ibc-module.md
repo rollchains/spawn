@@ -31,20 +31,26 @@ cd rollchain
 # scaffold the base IBC module for The
 # cross chain name service
 spawn module new nsibc --ibc-module
+
+# compile latest code with matching module name
+# failure to do this will result in: `panic: reflect: New(nil)`
+make proto-gen
 ```
 
-## Import the other NameService Module
+## Use the NameService Module
 
-You now reference the nameservice module you built within this new IBC module. This will allow you to save the name mapping on the name service, making it available for both IBC and native chain interactions.
+You now use the nameservice module you built previously within this new IBC module. This will allow you to save the name mapping on the name service, making it available for both IBC and native chain interactions.
 
 ```go title="x/nsibc/keeper/keeper.go"
 import (
 	...
+	// highlight-next-line
 	nameservicekeeper "github.com/rollchains/rollchain/x/nameservice/keeper"
 )
 
 type Keeper struct {
 	...
+	// highlight-next-line
 	NameServiceKeeper *nameservicekeeper.Keeper
 }
 ```
@@ -60,12 +66,14 @@ type Keeper struct {
 // NewKeeper creates a new Keeper instance.
 func NewKeeper(
 	...
+	// highlight-next-line
 	nsk *nameservicekeeper.Keeper,
 ) Keeper {
     ...
 
 	k := Keeper{
 		...
+		// highlight-next-line
 		NameServiceKeeper: nsk,
 	}
 ```
@@ -77,22 +85,11 @@ func NewKeeper(
 
 ## Provide NameService to the IBC Module
 
-You must now give the IBC module access to nameservice keeper. It needs this reference so that the logic and connections can be shared. This is done in the `app/app.go` file. Find where the EvidenceKeeper line is, and overwrite the current lines with the following.
+You must now give the IBC module access to nameservice keeper. It needs this reference so that the logic and connections can be shared. This is done in the `app/app.go` file. Find where the NameService IBC line is and update it to include the `&app.NameserviceKeeper,` reference.
 
-This moves the `NameserviceKeeper` above the IBC keeper (since you need to set that first so you can use it), and adds the `&app.NameserviceKeeper,` to the IBC Name Service keeper.
+You can find the `NameserviceKeeper` set just after the `NsibcKeeper` is set. If you would like to re-order the original NameService keeper, you can do so.
 
 ```go title="app/app.go"
-	// If evidence needs to be handled for the app, set routes in router here and seal
-	app.EvidenceKeeper = *evidenceKeeper
-
-	// Create the nameservice Keeper
-	app.NameserviceKeeper = nameservicekeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[nameservicetypes.StoreKey]),
-		logger,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-	)
-
 	// Create the nsibc IBC Module Keeper
 	app.NsibcKeeper = nsibckeeper.NewKeeper(
 		appCodec,
@@ -100,7 +97,8 @@ This moves the `NameserviceKeeper` above the IBC keeper (since you need to set t
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
 		scopedNsibc,
-		&app.NameserviceKeeper,
+		// highlight-next-line
+		&app.NameserviceKeeper, // This line added here
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 ```
@@ -108,7 +106,7 @@ This moves the `NameserviceKeeper` above the IBC keeper (since you need to set t
 <details>
 	<summary>Application NameService Reference Image</summary>
 
-	![View](https://github.com/user-attachments/assets/af456634-d7b7-475f-b468-7c14411803da)
+	![View](https://github.com/user-attachments/assets/6da58e1d-481b-46ba-bb66-d6c4a96971d0)
 </details>
 
 
@@ -137,7 +135,12 @@ Once found, remove the lines within and replace with the following return.
 
 ```go title="x/nsibc/ibc_module.go"
 func (im ExampleIBCModule) handleOnRecvLogic(ctx context.Context, data types.ExamplePacketData) error {
+	// highlight-start
+	if len(data.SomeData) > 32 {
+		return fmt.Errorf("name cannot be longer than 32 characters")
+	}
 	return im.keeper.NameServiceKeeper.NameMapping.Set(ctx, data.Sender, data.SomeData)
+	// highlight-end
 }
 ```
 
@@ -154,7 +157,8 @@ You could just as easily write the NameMapping in the ibc keeper store as well.
 # build chain binary
 make install
 
-# verify the binary works
+# verify the binary works. if you get a panic,
+# `make proto-gen`, then re make install
 rolld
 
 # build docker image
@@ -168,7 +172,7 @@ local-ic start self-ibc
 ## Import Testnet Helpers
 
 Pasting the following lines in your terminal will import helper functions to interact with the testnet.
-The source is publicly available on GitHub to review.
+The source is publicly available on GitHub to review. It gives you the ability to interact with the testnet easily using special `ICT_` commands.
 
 ```bash
 # Import the testnet interaction helper functions
@@ -182,7 +186,7 @@ ICT_POLL_FOR_START $API_ADDR 50 && echo "Testnet started"
 
 ## Connect Your IBC Modules
 
-You are ready to connect the two chains with your IBC module protocol. The [cosmos/relayer](https://github.com/cosmos/relayer) is already running between the 2 networks now. You will just send a command to connect the new logic.
+You are ready to connect the two chains with your IBC module protocol. The [cosmos/relayer](https://github.com/cosmos/relayer) is already running between the 2 networks now.
 
 :::note
 A Channel is a connection between two chains, like a highway. A port is a specific protocol (or logic) that can connect with itself on another chain.
@@ -191,6 +195,7 @@ For example; transfer to transfer, nsibc to nsibc, but transfer to nsibc can not
 These values are found in the keys.go file as the module name. By default version is just the module name + "-1".
 :::
 
+Execute the command on the testnet to connect the two chains with the IBC module.
 
 ```bash
 # This will take a minute.

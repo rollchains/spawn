@@ -17,6 +17,7 @@ Update the autocli to allow someone to get the name of a wallet account.
 		Query: &autocliv1.ServiceCommandDescriptor{
             Service: modulev1.Query_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
+				// highlight-start
 				{
 					RpcMethod: "ResolveName",
 					Use:       "resolve [wallet]",
@@ -25,6 +26,7 @@ Update the autocli to allow someone to get the name of a wallet account.
 						{ProtoField: "wallet"},
 					},
 				},
+				// highlight-end
 				{
 					RpcMethod: "Params",
 					Use:       "params",
@@ -34,7 +36,12 @@ Update the autocli to allow someone to get the name of a wallet account.
     	},
 ```
 
-![AutoCLI Query](https://github.com/rollchains/spawn/assets/31943163/fefe8c7d-88b5-42d5-afd9-cb33cd22df16)
+<details>
+  <summary>AutoCLI Query</summary>
+
+  ![AutoCLI Query](https://github.com/rollchains/spawn/assets/31943163/fefe8c7d-88b5-42d5-afd9-cb33cd22df16)
+</details>
+
 
 
 ### Transaction
@@ -45,6 +52,7 @@ Also add interaction in `x/nameservice/autocli.go` to set the name of a wallet a
 		Tx: &autocliv1.ServiceCommandDescriptor{
 			Service: modulev1.Msg_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
+				// highlight-start
 				{
 					RpcMethod: "SetServiceName",
 					Use:       "set [name]",
@@ -53,6 +61,7 @@ Also add interaction in `x/nameservice/autocli.go` to set the name of a wallet a
 						{ProtoField: "name"},
 					},
 				},
+				// highlight-end
                 {
 					// NOTE: this is already included in the current source
 					RpcMethod: "UpdateParams",
@@ -62,4 +71,10 @@ Also add interaction in `x/nameservice/autocli.go` to set the name of a wallet a
 		},
 ```
 
-![AutoCLI Tx](https://github.com/rollchains/spawn/assets/31943163/e945c898-415c-4d22-8bb3-b8af34a44cee)
+<details>
+  <summary>AutoCLI Tx</summary>
+
+  ![AutoCLI Tx](https://github.com/rollchains/spawn/assets/31943163/e945c898-415c-4d22-8bb3-b8af34a44cee)
+</details>
+
+
