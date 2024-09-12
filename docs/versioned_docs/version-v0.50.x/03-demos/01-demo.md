@@ -1,6 +1,6 @@
 ---
-title: "IBC Demo"
-sidebar_label: "IBC Demo"
+title: "IBC Transfers"
+sidebar_label: "IBC Transfer Demo"
 sidebar_position: 1
 slug: /demo/ibc
 ---

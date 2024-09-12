@@ -43,4 +43,12 @@ source ~/.bashrc
 # MacOS
 echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.zshrc
 source ~/.zshrc
+
+# Legacy MacOS Go
+echo 'export PATH=$PATH:$HOME/go/bin' >> ~/.zshrc
+source ~/.zshrc
+
+# Sometimes it can be good to also clear your cache
+# especially WSL users
+go clean -cache
 ```

@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package ibcmodule.v1;
+
+option go_package = "github.com/rollchains/spawn/simapp/x/ibcmodule/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/msg/v1/msg.proto";
+
+// Msg defines the Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  // SendExampleTx defines a rpc handler for MsgSendExampleTx.
+  rpc SendExampleTx(MsgSendExampleTx) returns (MsgSendExampleTxResponse);
+}
+
+// MsgSendExampleTx defines the payload for Msg/SendExampleTx
+message MsgSendExampleTx {
+    option (cosmos.msg.v1.signer) = "sender";
+
+    option (gogoproto.goproto_getters) = false;
+
+    string sender = 1;
+
+    string source_port = 2;
+    string source_channel = 3;
+    uint64 timeout_timestamp = 4;
+
+    string some_data = 5;
+  }
+
+// MsgSendExampleTxResponse defines the response.
+message MsgSendExampleTxResponse {
+    option (gogoproto.goproto_getters) = false;
+
+    uint64 sequence = 1;
+}
+
+
+// ExamplePacketData
+message ExamplePacketData {
+    string sender = 1;
+    string some_data = 2;
+}
+
+// Acknowledgement
+message Acknowledgement {
+    // response
+    oneof response {
+        bytes result = 21;
+        string error = 22;
+    }
+}

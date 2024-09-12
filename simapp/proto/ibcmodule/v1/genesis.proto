@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package ibcmodule.v1;
+
+option go_package = "github.com/rollchains/spawn/simapp/x/ibcmodule/types";
+
+import "gogoproto/gogo.proto";
+
+// GenesisState defines the modules genesis state.
+message GenesisState {
+    string port_id = 1;
+}

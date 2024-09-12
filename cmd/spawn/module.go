@@ -19,16 +19,41 @@ import (
 
 const (
 	FlagIsIBCMiddleware = "ibc-middleware"
+	FlagIsIBCModule     = "ibc-module"
 )
 
 type features struct {
 	ibcMiddleware bool
+	ibcModule     bool
+}
+
+func (f features) validate() error {
+	if f.ibcMiddleware && f.ibcModule {
+		return fmt.Errorf("cannot set both IBC Middleware and IBC Module")
+	}
+
+	return nil
+}
+
+func (f features) getModuleType() string {
+	if f.ibcMiddleware {
+		return "ibcmiddleware"
+	} else if f.ibcModule {
+		return "ibcmodule"
+	}
+
+	return "example"
+}
+func (f features) isIBC() bool {
+	return f.ibcMiddleware || f.ibcModule
 }
 
 func normalizeModuleFlags(f *pflag.FlagSet, name string) pflag.NormalizedName {
 	switch name {
 	case "ibcmiddleware", "middleware":
 		name = FlagIsIBCMiddleware
+	case "ibcmodule", "ibc":
+		name = FlagIsIBCModule
 	}
 
 	return pflag.NormalizedName(name)
@@ -64,7 +89,7 @@ func NewCmd() *cobra.Command {
 
 			// breaks proto-gen regex searches
 			if strings.Contains(extName, "module") {
-				logger.Error("Module names cannot start with 'module'")
+				logger.Error("Module names cannot contain 'module'")
 				return
 			}
 
@@ -78,7 +103,7 @@ func NewCmd() *cobra.Command {
 
 			cwd, err := os.Getwd()
 			if err != nil {
-				logger.Error("Error getting current working directory", err)
+				logger.Error("Error getting current working directory", "err", err)
 				return
 			}
 			if _, err := os.Stat(path.Join(cwd, "x", extName)); err == nil {
@@ -88,29 +113,41 @@ func NewCmd() *cobra.Command {
 
 			isIBCMiddleware, err := cmd.Flags().GetBool(FlagIsIBCMiddleware)
 			if err != nil {
-				logger.Error("Error getting IBC Middleware flag", err)
+				logger.Error("Error getting IBC Middleware flag", "err", err)
+				return
+			}
+
+			isIBCModule, err := cmd.Flags().GetBool(FlagIsIBCModule)
+			if err != nil {
+				logger.Error("Error getting IBC Module flag", "err", err)
 				return
 			}
 
 			feats := &features{
 				ibcMiddleware: isIBCMiddleware,
+				ibcModule:     isIBCModule,
+			}
+
+			if err := feats.validate(); err != nil {
+				logger.Error("Error validating module flags", "err", err)
+				return
 			}
 
 			// Setup Proto files to match the new x/ cosmos module name & go.mod module namespace (i.e. github org).
 			if err := SetupModuleProtoBase(GetLogger(), extName, feats); err != nil {
-				logger.Error("Error setting up proto for module", err)
+				logger.Error("Error setting up proto for module", "err", err)
 				return
 			}
 
 			// sets up the files in x/
 			if err := SetupModuleExtensionFiles(GetLogger(), extName, feats); err != nil {
-				logger.Error("Error setting up x/ module files", err)
+				logger.Error("Error setting up x/ module files", "err", err)
 				return
 			}
 
 			// Import the files to app.go
 			if err := AddModuleToAppGo(GetLogger(), extName, feats); err != nil {
-				logger.Error("Error adding new x/ module to app.go", err)
+				logger.Error("Error adding new x/ module to app.go", "err", err)
 				return
 			}
 
@@ -121,7 +158,8 @@ func NewCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().Bool(FlagIsIBCMiddleware, false, "Set the module as an IBC Middleware module")
+	cmd.Flags().Bool(FlagIsIBCMiddleware, false, "Set the module as an IBC Middleware")
+	cmd.Flags().Bool(FlagIsIBCModule, false, "Set the module as an IBC Module")
 	cmd.Flags().SetNormalizeFunc(normalizeModuleFlags)
 
 	return cmd
@@ -145,10 +183,7 @@ func SetupModuleProtoBase(logger *slog.Logger, extName string, feats *features) 
 	goModName := spawn.ReadCurrentGoModuleName(path.Join(cwd, "go.mod"))
 	protoNamespace := convertGoModuleNameToProtoNamespace(goModName)
 
-	moduleName := "example"
-	if feats.ibcMiddleware {
-		moduleName = "ibcmiddleware"
-	}
+	moduleName := feats.getModuleType()
 
 	logger.Debug("proto namespace", "goModName", goModName, "protoNamespace", protoNamespace, "moduleName", moduleName)
 
@@ -164,11 +199,15 @@ func SetupModuleProtoBase(logger *slog.Logger, extName string, feats *features) 
 		// ignore emebeded files for modules we are not working with
 		switch moduleName {
 		case "example":
-			if strings.Contains(fc.NewPath, "ibcmiddleware") {
+			if !strings.Contains(fc.NewPath, "example") {
 				return nil
 			}
 		case "ibcmiddleware":
-			if strings.Contains(fc.NewPath, "example") {
+			if !strings.Contains(fc.NewPath, "ibcmiddleware") {
+				return nil
+			}
+		case "ibcmodule":
+			if !strings.Contains(fc.NewPath, "ibcmodule") {
 				return nil
 			}
 		}
@@ -204,11 +243,7 @@ func SetupModuleExtensionFiles(logger *slog.Logger, extName string, feats *featu
 		return err
 	}
 
-	moduleName := "example"
-	if feats.ibcMiddleware {
-		moduleName = "ibcmiddleware"
-	}
-
+	moduleName := feats.getModuleType()
 	goModName := spawn.ReadCurrentGoModuleName(path.Join(cwd, "go.mod"))
 
 	// copy x/example to x/extName
@@ -224,11 +259,15 @@ func SetupModuleExtensionFiles(logger *slog.Logger, extName string, feats *featu
 		// ignore emebeded files for modules we are not working with
 		switch moduleName {
 		case "example":
-			if strings.Contains(fc.NewPath, "ibcmiddleware") {
+			if !strings.Contains(fc.NewPath, "example") {
 				return nil
 			}
 		case "ibcmiddleware":
-			if strings.Contains(fc.NewPath, "example") {
+			if !strings.Contains(fc.NewPath, "ibcmiddleware") {
+				return nil
+			}
+		case "ibcmodule":
+			if !strings.Contains(fc.NewPath, "ibcmodule") {
 				return nil
 			}
 		}
@@ -310,6 +349,16 @@ func AddModuleToAppGo(logger *slog.Logger, extName string, feats *features) erro
 		app.MsgServiceRouter(),
 		app.IBCKeeper.ChannelKeeper,
 	)`+"\n", extName, extNameTitle, extName)
+	} else if feats.ibcModule {
+		keeperText = fmt.Sprintf(`	// Create the %s IBC Module Keeper
+	app.%sKeeper = %skeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[%stypes.StoreKey]),
+		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.PortKeeper,
+		scoped%s,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)`+"\n", extName, extNameTitle, extName, extName, extNameTitle)
 	} else {
 		keeperText = fmt.Sprintf(`	// Create the %s Keeper
 	app.%sKeeper = %skeeper.NewKeeper(
@@ -322,17 +371,46 @@ func AddModuleToAppGo(logger *slog.Logger, extName string, feats *features) erro
 
 	appGoLines = append(appGoLines[:evidenceTextLine+2], append([]string{keeperText}, appGoLines[evidenceTextLine+2:]...)...)
 
+	// ibcModule requires some more setup additions for scoped keepers and specific module routing within IBC.
+	if feats.ibcModule {
+		capabilityKeeperSeal := spawn.FindLineWithText(appGoLines, "app.CapabilityKeeper.Seal()")
+		logger.Debug("capabilityKeeperSeal", "extName", extName, "line", evidenceTextLine)
+
+		// scopedMynsibc := app.CapabilityKeeper...
+		scopedKeeperText := fmt.Sprintf(`	scoped%s := app.CapabilityKeeper.ScopeToModule(%stypes.ModuleName)`, extNameTitle, extName)
+		appGoLines = append(appGoLines[:capabilityKeeperSeal], append([]string{scopedKeeperText}, appGoLines[capabilityKeeperSeal:]...)...)
+
+		// find ChainApp ScopedIBCKeeper (where keepers are saved) & save this new keeper to it
+		scopedIBCKeeperKeeper := spawn.FindLineWithText(appGoLines, "ScopedIBCKeeper")
+		logger.Debug("scopedIBCKeeperKeeper", "extName", extName, "line", scopedIBCKeeperKeeper)
+		scopedKeeper := fmt.Sprintf("Scoped%s", extNameTitle)
+
+		line := fmt.Sprintf(`	%s capabilitykeeper.ScopedKeeper`, scopedKeeper)
+		appGoLines = append(appGoLines[:scopedIBCKeeperKeeper+1], append([]string{line}, appGoLines[scopedIBCKeeperKeeper+1:]...)...)
+
+		scopedIBCKeeper := spawn.FindLineWithText(appGoLines, "app.ScopedIBCKeeper =")
+		logger.Debug("scopedIBCKeeper", "extName", extName, "line", scopedIBCKeeper)
+
+		line = fmt.Sprintf(`	app.%s = scoped%s`, scopedKeeper, extNameTitle)
+		appGoLines = append(appGoLines[:scopedIBCKeeper], append([]string{line}, appGoLines[scopedIBCKeeper:]...)...)
+
+		// find app.IBCKeeper.SetRouter
+		ibcKeeperSetRouter := spawn.FindLineWithText(appGoLines, "app.IBCKeeper.SetRouter(")
+		// place module above it `ibcRouter.AddRoute(nameserviceibctypes.ModuleName, nameserviceibc.NewIBCModule(app.NameserviceibcKeeper))`
+		newLine := fmt.Sprintf(`	ibcRouter.AddRoute(%stypes.ModuleName, %s.NewExampleIBCModule(app.%sKeeper))`, extName, extName, extNameTitle)
+		appGoLines = append(appGoLines[:ibcKeeperSetRouter], append([]string{newLine}, appGoLines[ibcKeeperSetRouter:]...)...)
+	}
+
 	// Register the app module.
 	start, end = spawn.FindLinesWithText(appGoLines, "NewManager(")
 	logger.Debug("module manager", "extName", extName, "start", start, "end", end)
 
 	var newAppModuleText string
-	if feats.ibcMiddleware {
+	if feats.isIBC() {
 		newAppModuleText = fmt.Sprintf(`		%s.NewAppModule(app.%sKeeper),`+"\n", extName, extNameTitle)
 	} else {
 		newAppModuleText = fmt.Sprintf(`		%s.NewAppModule(appCodec, app.%sKeeper),`+"\n", extName, extNameTitle)
 	}
-
 	appGoLines = append(appGoLines[:end-1], append([]string{newAppModuleText}, appGoLines[end-1:]...)...)
 
 	// Set the begin block order of the new module.
