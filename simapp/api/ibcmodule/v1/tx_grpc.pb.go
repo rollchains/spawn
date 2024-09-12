@@ -19,15 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_SendTx_FullMethodName = "/ibcmodule.v1.Msg/SendTx"
+	Msg_SendExampleTx_FullMethodName = "/ibcmodule.v1.Msg/SendExampleTx"
 )
 
 // MsgClient is the client API for Msg service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MsgClient interface {
-	// SendTx defines a rpc handler for MsgSendExampleTx.
-	SendTx(ctx context.Context, in *MsgSendExampleTx, opts ...grpc.CallOption) (*MsgSendExampleTxResponse, error)
+	// SendExampleTx defines a rpc handler for MsgSendExampleTx.
+	SendExampleTx(ctx context.Context, in *MsgSendExampleTx, opts ...grpc.CallOption) (*MsgSendExampleTxResponse, error)
 }
 
 type msgClient struct {
@@ -38,9 +38,9 @@ func NewMsgClient(cc grpc.ClientConnInterface) MsgClient {
 	return &msgClient{cc}
 }
 
-func (c *msgClient) SendTx(ctx context.Context, in *MsgSendExampleTx, opts ...grpc.CallOption) (*MsgSendExampleTxResponse, error) {
+func (c *msgClient) SendExampleTx(ctx context.Context, in *MsgSendExampleTx, opts ...grpc.CallOption) (*MsgSendExampleTxResponse, error) {
 	out := new(MsgSendExampleTxResponse)
-	err := c.cc.Invoke(ctx, Msg_SendTx_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Msg_SendExampleTx_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +51,8 @@ func (c *msgClient) SendTx(ctx context.Context, in *MsgSendExampleTx, opts ...gr
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
 type MsgServer interface {
-	// SendTx defines a rpc handler for MsgSendExampleTx.
-	SendTx(context.Context, *MsgSendExampleTx) (*MsgSendExampleTxResponse, error)
+	// SendExampleTx defines a rpc handler for MsgSendExampleTx.
+	SendExampleTx(context.Context, *MsgSendExampleTx) (*MsgSendExampleTxResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -60,8 +60,8 @@ type MsgServer interface {
 type UnimplementedMsgServer struct {
 }
 
-func (UnimplementedMsgServer) SendTx(context.Context, *MsgSendExampleTx) (*MsgSendExampleTxResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendTx not implemented")
+func (UnimplementedMsgServer) SendExampleTx(context.Context, *MsgSendExampleTx) (*MsgSendExampleTxResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendExampleTx not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -76,20 +76,20 @@ func RegisterMsgServer(s grpc.ServiceRegistrar, srv MsgServer) {
 	s.RegisterService(&Msg_ServiceDesc, srv)
 }
 
-func _Msg_SendTx_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Msg_SendExampleTx_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgSendExampleTx)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).SendTx(ctx, in)
+		return srv.(MsgServer).SendExampleTx(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_SendTx_FullMethodName,
+		FullMethod: Msg_SendExampleTx_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).SendTx(ctx, req.(*MsgSendExampleTx))
+		return srv.(MsgServer).SendExampleTx(ctx, req.(*MsgSendExampleTx))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -102,8 +102,8 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SendTx",
-			Handler:    _Msg_SendTx_Handler,
+			MethodName: "SendExampleTx",
+			Handler:    _Msg_SendExampleTx_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

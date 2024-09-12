@@ -22,7 +22,7 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 }
 
 // SendTx implements types.MsgServer.
-func (ms msgServer) SendTx(ctx context.Context, msg *types.MsgSendExampleTx) (*types.MsgSendExampleTxResponse, error) {
+func (ms msgServer) SendExampleTx(ctx context.Context, msg *types.MsgSendExampleTx) (*types.MsgSendExampleTxResponse, error) {
 	sequence, err := ms.sendPacket(
 		ctx, msg.SourcePort, msg.SourceChannel, msg.Sender, msg.SomeData, msg.TimeoutTimestamp)
 	if err != nil {

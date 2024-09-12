@@ -83,7 +83,7 @@ Ensure that `app.NameserviceKeeper` comes before the `app.NsibcKeeper` in the `a
 		runtime.NewKVStoreService(keys[nsibctypes.StoreKey]),
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
-		scopednsibc,
+		scopedNsibc,
 		&app.NameserviceKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
@@ -141,24 +141,25 @@ API_ADDR="http://localhost:8080"
 ICT_POLL_FOR_START $API_ADDR 50
 
 # only 1 channel (ics-20) is auto created on start of the testnet
-CHANNELS=`ICT_RELAYER_CHANNELS $API_ADDR "localchain-1"` && echo "CHANNELS: $CHANNELS"
+echo `ICT_RELAYER_CHANNELS $API_ADDR "localchain-1"`
 
 # We will then create a new channel between localchain-1 and localchain-2
 # Using the new nameservice module we just created.
 ICT_RELAYER_EXEC $API_ADDR "localchain-1" "rly tx connect localchain-1_localchain-2 --src-port=nsibc --dst-port=nsibc --order=unordered --version=nsibc-1"
 
 # We can then run the channels command again to verify the new channel was createds
-CHANNELS=`ICT_RELAYER_CHANNELS $API_ADDR "localchain-1"` && echo "CHANNELS: $CHANNELS"
+echo `ICT_RELAYER_CHANNELS $API_ADDR "localchain-1"`
 ```
 
 ## Really Interaction
 ```bash
-rolld tx nsibc some-data nsibc channel-1 testname --from acc0 --chain-id localchain-1
+# Set the IBC name from chain 1.
+rolld tx nsibc example-tx nsibc channel-1 testname --from acc0 --chain-id localchain-1
 
-rolld q tx 38330A7C5AD4451C93F5BE9E6FF006E3CDA1EAA187B3CE02C43E783632C99C3B
+# View the logs
+rolld q tx 669744547BFD84A76D6026FAC911AB0C5695BE46641CD5884CCE19077A5DA20F
 
-# ICT_RELAYER_EXEC $API_ADDR "loca/lchain-1" "rly tx flush"
-
-ICT_QUERY "http://localhost:8080" "localchain-2" "nameservice print-all"
+# Verify chain 2 set the name (
+# rolld keys show -a acc0 from chain-1
 ICT_QUERY "http://localhost:8080" "localchain-2" "nameservice resolve roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87"
 ```

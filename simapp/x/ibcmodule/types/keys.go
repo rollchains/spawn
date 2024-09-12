@@ -10,5 +10,7 @@ const (
 	// Version defines the current version the IBC module supports
 	Version = ModuleName + "-1"
 
+	StoreKey = ModuleName
+
 	EventTypePacket = "example_data_packet"
 )

@@ -11,11 +11,11 @@ import "cosmos/msg/v1/msg.proto";
 service Msg {
   option (cosmos.msg.v1.service) = true;
 
-  // SendTx defines a rpc handler for MsgSendExampleTx.
-  rpc SendTx(MsgSendExampleTx) returns (MsgSendExampleTxResponse);
+  // SendExampleTx defines a rpc handler for MsgSendExampleTx.
+  rpc SendExampleTx(MsgSendExampleTx) returns (MsgSendExampleTxResponse);
 }
 
-// MsgSendExampleTx defines the payload for Msg/SendTx
+// MsgSendExampleTx defines the payload for Msg/SendExampleTx
 message MsgSendExampleTx {
     option (cosmos.msg.v1.signer) = "sender";
 

@@ -37,7 +37,7 @@ var defaultTimeout = uint64((time.Duration(10) * time.Minute).Nanoseconds())
 // NewSomeDataTxCmd
 func NewSomeDataTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "some-data [src-port] [src-channel] [data]",
+		Use:   "example-tx [src-port] [src-channel] [data]",
 		Short: "Send a packet for some data",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
