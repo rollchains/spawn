@@ -23,7 +23,7 @@ type Keeper struct {
 	ics4Wrapper porttypes.ICS4Wrapper
 }
 
-// NewKeeper creates a new swap Keeper instance.
+// NewKeeper creates a new Keeper instance.
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	msgServiceRouter *baseapp.MsgServiceRouter,

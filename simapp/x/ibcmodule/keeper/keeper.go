@@ -31,7 +31,7 @@ type Keeper struct {
 	authority string
 }
 
-// NewKeeper creates a new swap Keeper instance.
+// NewKeeper creates a new Keeper instance.
 func NewKeeper(
 	appCodec codec.BinaryCodec,
 	storeService store.KVStoreService,
