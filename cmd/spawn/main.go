@@ -32,6 +32,10 @@ var (
 	}
 )
 
+func NewRootCmd() *cobra.Command {
+	return rootCmd
+}
+
 func main() {
 	outOfDateChecker()
 
