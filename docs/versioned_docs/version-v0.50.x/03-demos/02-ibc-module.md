@@ -5,8 +5,6 @@ sidebar_position: 1
 slug: /demo/ibc-module
 ---
 
-<!-- TODO: add new IBC modules after app.TransferKeeper / before transferStack porttypes.IBCModule. -->
-
 # IBC Module
 
 In this tutorial, we'll build on the nameservice tutorial and add an IBC module to the chain. This will allow us to sent our name on another network.
@@ -124,6 +122,9 @@ You could just as easily write the NameMapping in the ibc keeper store as well.
 # build chain binary
 make install
 
+# verify the binary works
+rolld
+
 # build docker image
 make local-image
 
@@ -138,7 +139,7 @@ local-ic start self-ibc
 source <(curl -s https://raw.githubusercontent.com/strangelove-ventures/interchaintest/main/local-interchain/bash/source.bash)
 API_ADDR="http://localhost:8080"
 
-ICT_POLL_FOR_START $API_ADDR 50
+ICT_POLL_FOR_START $API_ADDR 50 && echo "Testnet started"
 
 # only 1 channel (ics-20) is auto created on start of the testnet
 echo `ICT_RELAYER_CHANNELS $API_ADDR "localchain-1"`
@@ -154,7 +155,7 @@ echo `ICT_RELAYER_CHANNELS $API_ADDR "localchain-1"`
 ## Really Interaction
 ```bash
 # Set the IBC name from chain 1.
-rolld tx nsibc example-tx nsibc channel-1 testname --from acc0 --chain-id localchain-1
+rolld tx nsibc example-tx nsibc channel-1 testname --from acc0 --chain-id localchain-1 --yes
 
 # View the logs
 rolld q tx 669744547BFD84A76D6026FAC911AB0C5695BE46641CD5884CCE19077A5DA20F
