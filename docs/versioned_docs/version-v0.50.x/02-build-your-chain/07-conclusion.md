@@ -19,10 +19,10 @@ You just crafted your first blockchain, module, and custom logic with Spawn. You
 * Running a local testnet
 * Interacting with the network
 
-
-
 # What's Next?
 
 Extend the NameService to include IBC support with the [ibc-module](../03-demos/02-ibc-module.md) tutorial.
+
+
 
 <!-- TODO: What's next? (further interaction, Go,TS,Python, public testnet with github, frontend, explorer, cosmwasm) -->

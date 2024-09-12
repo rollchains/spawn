@@ -135,7 +135,6 @@ local-ic start self-ibc
 # Connect New IBC Module
 
 ```bash
-#
 source <(curl -s https://raw.githubusercontent.com/strangelove-ventures/interchaintest/main/local-interchain/bash/source.bash)
 API_ADDR="http://localhost:8080"
 
@@ -158,7 +157,7 @@ echo `ICT_RELAYER_CHANNELS $API_ADDR "localchain-1"`
 rolld tx nsibc example-tx nsibc channel-1 testname --from acc0 --chain-id localchain-1 --yes
 
 # View the logs
-rolld q tx 669744547BFD84A76D6026FAC911AB0C5695BE46641CD5884CCE19077A5DA20F
+rolld q tx 8A2009667022BE432B60158498C2256AEED0E86E9DFF79BD11CC9EA70DEC4A8A
 
 # Verify chain 2 set the name (
 # rolld keys show -a acc0 from chain-1
