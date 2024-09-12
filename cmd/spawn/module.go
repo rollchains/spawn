@@ -35,6 +35,19 @@ func (f features) validate() error {
 	return nil
 }
 
+func (f features) getModuleType() string {
+	if f.ibcMiddleware {
+		return "ibcmiddleware"
+	} else if f.ibcModule {
+		return "ibcmodule"
+	}
+
+	return "example"
+}
+func (f features) isIBC() bool {
+	return f.ibcMiddleware || f.ibcModule
+}
+
 func normalizeModuleFlags(f *pflag.FlagSet, name string) pflag.NormalizedName {
 	switch name {
 	case "ibcmiddleware", "middleware":
@@ -170,12 +183,7 @@ func SetupModuleProtoBase(logger *slog.Logger, extName string, feats *features) 
 	goModName := spawn.ReadCurrentGoModuleName(path.Join(cwd, "go.mod"))
 	protoNamespace := convertGoModuleNameToProtoNamespace(goModName)
 
-	moduleName := "example"
-	if feats.ibcMiddleware {
-		moduleName = "ibcmiddleware"
-	} else if feats.ibcModule {
-		moduleName = "ibcmodule"
-	}
+	moduleName := feats.getModuleType()
 
 	logger.Debug("proto namespace", "goModName", goModName, "protoNamespace", protoNamespace, "moduleName", moduleName)
 
@@ -235,13 +243,7 @@ func SetupModuleExtensionFiles(logger *slog.Logger, extName string, feats *featu
 		return err
 	}
 
-	moduleName := "example"
-	if feats.ibcMiddleware {
-		moduleName = "ibcmiddleware"
-	} else if feats.ibcModule {
-		moduleName = "ibcmodule"
-	}
-
+	moduleName := feats.getModuleType()
 	goModName := spawn.ReadCurrentGoModuleName(path.Join(cwd, "go.mod"))
 
 	// copy x/example to x/extName
@@ -369,11 +371,12 @@ func AddModuleToAppGo(logger *slog.Logger, extName string, feats *features) erro
 
 	appGoLines = append(appGoLines[:evidenceTextLine+2], append([]string{keeperText}, appGoLines[evidenceTextLine+2:]...)...)
 
+	// ibcModule requires some more setup additions for scoped keepers and specific module routing within IBC.
 	if feats.ibcModule {
 		capabilityKeeperSeal := spawn.FindLineWithText(appGoLines, "app.CapabilityKeeper.Seal()")
 		logger.Debug("capabilityKeeperSeal", "extName", extName, "line", evidenceTextLine)
 
-		// scopedMynsibc := app.CapabilityKeeper...s
+		// scopedMynsibc := app.CapabilityKeeper...
 		scopedKeeperText := fmt.Sprintf(`	scoped%s := app.CapabilityKeeper.ScopeToModule(%stypes.ModuleName)`, extNameTitle, extName)
 		appGoLines = append(appGoLines[:capabilityKeeperSeal], append([]string{scopedKeeperText}, appGoLines[capabilityKeeperSeal:]...)...)
 
@@ -385,7 +388,6 @@ func AddModuleToAppGo(logger *slog.Logger, extName string, feats *features) erro
 		line := fmt.Sprintf(`	%s capabilitykeeper.ScopedKeeper`, scopedKeeper)
 		appGoLines = append(appGoLines[:scopedIBCKeeperKeeper+1], append([]string{line}, appGoLines[scopedIBCKeeperKeeper+1:]...)...)
 
-		// find app.ScopedIBCKeeper =
 		scopedIBCKeeper := spawn.FindLineWithText(appGoLines, "app.ScopedIBCKeeper =")
 		logger.Debug("scopedIBCKeeper", "extName", extName, "line", scopedIBCKeeper)
 
@@ -404,12 +406,11 @@ func AddModuleToAppGo(logger *slog.Logger, extName string, feats *features) erro
 	logger.Debug("module manager", "extName", extName, "start", start, "end", end)
 
 	var newAppModuleText string
-	if feats.ibcMiddleware || feats.ibcModule {
+	if feats.isIBC() {
 		newAppModuleText = fmt.Sprintf(`		%s.NewAppModule(app.%sKeeper),`+"\n", extName, extNameTitle)
 	} else {
 		newAppModuleText = fmt.Sprintf(`		%s.NewAppModule(appCodec, app.%sKeeper),`+"\n", extName, extNameTitle)
 	}
-
 	appGoLines = append(appGoLines[:end-1], append([]string{newAppModuleText}, appGoLines[end-1:]...)...)
 
 	// Set the begin block order of the new module.
