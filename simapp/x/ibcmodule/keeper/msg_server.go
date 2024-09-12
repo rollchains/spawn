@@ -22,14 +22,14 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 }
 
 // SendTx implements types.MsgServer.
-func (ms msgServer) SendTx(ctx context.Context, msg *types.MsgSendTx) (*types.MsgSendTxResponse, error) {
+func (ms msgServer) SendTx(ctx context.Context, msg *types.MsgSendExampleTx) (*types.MsgSendExampleTxResponse, error) {
 	sequence, err := ms.sendPacket(
 		ctx, msg.SourcePort, msg.SourceChannel, msg.Sender, msg.SomeData, msg.TimeoutTimestamp)
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.MsgSendTxResponse{
+	return &types.MsgSendExampleTxResponse{
 		Sequence: sequence,
 	}, nil
 }
@@ -48,7 +48,6 @@ func (ms msgServer) sendPacket(ctx context.Context, sourcePort, sourceChannel, s
 		Sender:   sender,
 		SomeData: someData,
 	}
-	// packetDataBz := types.EncodePacketData(packetData)
 
 	sequence, err = ms.ics4Wrapper.SendPacket(sdkCtx, channelCap, sourcePort, sourceChannel, clienttypes.ZeroHeight(), timeoutTimestamp, packetData.MustGetBytes())
 	if err != nil {

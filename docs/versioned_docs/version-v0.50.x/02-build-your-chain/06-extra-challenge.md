@@ -33,3 +33,5 @@ func (ms msgServer) SetServiceName(ctx context.Context, msg *types.MsgSetService
 }
 ```
 </details>
+
+<!-- TODO: add a get-all names or way to resolve a name -> wallet -->

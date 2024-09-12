@@ -11,12 +11,12 @@ import "cosmos/msg/v1/msg.proto";
 service Msg {
   option (cosmos.msg.v1.service) = true;
 
-  // SendTx defines a rpc handler for MsgSendTx.
-  rpc SendTx(MsgSendTx) returns (MsgSendTxResponse);
+  // SendTx defines a rpc handler for MsgSendExampleTx.
+  rpc SendTx(MsgSendExampleTx) returns (MsgSendExampleTxResponse);
 }
 
-// MsgSendTx defines the payload for Msg/SendTx
-message MsgSendTx {
+// MsgSendExampleTx defines the payload for Msg/SendTx
+message MsgSendExampleTx {
     option (cosmos.msg.v1.signer) = "sender";
 
     option (gogoproto.goproto_getters) = false;
@@ -30,8 +30,8 @@ message MsgSendTx {
     string some_data = 5;
   }
 
-// MsgSendTxResponse defines the response for MsgSendTx
-message MsgSendTxResponse {
+// MsgSendExampleTxResponse defines the response.
+message MsgSendExampleTxResponse {
     option (gogoproto.goproto_getters) = false;
 
     uint64 sequence = 1;

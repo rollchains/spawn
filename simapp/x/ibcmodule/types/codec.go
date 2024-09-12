@@ -22,7 +22,7 @@ func init() {
 
 // RegisterLegacyAminoCodec registers concrete types on the LegacyAmino codec
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgSendTx{}, ModuleName+"/MsgSendTx", nil)
+	cdc.RegisterConcrete(&MsgSendExampleTx{}, ModuleName+"/MsgSendExampleTx", nil)
 }
 
 func RegisterInterfaces(registry types.InterfaceRegistry) {
@@ -30,7 +30,7 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
-		&MsgSendTx{},
+		&MsgSendExampleTx{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)

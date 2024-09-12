@@ -26,3 +26,7 @@ ICT_RELAYER_EXEC $API_ADDR "localchain-1" "rly tx connect localchain-1_localchai
 
 # 2 open :D
 CHANNELS=`ICT_RELAYER_CHANNELS $API_ADDR "localchain-1"` && echo "CHANNELS: $CHANNELS"
+
+
+# perform ibc action
+

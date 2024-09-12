@@ -131,7 +131,7 @@ func (im ExampleIBCModule) OnRecvPacket(
 	// only attempt the application logic if the packet data was successfully decoded
 	if ack.Success() {
 		// TODO: perform your logic here
-		err := im.handleOnRecvLogic(ctx)
+		err := im.handleOnRecvLogic(ctx, data)
 		if err != nil {
 			ack = channeltypes.NewErrorAcknowledgement(err)
 			ackErr = err
@@ -154,7 +154,7 @@ func (im ExampleIBCModule) OnRecvPacket(
 	return ack
 }
 
-func (im ExampleIBCModule) handleOnRecvLogic(ctx context.Context) error {
+func (im ExampleIBCModule) handleOnRecvLogic(ctx context.Context, data types.ExamplePacketData) error {
 	v, err := im.keeper.ExampleStore.Get(ctx)
 	if err != nil {
 		return err

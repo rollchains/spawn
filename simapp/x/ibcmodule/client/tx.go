@@ -60,7 +60,7 @@ func NewSomeDataTxCmd() *cobra.Command {
 				timeoutTimestamp = uint64(now + time.Duration(1*time.Hour).Nanoseconds())
 			}
 
-			msg := &types.MsgSendTx{
+			msg := &types.MsgSendExampleTx{
 				Sender:           sender,
 				SourcePort:       srcPort,
 				SourceChannel:    srcChannel,

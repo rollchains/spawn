@@ -34,7 +34,9 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterLegacyAminoCodec implements AppModuleBasic interface.
-func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {}
+func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+	types.RegisterLegacyAminoCodec(cdc)
+}
 
 // RegisterInterfaces registers module concrete types into protobuf Any.
 func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
@@ -115,8 +117,8 @@ func (am AppModule) InitGenesis(
 
 // ExportGenesis returns the exported genesis state as raw bytes for the swap module.
 func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
-	gs := am.keeper.ExportGenesis(ctx)
-	return cdc.MustMarshalJSON(gs)
+	genState := am.keeper.ExportGenesis(ctx)
+	return cdc.MustMarshalJSON(genState)
 }
 
 // ConsensusVersion returns the consensus state breaking version for the swap module.

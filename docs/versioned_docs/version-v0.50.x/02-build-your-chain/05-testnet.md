@@ -59,3 +59,7 @@ The expected result should be:
 ```
 
 Your network is now running and you have successfully set and resolved a name! 🎉
+
+:::note
+When you are ready to stop the testnet, you can use `ctrl + c` or `killall -9 rolld`.
+:::

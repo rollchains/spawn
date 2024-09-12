@@ -1,19 +1,11 @@
 package keeper
 
 import (
-	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 )
-
-// hasCapability checks if the IBC app module owns the port capability for the desired port
-func (k Keeper) hasCapability(ctx sdk.Context, portID string) bool {
-	_, ok := k.ScopedKeeper.GetCapability(ctx, host.PortPath(portID))
-	return ok
-}
 
 func (k Keeper) IsBound(ctx sdk.Context, portID string) bool {
 	return k.PortKeeper.IsBound(ctx, portID)
@@ -23,10 +15,7 @@ func (k Keeper) IsBound(ctx sdk.Context, portID string) bool {
 // order to expose it to module's InitGenesis function
 func (k Keeper) BindPort(ctx sdk.Context, portID string) error {
 	cap := k.PortKeeper.BindPort(ctx, portID)
-	fmt.Printf("port binded: %s\n", portID)
-	err := k.ClaimCapability(ctx, cap, host.PortPath(portID))
-	fmt.Printf("port capability claimed: %s\n", portID)
-	return err
+	return k.ClaimCapability(ctx, cap, host.PortPath(portID))
 
 }
 
