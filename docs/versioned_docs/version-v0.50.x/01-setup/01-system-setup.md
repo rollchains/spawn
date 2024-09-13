@@ -69,6 +69,7 @@ git config --global user.name "Your Name"
 brew install make
 brew install gcc
 brew install wget
+brew install jq
 
 # Github CLI - https://github.com/cli/cli
 brew install gh
@@ -78,7 +79,10 @@ gh auth login
 brew install go
 
 # Docker
-brew install docker
+brew install --cask docker
+open -a Docker # start docker desktop
+# settings -> General -> Start Docker Desktop when you sign in to your computer
+# Apply & Restart
 
 # Setup base git config
 git config --global user.email "yourEmail@gmail.com"

@@ -158,7 +158,7 @@ You could just as easily write the NameMapping in the ibc keeper store as well.
 make install
 
 # verify the binary works. if you get a panic,
-# `make proto-gen`, then re make install
+# `make proto-gen`, then re `make install`
 rolld
 
 # build docker image
@@ -177,7 +177,9 @@ The source is publicly available on GitHub to review. It gives you the ability t
 ```bash
 # Import the testnet interaction helper functions
 # for local-interchain
-source <(curl -s https://raw.githubusercontent.com/strangelove-ventures/interchaintest/main/local-interchain/bash/source.bash)
+curl -s https://raw.githubusercontent.com/strangelove-ventures/interchaintest/main/local-interchain/bash/source.bash > ict_source.bash
+source ./ict_source.bash
+
 API_ADDR="http://localhost:8080"
 
 # Waits for the testnet to start
@@ -219,3 +221,16 @@ rolld q tx 8A2009667022BE432B60158498C2256AEED0E86E9DFF79BD11CC9EA70DEC4A8A
 # `rolld keys show -a acc0` from chain-1
 ICT_QUERY "http://localhost:8080" "localchain-2" "nameservice resolve roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87"
 ```
+
+## Summary
+
+You just build an IBC module that interacts with your other nameservice module! It allowed you to set your name from a different network entirely and securely with IBC.
+
+## What you Learned
+
+* Scaffolding ab IBC module
+* Importing another module
+* Adding business logic for an IBC request
+* Connecting two chains with a custom IBC protocol
+* Sending your first IBC packet from chain A
+* Processing the packet on chain B and verifying it was set
