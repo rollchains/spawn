@@ -14,7 +14,7 @@ var SimAppFS embed.FS
 //go:embed interchaintest/*
 var ICTestFS embed.FS
 
-//go:embed proto/*
+//go:embed proto/example/* proto/ibcmiddleware/* proto/ibcmodule/*
 var ProtoModuleFS embed.FS
 
 //go:embed x/*

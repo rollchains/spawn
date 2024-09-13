@@ -187,7 +187,19 @@ def main():
             f"u{random_string(5, True)}",
             random_string(10, True),
         )
-        .set_custom_modules([f"{random_string(6, True)}" for _ in range(10)])
+        .set_custom_modules([f"{random_string(6, True)}" for _ in range(5)] + [f"{random_string(6, True)} --ibc-module" for _ in range(5)] + [f"{random_string(6, True)} --ibc-middleware" for _ in range(10)])
+        .set_with_local_unit_test()
+        .build(),
+        CmdCreator(
+            "poswithwithibctest",
+            POS,
+            [],
+            random_string(5, True),
+            f"{random_string(6, True)}",
+            f"u{random_string(5, True)}",
+            random_string(10, True),
+        )
+        .set_custom_modules(["nsibc --ibc-module"])
         .set_with_local_unit_test()
         .build(),
     ]
