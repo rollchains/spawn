@@ -42,8 +42,8 @@ sudo apt update && sudo apt install snapd
 sudo snap info go
 sudo snap install go --channel=1.23/stable --classic
 
-# Install Basics
-sudo apt install make gcc git jq
+# Install Base
+sudo apt install make gcc git jq wget
 
 # Install github-cli
 sudo snap install gh
@@ -56,7 +56,7 @@ sudo snap install docker
 # Fix versioning for interaction of commands
 sudo chmod 666 /var/run/docker.sock
 
-# Setup base github config
+# Setup base git config
 git config --global user.email "yourEmail@gmail.com"
 git config --global user.name "Your Name"
 ```
@@ -68,6 +68,7 @@ git config --global user.name "Your Name"
 # Base
 brew install make
 brew install gcc
+brew install wget
 
 # Github CLI - https://github.com/cli/cli
 brew install gh
@@ -79,7 +80,7 @@ brew install go
 # Docker
 brew install docker
 
-# Setup base github config
+# Setup base git config
 git config --global user.email "yourEmail@gmail.com"
 git config --global user.name "Your Name"
 ```
@@ -89,9 +90,9 @@ git config --global user.name "Your Name"
 
 ```bash
 # Base
-sudo apt install make gcc git
+sudo apt install make gcc git jq wget
 
-# Github CLI - https://github.com/cli/cli
+# (optional) Github CLI - https://github.com/cli/cli
 curl -sS https://webi.sh/gh | sh
 gh auth login
 
@@ -103,7 +104,7 @@ sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go$GO_VERSION.linux-amd
 # Docker
 sudo apt -y install docker.io
 
-# Setup base github config
+# Setup base git config
 git config --global user.email "yourEmail@gmail.com"
 git config --global user.name "Your Name"
 ```
