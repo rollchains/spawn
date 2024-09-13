@@ -45,17 +45,14 @@ run:
 ## get-heighliner: Install the cosmos docker utility.
 get-heighliner:
 	@echo ⏳ Installing heighliner...
-	git clone https://github.com/strangelove-ventures/heighliner.git
+	git clone --depth 1 https://github.com/strangelove-ventures/heighliner.git
 	cd heighliner && go install
 	@echo ✅ heighliner installed to $(shell which heighliner)
 
 get-localic:
 	@echo "Installing local-interchain"
-# git clone --branch v8.7.0 https://github.com/strangelove-ventures/interchaintest.git interchaintest-downloader
-# cd interchaintest-downloader/local-interchain && make install
-	wget https://github.com/strangelove-ventures/interchaintest/releases/download/v8.7.0/local-ic
-	chmod +x local-ic
-	mv local-ic $(shell go env GOPATH)/bin
+	git clone --depth 1 --branch v8.7.0 https://github.com/strangelove-ventures/interchaintest.git interchaintest-downloader
+	cd interchaintest-downloader/local-interchain && make install
 	@sleep 0.1
 	@echo ✅ local-interchain installed $(shell which local-ic)
 
