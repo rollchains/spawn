@@ -11,8 +11,8 @@ services:
     image: pingpub:latest
     network_mode: "host"
     build:
-      context: pingpub
-      dockerfile: ./explorer/Dockerfile
+      context: explorer
+      dockerfile: ./Dockerfile
 
     volumes:
       - ./explorer/chains:/app/chains/

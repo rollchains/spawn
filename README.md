@@ -22,7 +22,7 @@ If you do not have [`go 1.22+`](https://go.dev/doc/install), [`Docker`](https://
 
 ```bash
 # Download the the Spawn repository
-git clone https://github.com/rollchains/spawn.git --depth=1 --branch v0.50.7
+git clone https://github.com/rollchains/spawn.git --depth=1 --branch v0.50.8
 cd spawn
 
 # Install Spawn
@@ -53,6 +53,6 @@ In this 4 minute demo we:
 - Build and launch a chain locally
 - Interact with the chain's nameservice logic, settings a name, and retrieving it
 
-[Follow Along with the nameservice demo](https://rollchains.github.io/spawn/v0.50/build/name-service/) | [source](./docs/versioned_docs/version-v0.50.x/02-build-your-chain/01-nameservice.md)
+[Follow Along with the nameservice demo](https://rollchains.github.io/spawn/v0.50/build/name-service/) | [source](./docs/versioned_docs/version-v0.50.x/02-build-your-application/01-nameservice.md)
 
 https://github.com/rollchains/spawn/assets/31943163/ecc21ce4-c42c-4ff2-8e73-897c0ede27f0

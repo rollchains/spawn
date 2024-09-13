@@ -13,6 +13,6 @@ Spawn is the easiest way to build, maintain and scale a Cosmos SDK blockchain. S
 
 ## NameService Demo
 
-[Follow Along with the NameService demo](../version-v0.50.x/02-build-your-chain/01-nameservice.md)
+[Follow Along with the NameService demo](../version-v0.50.x/02-build-your-application/01-nameservice.md)
 
 <video src="https://github.com/rollchains/spawn/assets/31943163/ecc21ce4-c42c-4ff2-8e73-897c0ede27f0" width="100%" height="100%" controls></video>

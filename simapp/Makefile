@@ -226,6 +226,7 @@ get-localic:
 	@echo "Installing local-interchain"
 	git clone --depth 1 --branch v8.7.0 https://github.com/strangelove-ventures/interchaintest.git interchaintest-downloader
 	cd interchaintest-downloader/local-interchain && make install
+	@sleep 0.1
 	@echo ✅ local-interchain installed $(shell which local-ic)
 
 is-localic-installed:
@@ -234,8 +235,11 @@ ifeq (,$(shell which local-ic))
 endif
 
 get-heighliner:
-	git clone https://github.com/strangelove-ventures/heighliner.git
+	@echo ⏳ Installing heighliner...
+	git clone --depth 1 https://github.com/strangelove-ventures/heighliner.git
 	cd heighliner && go install
+	@sleep 0.1
+	@echo ✅ heighliner installed to $(shell which heighliner)
 
 local-image:
 ifeq (,$(shell which heighliner))

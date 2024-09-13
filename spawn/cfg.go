@@ -108,6 +108,13 @@ func (cfg *NewChainConfig) Validate() error {
 		return types.ErrCfgProjSpecialChars
 	}
 
+	// TODO(breaks): new chain named matrixposibcmodule && cd && spawn new nsibc --ibc-module moves in all template modules too
+	// Probably since it fines it in the import namespace, so when moving files it just coppies all over.
+	// The module.go `switch moduleName` is the culprit.
+	if strings.Contains(cfg.ProjectName, "ibcmodule") || strings.Contains(cfg.ProjectName, "ibcmiddleware") {
+		return fmt.Errorf("project name cannot contain 'ibcmodule' or 'ibcmiddleware'")
+	}
+
 	if cfg.GithubOrg == "" {
 		return types.ErrCfgEmptyOrg
 	}
