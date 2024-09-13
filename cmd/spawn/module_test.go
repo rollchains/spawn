@@ -36,11 +36,11 @@ func TestModuleGeneration(t *testing.T) {
 
 	mcs := []mc{
 		{
-			Name: "ibcmodule",
+			Name: "iibcmid",
 			Args: []string{"new", "myibc", "--ibc-module"},
 		},
 		{
-			Name: "ibcmiddleware",
+			Name: "iibcmod",
 			Args: []string{"new", "myibcmw", "--ibc-middleware"},
 		},
 		{
