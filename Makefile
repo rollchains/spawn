@@ -47,6 +47,7 @@ get-heighliner:
 	@echo ⏳ Installing heighliner...
 	git clone --depth 1 https://github.com/strangelove-ventures/heighliner.git
 	cd heighliner && go install
+	@sleep 0.1
 	@echo ✅ heighliner installed to $(shell which heighliner)
 
 get-localic:
