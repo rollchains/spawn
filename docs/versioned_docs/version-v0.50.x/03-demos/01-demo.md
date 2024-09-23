@@ -30,7 +30,7 @@ spawn new rollchain \
 --bech32=roll \
 --denom=uroll \
 --bin=rolld \
---disabled=cosmwasm,globalfee,block-explorer \
+--disabled=cosmwasm,block-explorer \
 --org=${GITHUB_USERNAME}
 ```
 

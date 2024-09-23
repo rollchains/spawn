@@ -14,7 +14,6 @@ var (
 	TokenFactory        = "tokenfactory"
 	POA                 = "poa"
 	POS                 = "staking" // if ICS is used, we remove staking
-	GlobalFee           = "globalfee"
 	CosmWasm            = "cosmwasm"
 	WasmLC              = "wasmlc"
 	PacketForward       = "packetforward"
@@ -30,7 +29,7 @@ var (
 
 // used for fuzz testing
 var AllFeatures = []string{
-	TokenFactory, POA, GlobalFee, CosmWasm, WasmLC,
+	TokenFactory, POA, CosmWasm, WasmLC,
 	PacketForward, IBCRateLimit, Ignite, InterchainSecurity, POS,
 }
 
@@ -44,8 +43,6 @@ func AliasName(name string) string {
 		return POA
 	case POS, "proof-of-stake", "staking", "pos":
 		return POS
-	case GlobalFee, "global-fee":
-		return GlobalFee
 	case CosmWasm, "wasm", "cw":
 		return CosmWasm
 	case WasmLC, "wasm-lc", "cwlc", "cosmwasm-lc", "wasm-light-client",
@@ -85,8 +82,6 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		// modules
 		case TokenFactory:
 			fc.RemoveTokenFactory()
-		case GlobalFee:
-			fc.RemoveGlobalFee()
 		case CosmWasm:
 			fc.RemoveCosmWasm(!cfg.IsFeatureEnabled(WasmLC))
 		case WasmLC:
@@ -154,23 +149,6 @@ func (fc *FileContent) RemovePOA() {
 
 	fc.DeleteFile(path.Join("interchaintest", "poa_test.go"))
 	fc.DeleteFile(path.Join("interchaintest", "poa.go")) // helpers
-}
-
-func (fc *FileContent) RemoveGlobalFee() {
-	text := "globalfee"
-	fc.RemoveGoModImport("github.com/strangelove-ventures/globalfee")
-
-	fc.HandleAllTagged(text)
-
-	fc.RemoveModuleFromText(text,
-		appGo,
-		appAnte,
-		path.Join("scripts", "test_node.sh"),
-		path.Join("scripts", "test_ics_node.sh"),
-		path.Join("interchaintest", "setup.go"),
-	)
-
-	fc.RemoveModuleFromText("GlobalFee", appGo)
 }
 
 func (fc *FileContent) RemoveCosmWasm(isWasmClientDisabled bool) {
