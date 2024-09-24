@@ -11,7 +11,6 @@ ConsensusFeatures = ["proof-of-authority", "proof-of-stake", "interchain-securit
 
 SupportedFeatures = [
     "tokenfactory",
-    "globalfee",
     "ibc-packetforward",
     "ibc-ratelimit",
     "cosmwasm",
@@ -84,7 +83,7 @@ def main():
         CmdCreator(
             "randmixone",
             POS,
-            "globalfee,wasmlc,ignite".split(","),
+            "wasmlc,ignite".split(","),
             random_string(5, True),
             f"{random_string(6, True)}",
             f"u{random_string(5, True)}",
@@ -130,7 +129,7 @@ def main():
         CmdCreator(
             "randmixfive",
             POS,
-            "globalfee,ibc-ratelimit".split(","),
+            "ibc-ratelimit".split(","),
             random_string(5, True),
             f"{random_string(6, True)}",
             f"u{random_string(5, True)}",
@@ -141,7 +140,7 @@ def main():
         CmdCreator(
             "mywlcnocw",
             POS,
-            "tokenfactory,globalfee,ibc-packetforward,cosmwasm".split(","),
+            "tokenfactory,ibc-packetforward,cosmwasm".split(","),
             random_string(5, True),
             f"{random_string(6, True)}",
             f"u{random_string(5, True)}",

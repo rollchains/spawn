@@ -25,7 +25,6 @@ var (
 
 	SupportedFeatures = append(ConsensusFeatures, items{
 		{ID: "tokenfactory", IsSelected: true, Details: "Native token minting, sending, and burning on the chain"},
-		{ID: "globalfee", IsSelected: true, Details: "Static minimum fee(s) for all transactions, controlled by governance"},
 		{ID: "ibc-packetforward", IsSelected: true, Details: "Packet forwarding"},
 		{ID: "ibc-ratelimit", IsSelected: false, Details: "Thresholds for outflow as a percent of total channel value"},
 		{ID: "cosmwasm", IsSelected: false, Details: "Cosmos smart contracts"},
@@ -81,7 +80,7 @@ var newChain = &cobra.Command{
 	Short: "Create a new project",
 	Example: fmt.Sprintf(
 		`  - spawn new rollchain --consensus=proof-of-stake --%s=cosmos --%s=simd --%s=token --org=abcde
-  - spawn new rollchain --consensus=proof-of-authority --%s=tokenfactory,globalfee
+  - spawn new rollchain --consensus=proof-of-authority --%s=tokenfactory
   - spawn new rollchain --consensus=interchain-security --%s=cosmwasm --%s
   - spawn new rollchain --%s`,
 		FlagWalletPrefix, FlagBinDaemon, FlagTokenDenom, FlagDisabled, FlagDisabled, FlagNoGit, FlagBypassPrompt,

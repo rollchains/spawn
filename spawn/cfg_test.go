@@ -19,18 +19,18 @@ func TestDisabled(t *testing.T) {
 	testCases := []tcase{
 		{
 			name:     "same",
-			disabled: []string{"poa", "globalfee", "cosmwasm"},
-			expected: []string{"poa", "globalfee", "cosmwasm"},
+			disabled: []string{"poa", "cosmwasm"},
+			expected: []string{"poa", "cosmwasm"},
 		},
 		{
 			name:     "remove poa duplicate",
-			disabled: []string{"poa", "globalfee", "cosmwasm", "poa"},
-			expected: []string{"poa", "globalfee", "cosmwasm"},
+			disabled: []string{"poa", "cosmwasm", "poa"},
+			expected: []string{"poa", "cosmwasm"},
 		},
 		{
-			name:     "remove poa and globalfee duplicate",
-			disabled: []string{"poa", "globalfee", "cosmwasm", "poa", "globalfee"},
-			expected: []string{"poa", "globalfee", "cosmwasm"},
+			name:     "remove poa duplicate",
+			disabled: []string{"poa", "cosmwasm", "poa"},
+			expected: []string{"poa", "cosmwasm"},
 		},
 		{
 			name:     "panic due to invalid disabled feature",
@@ -87,13 +87,13 @@ func TestNormalizedNames(t *testing.T) {
 	testCases := []tcase{
 		{
 			name:     "normal for both",
-			disabled: []string{spawn.POA, spawn.GlobalFee, spawn.CosmWasm},
-			expected: []string{spawn.POA, spawn.GlobalFee, spawn.CosmWasm},
+			disabled: []string{spawn.POA, spawn.CosmWasm},
+			expected: []string{spawn.POA, spawn.CosmWasm},
 		},
 		{
 			name:     "fix-all",
-			disabled: []string{"proof-of-authority", "global-fee", "cw"},
-			expected: []string{spawn.POA, spawn.GlobalFee, spawn.CosmWasm},
+			disabled: []string{"proof-of-authority", "cw"},
+			expected: []string{spawn.POA, spawn.CosmWasm},
 		},
 		{
 			name:     "remove duplicate",
