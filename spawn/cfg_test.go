@@ -92,7 +92,7 @@ func TestNormalizedNames(t *testing.T) {
 		},
 		{
 			name:     "fix-all",
-			disabled: []string{"proof-of-authority", "global-fee", "cw"},
+			disabled: []string{"proof-of-authority", "cw"},
 			expected: []string{spawn.POA, spawn.CosmWasm},
 		},
 		{
