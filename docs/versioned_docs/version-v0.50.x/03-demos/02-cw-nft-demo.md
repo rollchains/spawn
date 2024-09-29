@@ -1,8 +1,8 @@
 ---
 title: "CW NFTs"
 sidebar_label: "CosmWasm NFTs"
-sidebar_position: 1
 slug: /demo/cw-nft
+# sidebar_position: 1
 ---
 
 # Non-fungible Token Demo
