@@ -1,6 +1,6 @@
 ---
 title: "Name Service"
-sidebar_label: "Build A Name Service"
+sidebar_label: "Build a Name Service"
 sidebar_position: 1
 slug: /build/name-service
 ---
