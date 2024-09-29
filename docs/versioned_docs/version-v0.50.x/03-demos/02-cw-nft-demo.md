@@ -1,6 +1,6 @@
 ---
-title: "NFTs"
-sidebar_label: "NFT Demo"
+title: "CW NFTs"
+sidebar_label: "CosmWasm NFTs"
 sidebar_position: 1
 slug: /demo/cw-nft
 ---
@@ -28,9 +28,6 @@ Some machines like Windows and ARM64 (MacOS) will not work with running the test
 
 Build a new chain that has CosmWasm configured.
 
-
-
-
 ```bash
 GITHUB_USERNAME=rollchains
 
@@ -52,8 +49,6 @@ If you remove the `--disabled` flag; a more intuitive UI selection approach will
 ![Image](https://github.com/user-attachments/assets/16698f3f-143b-4258-9ff2-fc429764b58c)
 
 </details>
-
----
 
 
 ## Start the testnet
@@ -79,7 +74,6 @@ make sh-testnet
 rolld q wasm params
 ```
 
-<!-- show bash output -->
 <details>
 
 <summary>Expected Output</summary>
@@ -105,7 +99,7 @@ curl -LO https://github.com/public-awesome/cw-nfts/releases/download/v0.19.0/cw7
 
 # Upload the source code to the chain
 # - gas is is amount of compute resources to allocate.
-rolld tx wasm store ./cw721_base.wasm --from=acc0 --chain-id=localchain-1 \
+rolld tx wasm store ./cw721_base.wasm --from=acc0 \
     --gas=auto --gas-adjustment=2.0 --yes
 ```
 
@@ -172,7 +166,7 @@ MESSAGE='{"name":"Roll","symbol":"ROLL","minter":"roll1hj5fveer5cjtn4wd6wstzugjf
 
 # Create the NFT collection
 rolld tx wasm instantiate 1 $MESSAGE --no-admin --from=acc0 --label="my-nft" \
-    --chain-id=localchain-1 --gas=auto --gas-adjustment=2.0 --yes
+    --gas=auto --gas-adjustment=2.0 --yes
 ```
 
 ## Contract address
@@ -211,7 +205,7 @@ https://github.com/public-awesome/cw-nfts/blob/v0.19.0/packages/cw721/src/msg.rs
 ```bash
 MESSAGE='{"mint":{"token_id":"1","owner":"roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87","token_uri":"https://onlinejpgtools.com/images/examples-onlinejpgtools/sunflower.jpg"}}'
 
-rolld tx wasm execute $NFT_CONTRACT $MESSAGE --from=acc0 --chain-id=localchain-1 \
+rolld tx wasm execute $NFT_CONTRACT $MESSAGE --from=acc0 \
     --gas=auto --gas-adjustment=2.0 --yes
 ```
 
@@ -260,7 +254,7 @@ https://github.com/public-awesome/cw-nfts/blob/v0.19.0/packages/cw721/src/msg.rs
 rolld keys show acc1 -a # roll1efd63aw40lxf3n4mhf7dzhjkr453axur57cawh
 
 MESSAGE='{"transfer_nft":{"recipient":"roll1efd63aw40lxf3n4mhf7dzhjkr453axur57cawh","token_id":"1"}}'
-rolld tx wasm execute $NFT_CONTRACT $MESSAGE --from=acc0 --chain-id=localchain-1 --gas=auto --gas-adjustment=2.0 --yes
+rolld tx wasm execute $NFT_CONTRACT $MESSAGE --from=acc0 --gas=auto --gas-adjustment=2.0 --yes
 
 # Get who is the owner of 1
 # Moved to: roll1efd63aw40lxf3n4mhf7dzhjkr453axur57cawh
