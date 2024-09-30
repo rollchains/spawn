@@ -1,18 +1,18 @@
 ---
-title: "IBC Module"
-sidebar_label: "IBC NameService Module"
-sidebar_position: 1
-slug: /demo/ibc-module
+title: "IBC NameService Module"
+sidebar_label: "IBC NameService (Part 2)"
+sidebar_position: 8
+slug: /build/name-service-ibc-module
 ---
 
-# IBC NameService Module
+# IBC Name Service Module
 
-In this section, you will build on top of the Service tutorial to add cross chain functionality. This will allow you to sent a name from another network.
+In this section, you will build on top of the Name Service tutorial to add cross chain functionality. This will allow you to sent a name from another network.
 
 ## Prerequisites
 - [System Setup](../01-setup/01-system-setup.md)
 - [Install Spawn](../01-setup/02-install-spawn.md)
-- [Build Your Name Service Chain Tutorial](../02-build-your-application/01-nameservice.md)
+- [Build Your Name Service Chain Tutorial](./01-nameservice.md)
 
 ## Create your chain
 

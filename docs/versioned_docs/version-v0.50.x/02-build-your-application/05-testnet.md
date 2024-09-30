@@ -28,9 +28,9 @@ The chain will begin to create (mint) new blocks. You can see the logs of the ne
 
 ### Interact Set Name
 
-Using the newly built binary *(rolld from the --bin flag when we created the chain)*, you are going to execute the `set` transaction to your name. In this example we will use "alice". This links account `acc1` address to the desired name in the keeper.
+Using the newly built binary *(rolld from the --bin flag when the chain was created)*, you are going to execute the `set` transaction to your name. In this example, use "alice". This links account `acc1` address to the desired name in the keeper.
 
-Then, we resolve this name with the nameservice lookup. `$(rolld keys show acc1 -a)` is a substitute for the acc1's address. You can also use just `roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87` here.
+Then, resolve this name with the nameservice lookup. `$(rolld keys show acc1 -a)` is a substitute for the acc1's address. You can also use just `roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87` here.
 
 ```bash
 rolld tx nameservice set alice --from=acc1 --yes
