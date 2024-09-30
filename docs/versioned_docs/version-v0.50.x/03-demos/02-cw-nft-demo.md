@@ -137,7 +137,7 @@ pagination:
 
 ## Create a new NFT collection
 
-With the source now uploaded, anyone can create a new NFT collection with this base contract code now on the chain. This will be a new contract that only we control. Now, instantiate the contract to create the new NFT collection.
+With the source now uploaded, anyone can create a new NFT collection with this base contract code now on the chain. This will be a new contract that only you control. Now, instantiate the contract to create the new NFT collection.
 
 <details>
 
@@ -174,10 +174,10 @@ rolld tx wasm instantiate 1 $MESSAGE --no-admin --from=acc0 --label="my-nft" \
 A contract address is where all the collection and information is stored. It never changes and is the unique identifier for interaction. Think of this similar to a website, google.com always brings you to google search. `NFT_CONTRACT` is always the RollNFTs collection.
 
 ```bash
-# View all contract addresses we have created
+# View all contract addresses a wallet has created
 rolld q wasm list-contracts-by-creator roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87
 
-# The contract address for the NFT collection we just created
+# The contract address for the NFT collection just created
 NFT_CONTRACT=roll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sjczpjh
 ```
 

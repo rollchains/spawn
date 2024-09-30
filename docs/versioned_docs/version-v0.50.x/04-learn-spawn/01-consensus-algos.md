@@ -112,7 +112,7 @@ The cost of running these networks is relatively low as you just pay a portion o
 To create a new network with interchain-security, use the `--consensus=interchain-security` flag. If `--consensus` is not present, a selector UI will appear in your terminal to see all options.
 
 ::note Note
-We do not support creating provider networks.
+Spawn does not support creating provider networks.
 :::
 
 ```bash

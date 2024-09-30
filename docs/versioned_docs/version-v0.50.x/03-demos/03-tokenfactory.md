@@ -103,7 +103,7 @@ The output shows a denom with the named `factory/roll1hj5fveer5cjtn4wd6wstzugjfd
 :::note Note
 Why did it add extra data to the token?
 
-Imagine we have 2 people, both named John. If we only use the name John, how do we know which John we are talking about? We need to add more information to the name to make it unique. This is the same concept, but with tokens. The extra data is added to ensure the token is unique while we can still contain the same base name. With tokenfactory, we place the creators name in the token. Read more about [naming collisions](https://en.wikipedia.org/wiki/Naming_collision).
+Imagine there are 2 people, both named John. If only the name John is used, which John is it talking about? More information must be added to the name to make it unique. This is the same concept, but with tokens. The extra data is added to ensure the token is unique while it can still contain the same base name. With tokenfactory, the creators name is placed in the token. Read more about [naming collisions](https://en.wikipedia.org/wiki/Naming_collision).
 :::
 
 
@@ -149,7 +149,7 @@ metadata:
 
 ## Create new tokens to transfer
 
-The base token structure is created, but no tokens actually exists yet. We must mint new tokens to then be able to transfer them between accounts.
+The base token structure is created, but no tokens actually exists yet. Mint new tokens to then be able to transfer them between accounts.
 
 ```bash
 # Mint 5,000,000 micro mytoken. By default this goes to the token creator.

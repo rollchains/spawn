@@ -91,7 +91,7 @@ make proto-gen
 
 <details>
 <summary>Hint #2</summary>
-<p>Iterate through the `k.Keeper.NameMapping`, check the Value(). if it matches the name we requested, return that wallet (Key)</p>
+<p>Iterate through the `k.Keeper.NameMapping`, check the Value(). if it matches the name requested, return that wallet (Key)</p>
 </details>
 
 <details>

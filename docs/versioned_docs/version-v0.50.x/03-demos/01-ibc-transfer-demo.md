@@ -18,7 +18,7 @@ In this tutorial, we'll create and interact with a new Cosmos-SDK blockchain cal
 Create your chain using the spawn command line tool. Change the `GITHUB_USERNAME` to your github username.
 If you do not have a github, leaving it as default is fine.
 
-We create a [Proof of Authority](https://en.wikipedia.org/wiki/Proof_of_authority) network to focus on our application logic rather than worry about the security model. This is a great starting point for new chains.
+Create a [Proof of Authority](https://en.wikipedia.org/wiki/Proof_of_authority) network to focus on the application logic rather than worry about the security model. This is a great starting point for new chains.
 
 ```bash
 GITHUB_USERNAME=rollchains

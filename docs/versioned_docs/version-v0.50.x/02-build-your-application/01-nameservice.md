@@ -24,7 +24,7 @@ Building your first Cosmos-SDK blockchain with Spawn. This tutorial focuses on a
 
 ## Generate a New Chain
 
-Let's create a new chain called 'rollchain'. We are going to set defining characteristics such as
+Let's create a new chain called 'rollchain'. You are going to set defining characteristics such as
 - Which modules to disable from the template *if any*
 - Proof of Stake consensus
 - Wallet prefix (bech32)

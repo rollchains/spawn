@@ -9,13 +9,13 @@ slug: /install/system-setup
 # Overview
 
 :::note Synopsis
-Setup your development environment with the essentials to get started building your blockchain.
+Setup your development environment with the essentials to get started building the blockchain.
 :::
 
 
 ## System Requirements
 
-Before we can install and interact with spawn, you must have the following core tools installed:
+Before you can install and interact with spawn, you must have the following core tools installed:
 * [`Go 1.22+`](https://go.dev/doc/install)
 * [`Docker`](https://docs.docker.com/get-docker/)
 * [`Git`](https://git-scm.com/)
