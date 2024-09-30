@@ -7,25 +7,19 @@ slug: /learn/what-spawn-does
 
 # What Spawn Does
 
-Learn about what spawn does, how it works, and how it can help you build your applications faster than ever before
+Spawn is a powerful tool designed to streamline the process of building, maintaining, and scaling your blockchain application.
 
 ## Overview
 
-Spawn is a powerful tool designed to streamline the process of building, maintaining, and scaling Cosmos SDK blockchains. As a developer, Spawn offers several compelling reasons to incorporate it into your workflow.
-
-Before, you would have at least a week setting up a new chain. You would manually copy paste some other codebase, modify it to your needs, debug issues, add custom test, fix github actions, and then you have a base network. Now you can do all this in just a flew clicks. Spawn takes in your context and with magic, generates a new network for you fitting your needs.
+Setting up a new blockchain used to take at least a week, requiring manual edits, debugging, and configuring tests. Now, with Spawn, you can create a custom network in just a few clicks. It generates a personalized network tailored to your project, letting you focus on writing product logic. The modular approach allows you to include or remove features, so you can start building quickly without the hassle of setting up everything from scratch. Spawn simplifies the process, especially for new developers, by removing guesswork and speeding up the setup.
 
 ## New Development
 
-Say you have a project idea, and you want to get started on writing the logic. Spawn gets you from 0 to 1 with the template matching your exact needs. The modular approach allows you to pick what you just have, such as smart contracts, and remove the things you don't. This way, you can focus on what matters to you.
-
-Get started building your first chain using the `new-chain` command. Spawn will guide you through the process of selecting the modules you need and configuring your new chain.
+Get started building using the `new-chain` command. Spawn will guide you through the process of selecting the modules you need and configuring your new chain. Using `--help` will showcase examples and other options you may want to consider for your new network.
 
 ```bash
 spawn new mychain --help
 ```
-
-Using `--help` will showcase examples and other options you may want to consider for your new network.
 
 ```bash
 Create a new project
@@ -37,25 +31,23 @@ Aliases:
   new-chain, new, init, create
 
 Flags:
-  -b, --binary string          binary name (default "simd")
-      --bypass-prompt          bypass UI prompt
-      --debug                  enable debugging
-      --denom string           bank token denomination (default "token")
-  -h, --help                   help for new-chain
-      --org string             github organization (default "rollchains")
-      --skip-git               ignore git init
-      --wallet-prefix string   chain bech32 wallet prefix (default "cosmos")
+  -b, --binary string          Application binary name (default "simd")
+      --bypass-prompt          Bypass UI prompter
+      --denom string           Bank token denomination (default "token")
+      --org string             Github organization name (default "rollchains")
+      --skip-git               No git repository created
+      --wallet-prefix string   Users wallet namespace (default "cosmos")
 ```
 
 ### Security Selection
 
-You can read about different security models in the [Consensus Security](./01-consensus-algos.md) section. If you don't know which to select, use proof of authority for your application.
+You can read about different security models in the [Consensus Security](./01-consensus-algos.md) section. If you don't know which to select, use proof of authority.
 
 ```bash
 spawn new mychain
 ```
 
-After running the new command, use your arrow keys and use 'enter' to select the module you want to use. You can only use 1 from this list. Then select done.
+After running the new command, navigate with your arrow keys and press 'enter' to select the module you want to use. You can only use 1 from this consensus list. Then select done.
 
 ```
 Consensus Selector (( enter to toggle ))
@@ -67,9 +59,9 @@ Consensus Selector (( enter to toggle ))
 
 ### Feature Selection
 
-You now select which features you want to include in your base application. Usually you would have to do these manually, each taking about 15 minutes to add. With spawn, we let you select them right away, automatically configure them, **and** give you testing to give you the assurance it works.
+You now select which features you want to include in your base application. Usually you would have to do these manually, each taking about 15 minutes to integrate. With spawn, you select them right away. It automatically configures them **and** give you testing for the assurance it works.
 
-As you scroll through features,
+An information guide will be displayed for each feature at the bottom of the UI, sharing information about what the feature does. Select the following then press 'enter' on done to continue.
 
 ```bash
 Feature Selector (( enter to toggle ))
@@ -85,12 +77,132 @@ Feature Selector (( enter to toggle ))
 tokenfactory: Native token minting, sending, and burning on the chain
 ```
 
+Just like that, an entire network is generated. Everything you need to get started and more! Let's dive in.
 
+## Structure
 
----
+Opening up this newly generated `mychain/` gives you a general view into the entire layout.
 
-# Testing
+```bash title="ls -laG"
+.github/
+app/
+chains/
+cmd/
+contrib/
+explorer/
+interchaintest/
+proto/
+scripts/
 
-# Modules
+.gitignore
+.goreleaser.yaml
+chain_metadata.json
+chain_registry_assets.json
+chain_registry.json
+chains.yaml
+docker-compose.yml
+Dockerfile
+go.mod
+go.sum
+Makefile
+README.md
+```
 
-# testnets
+### .github/
+
+This directory contains all the workflow actions for native github integration out of the box. It handles
+- Integration & Unit tests for every code change
+- Docker images saved to [ghcr](https://github.com/features/packages) on a new version tag
+- Public cloud or private hosted testnets
+- App binary releases
+- PR title formatting
+- Markdown file valid link reviews
+
+### app/
+
+App is the main location for all of the application connection logic.
+
+- **decorators/** - Initial logic as new transactions are received. Used to override input data, block requests, or add additional logic before the action begins initial processing.
+- **upgrades/** - You have to run an upgrade when you add or remove logic and nodes are already running different logic. This is where you put the upgrade information and state migrations.
+- **ante.go** - The decorators for the entire network, wired together.
+- **app.go** - The entire application connected and given access to the cosmos-sdk. The brain of the program.
+- **upgrades.go** - Registers the upgrades/ folder logic when one is pending processing.
+
+### chains/
+
+The chains/ directory is where the local and public testnet configuration files are placed. Reference the [testnets](#testnets) section for more information
+
+### cmd/
+
+The cmd/ directory is the entry point for the wiring connections and is where the main.go file is located. This is where the application is started and the chain is initialized when you run the binary. By default, `simd` is the binary name and is saved to your $GOPATH (/home/user/go/bin/).
+
+### explorer/
+
+If you enabled the explorer in the feature selection, this is where the [ping.pub](https://ping.pub/) explorer files are located. When running a testnet with `make sh-testnet` or `make testnet`, you can launch the explorer along side the chain to view activity in real time. Blocks, transactions, uptime, connections, and more are all viewable. Easily launch it with the `docker compose up` command in the root of the directory.
+
+### interchaintest/
+
+Interchaintest is a generalized integration test environment for the Interchain and beyond. It supports Cosmos, Ethereum, UTXO (Bitcoin), and other chain types. By default you will see many test like `ibc_test.go`, `ibc_rate_limit_test.go` and `tokenfactory_test.go` after generation. Any features you select are placed here automatically to confirm your network is working as expected. This are run with the github action automatically on every code change **or** you can run them manually with `make local-image && make ictest-*`, where the * is the testname *(ictest-ibc, ictest-tokenfactory, etc)*.
+
+### proto/
+
+[Proto, also called protocol buffers](https://protobuf.dev/), are a generalized way to define the structure of data. Discussed this more in the [Modules](#modules) sub section.
+
+### scripts/
+
+Scripts automate some more complex requirements list setting up a fast testnet or generating code on the fly. You should not need to modify anything here until you are more advanced. These are shown in the `make help` command to abstract away complexity.
+
+### chain_metadata.json
+
+A cosmetic file showcasing a format for the network. Fill in the data here once you push to the public so developers can easily see what your network is about. This is required for [ICS consumer networks](./01-consensus-algos.md#create-an-ics-consumer-network). If you do not use ICS, you can delete this file if you wish.
+
+### chain_registry.json & assets
+
+These files are the format needed to upload to [https://cosmos.directory/](https://cosmos.directory/) ([github](https://github.com/cosmos/chain-registry)). Frontends use this data to connect to the network, especially in the [local-interchain testnet tool](#testnets).
+
+## Modules
+
+We're all here to build new logic on top. The SDK calls these modules, or e**x**tensions, x/ for short. To make this easy spawn has a build in generator for a module.
+
+```bash
+spawn module new --help
+```
+
+```bash
+Usage:
+  spawn module new [name] [flags]
+
+Aliases:
+  new, c, create
+
+Examples:
+  spawn module new mymodule [--ibc-module]
+
+Flags:
+  --ibc-middleware   Set the module as an IBC Middleware
+  --ibc-module       Set the module as an IBC Module
+```
+
+All you need to have is the name you wish to call it, and if you want standard or an IBC module. IBC enables cross network communication of the logic. This is a powerful feature that allows you to build a network of networks. You can try this out with the [IBC module demo](../02-build-your-application/08-ibc-module.md) demo.
+
+For now, just create a default module called `example`
+
+```bash
+spawn module new example
+```
+
+```
+🎉 New Module 'example' generated!
+🏅 Commands:
+  - $ make proto-gen     # convert proto files into code
+```
+
+This created a new x/example module and the [proto/](#proto) files in the expected structure. `genesis.proto` contains the data saved and more hardcoded. `query.proto` is how you allow external actors to grab data from the network and `tx.proto` is how you allow external actors to send data to the network. Spawn also connects it to the application if you look through your `app/app.go`.
+
+Learn how to make a new module with the [Name Service](../02-build-your-application/01-nameservice.md) guide.
+
+## Testnets
+
+This uses the [local-interchain](https://github.com/strangelove-ventures/interchaintest/tree/main/local-interchain) format and supports JSON or YAML. By default, 2 IBC network defaults are included. **self-ibc** and **testnet**. Run the testnet with `make testnet` to automatically build, setup, and launch a complex network simply.
+
+Self IBC is really only useful if you are building [IBC Modules](../02-build-your-application/08-ibc-module.md). Follow that guide to see how to use it.
