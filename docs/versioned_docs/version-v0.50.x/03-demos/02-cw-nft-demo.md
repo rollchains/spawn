@@ -20,7 +20,9 @@ Some parts of this tutorial will not have the added context about spawn's inner 
 - [Install Spawn](../01-setup/02-install-spawn.md)
 
 :::note Danger
-Some machines like Windows and ARM64 (MacOS) will not work with running the testnet. This is a limitation of the operating system hardware with wasm and required C language libraries / DLLs. For the best experience, use a Linux machine or a cloud-based linux instance from [Hetzner](https://www.hetzner.com/cloud/) or [Digital Ocean](https://www.digitalocean.com/pricing/droplets) for $6 per month.
+Some machines like Windows will not work with running the testnet. This is a limitation of the operating system hardware with wasm and required C language libraries / DLLs.
+
+For the best experience, try `make testnet` or use a Linux machine or a cloud-based linux instance from [Hetzner](https://www.hetzner.com/cloud/) or [Digital Ocean](https://www.digitalocean.com/pricing/droplets) for $6 per month.
 :::
 
 
