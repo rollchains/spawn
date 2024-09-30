@@ -59,7 +59,7 @@ Flags:
 
 ### Security Selection
 
-You can read about different security models in the [Consensus Security](./04-learn-spawn/01-consensus-algos.md) section. If you don't know which to select, use proof of authority.
+You can read about different security models in the [Consensus Security](./04-learn/01-consensus-algos.md) section. If you don't know which to select, use proof of authority.
 
 ```bash
 spawn new mychain
@@ -172,7 +172,7 @@ Scripts automate some more complex requirements list setting up a fast testnet o
 
 ### chain_metadata.json
 
-A cosmetic file showcasing a format for the network. Fill in the data here once you push to the public so developers can easily see what your network is about. This is required for [ICS consumer networks](./04-learn-spawn/01-consensus-algos.md#create-an-ics-consumer-network). If you do not use ICS, you can delete this file if you wish.
+A cosmetic file showcasing a format for the network. Fill in the data here once you push to the public so developers can easily see what your network is about. This is required for [ICS consumer networks](./04-learn/01-consensus-algos.md#create-an-ics-consumer-network). If you do not use ICS, you can delete this file if you wish.
 
 ### chain_registry.json & assets
 
