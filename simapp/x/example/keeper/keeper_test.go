@@ -3,14 +3,14 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
-	"github.com/cosmos/cosmos-sdk/testutil"
+	"github.com/cosmos/cosmos-sdk/testutil/integration"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
@@ -18,13 +18,12 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	"cosmossdk.io/core/store"
 
 	module "github.com/rollchains/spawn/simapp/x/example"
 	"github.com/rollchains/spawn/simapp/x/example/keeper"
@@ -60,7 +59,6 @@ type testFixture struct {
 func SetupTest(t *testing.T) *testFixture {
 	t.Helper()
 	f := new(testFixture)
-	require := require.New(t)
 
 	// Base setup
 	logger := log.NewTestLogger(t)
@@ -69,17 +67,14 @@ func SetupTest(t *testing.T) *testFixture {
 	f.govModAddr = authtypes.NewModuleAddress(govtypes.ModuleName).String()
 	f.addrs = simtestutil.CreateIncrementalAccounts(3)
 
-	key := storetypes.NewKVStoreKey(types.ModuleName)
-	storeService := runtime.NewKVStoreService(key)
-	testCtx := testutil.DefaultContextWithDB(t, key, storetypes.NewTransientStoreKey("transient_test"))
-
-	f.ctx = testCtx.Ctx
+	keys := storetypes.NewKVStoreKeys(authtypes.ModuleName, banktypes.ModuleName, stakingtypes.ModuleName, minttypes.ModuleName, types.ModuleName)
+	f.ctx = sdk.NewContext(integration.CreateMultiStore(keys, logger), cmtproto.Header{}, false, logger)
 
 	// Register SDK modules.
-	registerBaseSDKModules(f, encCfg, storeService, logger, require)
+	registerBaseSDKModules(logger, f, encCfg, keys)
 
 	// Setup Keeper.
-	f.k = keeper.NewKeeper(encCfg.Codec, storeService, logger, f.govModAddr)
+	f.k = keeper.NewKeeper(encCfg.Codec, runtime.NewKVStoreService(keys[types.ModuleName]), logger, f.govModAddr)
 	f.msgServer = keeper.NewMsgServerImpl(f.k)
 	f.queryServer = keeper.NewQuerier(f.k)
 	f.appModule = module.NewAppModule(encCfg.Codec, f.k)
@@ -90,22 +85,23 @@ func SetupTest(t *testing.T) *testFixture {
 func registerModuleInterfaces(encCfg moduletestutil.TestEncodingConfig) {
 	authtypes.RegisterInterfaces(encCfg.InterfaceRegistry)
 	stakingtypes.RegisterInterfaces(encCfg.InterfaceRegistry)
+	banktypes.RegisterInterfaces(encCfg.InterfaceRegistry)
+	minttypes.RegisterInterfaces(encCfg.InterfaceRegistry)
 
 	types.RegisterInterfaces(encCfg.InterfaceRegistry)
 }
 
 func registerBaseSDKModules(
+	logger log.Logger,
 	f *testFixture,
 	encCfg moduletestutil.TestEncodingConfig,
-	storeService store.KVStoreService,
-	logger log.Logger,
-	require *require.Assertions,
+	keys map[string]*storetypes.KVStoreKey,
 ) {
 	registerModuleInterfaces(encCfg)
 
 	// Auth Keeper.
 	f.accountkeeper = authkeeper.NewAccountKeeper(
-		encCfg.Codec, storeService,
+		encCfg.Codec, runtime.NewKVStoreService(keys[authtypes.StoreKey]),
 		authtypes.ProtoBaseAccount,
 		maccPerms,
 		authcodec.NewBech32Codec(sdk.Bech32MainPrefix), sdk.Bech32MainPrefix,
@@ -114,7 +110,7 @@ func registerBaseSDKModules(
 
 	// Bank Keeper.
 	f.bankkeeper = bankkeeper.NewBaseKeeper(
-		encCfg.Codec, storeService,
+		encCfg.Codec, runtime.NewKVStoreService(keys[banktypes.StoreKey]),
 		f.accountkeeper,
 		nil,
 		f.govModAddr, logger,
@@ -122,21 +118,16 @@ func registerBaseSDKModules(
 
 	// Staking Keeper.
 	f.stakingKeeper = stakingkeeper.NewKeeper(
-		encCfg.Codec, storeService,
+		encCfg.Codec, runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
 		f.accountkeeper, f.bankkeeper, f.govModAddr,
 		authcodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
 		authcodec.NewBech32Codec(sdk.Bech32PrefixConsAddr),
 	)
-	require.NoError(f.stakingKeeper.SetParams(f.ctx, stakingtypes.DefaultParams()))
-	f.accountkeeper.SetModuleAccount(f.ctx, f.stakingKeeper.GetNotBondedPool(f.ctx))
-	f.accountkeeper.SetModuleAccount(f.ctx, f.stakingKeeper.GetBondedPool(f.ctx))
 
 	// Mint Keeper.
 	f.mintkeeper = mintkeeper.NewKeeper(
-		encCfg.Codec, storeService,
+		encCfg.Codec, runtime.NewKVStoreService(keys[minttypes.StoreKey]),
 		f.stakingKeeper, f.accountkeeper, f.bankkeeper,
 		authtypes.FeeCollectorName, f.govModAddr,
 	)
-	f.accountkeeper.SetModuleAccount(f.ctx, f.accountkeeper.GetModuleAccount(f.ctx, minttypes.ModuleName))
-	f.mintkeeper.InitGenesis(f.ctx, f.accountkeeper, minttypes.DefaultGenesisState())
 }
