@@ -18,13 +18,12 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	"cosmossdk.io/core/store"
 
 	module "github.com/rollchains/spawn/simapp/x/example"
 	"github.com/rollchains/spawn/simapp/x/example/keeper"
@@ -76,7 +75,7 @@ func SetupTest(t *testing.T) *testFixture {
 	f.ctx = testCtx.Ctx
 
 	// Register SDK modules.
-	registerBaseSDKModules(f, encCfg, storeService, logger, require)
+	registerBaseSDKModules(f, encCfg, logger, require)
 
 	// Setup Keeper.
 	f.k = keeper.NewKeeper(encCfg.Codec, storeService, logger, f.govModAddr)
@@ -97,7 +96,6 @@ func registerModuleInterfaces(encCfg moduletestutil.TestEncodingConfig) {
 func registerBaseSDKModules(
 	f *testFixture,
 	encCfg moduletestutil.TestEncodingConfig,
-	storeService store.KVStoreService,
 	logger log.Logger,
 	require *require.Assertions,
 ) {
@@ -105,7 +103,7 @@ func registerBaseSDKModules(
 
 	// Auth Keeper.
 	f.accountkeeper = authkeeper.NewAccountKeeper(
-		encCfg.Codec, storeService,
+		encCfg.Codec, runtime.NewKVStoreService(storetypes.NewKVStoreKey(authtypes.ModuleName)),
 		authtypes.ProtoBaseAccount,
 		maccPerms,
 		authcodec.NewBech32Codec(sdk.Bech32MainPrefix), sdk.Bech32MainPrefix,
@@ -114,7 +112,7 @@ func registerBaseSDKModules(
 
 	// Bank Keeper.
 	f.bankkeeper = bankkeeper.NewBaseKeeper(
-		encCfg.Codec, storeService,
+		encCfg.Codec, runtime.NewKVStoreService(storetypes.NewKVStoreKey(banktypes.ModuleName)),
 		f.accountkeeper,
 		nil,
 		f.govModAddr, logger,
@@ -122,7 +120,7 @@ func registerBaseSDKModules(
 
 	// Staking Keeper.
 	f.stakingKeeper = stakingkeeper.NewKeeper(
-		encCfg.Codec, storeService,
+		encCfg.Codec, runtime.NewKVStoreService(storetypes.NewKVStoreKey(stakingtypes.ModuleName)),
 		f.accountkeeper, f.bankkeeper, f.govModAddr,
 		authcodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
 		authcodec.NewBech32Codec(sdk.Bech32PrefixConsAddr),
@@ -133,7 +131,7 @@ func registerBaseSDKModules(
 
 	// Mint Keeper.
 	f.mintkeeper = mintkeeper.NewKeeper(
-		encCfg.Codec, storeService,
+		encCfg.Codec, runtime.NewKVStoreService(storetypes.NewKVStoreKey(minttypes.ModuleName)),
 		f.stakingKeeper, f.accountkeeper, f.bankkeeper,
 		authtypes.FeeCollectorName, f.govModAddr,
 	)
