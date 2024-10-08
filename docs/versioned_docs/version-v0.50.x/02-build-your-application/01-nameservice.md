@@ -22,6 +22,10 @@ Building your first Cosmos-SDK blockchain with Spawn. This tutorial focuses on a
 - [System Setup](../01-setup/01-system-setup.md)
 - [Install Spawn](../01-setup/02-install-spawn.md)
 
+## Video Walkthrough
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/4gFSuLUlP4I?si=A_VqEwhOh2ZPxNsb" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
 ## Generate a New Chain
 
 Let's create a new chain called 'rollchain'. You are going to set defining characteristics such as
