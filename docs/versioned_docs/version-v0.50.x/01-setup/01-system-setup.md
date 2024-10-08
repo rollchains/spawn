@@ -39,8 +39,10 @@ wsl
 sudo apt update && sudo apt install snapd
 
 # Install Go (Snap)
-sudo snap info go
 sudo snap install go --channel=1.23/stable --classic
+
+# Clean module cache
+go clean -modcache
 
 # Install Base
 sudo apt install make gcc git jq wget
@@ -78,6 +80,9 @@ gh auth login
 # Golang
 brew install go
 
+# Clean module cache
+go clean -modcache
+
 # Docker
 brew install --cask docker
 open -a Docker # start docker desktop
@@ -104,6 +109,9 @@ gh auth login
 GO_VERSION=1.23.0
 wget https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz
 sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go$GO_VERSION.linux-amd64.tar.gz
+
+# Clean module cache
+go clean -modcache
 
 # Docker
 sudo apt -y install docker.io

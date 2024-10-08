@@ -24,6 +24,9 @@ git clone https://github.com/rollchains/spawn.git --depth 1 --branch v0.50.8
 # Change to this directory
 cd spawn
 
+# Clear Go modules cache for a fresh install
+go clean -modcache
+
 # Install Spawn
 make install
 
