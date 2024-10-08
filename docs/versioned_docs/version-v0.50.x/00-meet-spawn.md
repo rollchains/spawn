@@ -20,7 +20,7 @@ Spawn is the easiest way to build, maintain and scale a Cosmos SDK blockchain. S
 
 ## Testimonials
 
-> "Spawn is a marked transformation in CosmosSDK protocol development, allowing scaffolding and upgrading from 0.47 to 0.50 to be achievable and understandable. Without the tool, this would have been a dedicated multi-month effort" - Ash, [Burnt.com](https://burnt.com/)
+> "Spawn is a marked transformation in CosmosSDK protocol development, allowing scaffolding and upgrading from 0.47 to 0.50 to be achievable and understandable. Without the tool, this would have been a dedicated multi-month effort" - Ash, [Burnt.com](https://twitter.com/burnt_xion)
 
 
 > "Spawn has truly streamlined the developer onboarding process into the Cosmos ecosystem, seamless and efficient." - [Anil](https://x.com/anilcse_/status/1840444855576846355) [VitWit](https://www.vitwit.com/)
