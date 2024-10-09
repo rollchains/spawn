@@ -1,14 +1,13 @@
 ---
-title: "CW Validator Reviews"
-sidebar_label: "CosmWasm Validator Reviews"
-slug: /demo/cw-validator-reviews
+title: "IBC NameService Contract"
+sidebar_label: "IBC Contract (Part 3)"
+sidebar_position: 8
+slug: /build/name-service-ibc-contract
 ---
 
-# CosmWasm Validator Reviews
+# IBC Name Service Contract
 
-You will build a new chain with [CosmWasm](https://cosmwasm.com), enabling a proof-of-stake validator review system. You will write a contract to collect and manage validator reviews, integrate it with the chain, and update validator data automatically through a Cosmos-SDK endblocker module.
-
-There are easy ways to get validators in a cosmwasm smart contract. The goal of this tutorial is to teach how to pass data from the SDK to a contract.
+You will build a new IBC contract with [CosmWasm](https://cosmwasm.com), enabling the same features we just built out in the IBC module.
 
 ## Prerequisites
 - [System Setup](../01-setup/01-system-setup.md)
@@ -22,7 +21,7 @@ Build a new blockchain with CosmWasm enabled. THen generate a new module from th
 ```bash
 GITHUB_USERNAME=rollchains
 
-spawn new rollchain \
+spawn new cwchain \
 --consensus=proof-of-stake \
 --bech32=roll \
 --denom=uroll \
@@ -32,13 +31,9 @@ spawn new rollchain \
 
 
 # move into the chain directory
-cd rollchain
+cd cwchain
 
-# Generate the Cosmos-SDK reviews module
-spawn module new reviews
-
-# build the proto to code
-make proto-gen
+go mod tidy
 ```
 
 Once the chain is started, continue on to the contract building steps
@@ -49,15 +44,118 @@ CosmWasm has a template repository that is used to generate new contracts. A min
 
 ```bash
 cargo generate --git https://github.com/CosmWasm/cw-template.git \
-    --name validator-reviews-contract \
+    --name nameservice-contract \
     -d minimal=true --tag a2a169164324aa1b48ab76dd630f75f504e41d99
 ```
 
-A new folder will be created with the contract template.
+```bash
+code nameservice-contract/
+```
+
+<!-- TODO: WIP here: https://github.com/Reecepbcups/nameservice-contract -->
+
+
+`make sh-testnet`
+
+### Upload Contract to both networks
+
+Make sure you are in the `cwchain` directory to begin interacting and uploading the contract to the chain.
 
 ```bash
-code validator-reviews-contract/
+make local-image
+
+local-ic start self-ibc
 ```
+
+
+```bash
+RPC_1=http://localhost:26657
+RPC_2=http://localhost:41427 # todo: query from the http://127.0.0.1:8080/info with jq parse jq .logs.chains[1].rpc_address
+
+CONTRACT_SOURCE=./nameservice-contract/artifacts/nameservice_contract.wasm
+rolld tx wasm store $CONTRACT_SOURCE --from=acc0 --gas=auto --gas-adjustment=2.0 --yes --node=$RPC_1
+# rolld q wasm list-code --node=$RPC_1
+
+rolld tx wasm store $CONTRACT_SOURCE --from=acc0 --gas=auto --gas-adjustment=2.0 --yes --node=$RPC_2 --chain-id=localchain-2
+# rolld q wasm list-code --node=$RPC_2
+```
+
+### Instantiate our Contract on oth chains
+
+```bash
+rolld tx wasm instantiate 1 '{}' --no-admin --from=acc0 --label="ns-1" --gas=auto --gas-adjustment=2.0 --yes --node=$RPC_1
+rolld tx wasm instantiate 1 '{}' --no-admin --from=acc0 --label="ns-1" --gas=auto --gas-adjustment=2.0 --yes --node=$RPC_2 --chain-id=localchain-2
+
+rolld q wasm list-contracts-by-creator roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87
+rolld q wasm list-contracts-by-creator roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87 --node=$RPC_2
+
+NSERVICE_CONTRACT=roll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sjczpjh
+```
+
+### Relayer connect
+
+```bash
+# Import the testnet interaction helper functions
+# for local-interchain
+curl -s https://raw.githubusercontent.com/strangelove-ventures/interchaintest/main/local-interchain/bash/source.bash > ict_source.bash
+source ./ict_source.bash
+
+API_ADDR="http://localhost:8080"
+
+# This will take a moment.
+ICT_RELAYER_EXEC "$API_ADDR" "localchain-1" "rly tx link localchain-1_localchain-2 --src-port wasm.${NSERVICE_CONTRACT} --dst-port=wasm.${NSERVICE_CONTRACT} --order unordered --version counter-1"
+ICT_RELAYER_EXEC "$API_ADDR" "localchain-1" "rly start"
+```
+
+## Transaction against
+
+```bash
+MESSAGE='{"set_name":{"channel":"channel-1","name":"myname"}}'
+rolld tx wasm execute $NSERVICE_CONTRACT "$MESSAGE" --from=acc0 \
+    --gas=auto --gas-adjustment=2.0 --yes
+
+
+
+```
+
+---
+
+### Verify data
+
+```bash
+# TODO: rename this to get the name from a wallet
+# query on the other sidebar_label
+rolld q wasm state smart $NSERVICE_CONTRACT '{"get_wallet":{"channel":"channel-1","name":"roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87 "}}' --node=$RPC_2
+
+# dump state fropm the other chain
+rolld q wasm state all $NSERVICE_CONTRACT --node=$RPC_2
+```
+
+## Write a review
+
+```bash
+MESSAGE='{"write_review":{"val_addr":"rollvaloper1hj5fveer5cjtn4wd6wstzugjfdxzl0xpmhf3p6","review":"hi reviewing."}}'
+rolld tx wasm execute $NSERVICE_CONTRACT "$MESSAGE" --from=acc0 \
+    --gas=auto --gas-adjustment=2.0 --yes
+```
+
+### Verify the review
+
+```bash
+rolld q wasm state smart $NSERVICE_CONTRACT '{"reviews":{"address":"rollvaloper1hj5fveer5cjtn4wd6wstzugjfdxzl0xpmhf3p6"}}'
+```
+
+### Write a review for a non-validator
+
+```bash
+MESSAGE='{"write_review":{"val_addr":"NotAValidator","review":"hi this is a review"}}'
+
+rolld tx wasm execute $NSERVICE_CONTRACT "$MESSAGE" --from=acc0 \
+    --gas=auto --gas-adjustment=2.0 --yes
+```
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 ### Set State
@@ -284,7 +382,7 @@ Build the contract to get the cosmwasm wasm binary. This converts it from englis
 cargo run-script optimize
 ```
 
-The .wasm file is then saved to `./artifacts/validator_reviews_contract.wasm`.
+The .wasm file is then saved to `./artifacts/validator_NSERVICE_CONTRACT.wasm`.
 
 ## Modify the Module
 
@@ -491,7 +589,7 @@ make sh-testnet
 Make sure you are in the `rollchain` directory to begin interacting and uploading the contract to the chain.
 
 ```bash
-CONTRACT_SOURCE=./validator-reviews-contract/artifacts/validator_reviews_contract.wasm
+CONTRACT_SOURCE=./validator-reviews-contract/artifacts/validator_NSERVICE_CONTRACT.wasm
 rolld tx wasm store $CONTRACT_SOURCE --from=acc0 --gas=auto --gas-adjustment=2.0 --yes
 # rolld q wasm list-code
 ```
@@ -504,27 +602,27 @@ rolld tx wasm instantiate 1 '{}' --no-admin --from=acc0 --label="reviews" \
 
 rolld q wasm list-contracts-by-creator roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87
 
-REVIEWS_CONTRACT=roll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sjczpjh
+NSERVICE_CONTRACT=roll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sjczpjh
 ```
 
 ### Verify data
 
 ```bash
-rolld q wasm state smart $REVIEWS_CONTRACT '{"validators":{}}'
+rolld q wasm state smart $NSERVICE_CONTRACT '{"validators":{}}'
 ```
 
 ## Write a review
 
 ```bash
 MESSAGE='{"write_review":{"val_addr":"rollvaloper1hj5fveer5cjtn4wd6wstzugjfdxzl0xpmhf3p6","review":"hi reviewing."}}'
-rolld tx wasm execute $REVIEWS_CONTRACT "$MESSAGE" --from=acc0 \
+rolld tx wasm execute $NSERVICE_CONTRACT "$MESSAGE" --from=acc0 \
     --gas=auto --gas-adjustment=2.0 --yes
 ```
 
 ### Verify the review
 
 ```bash
-rolld q wasm state smart $REVIEWS_CONTRACT '{"reviews":{"address":"rollvaloper1hj5fveer5cjtn4wd6wstzugjfdxzl0xpmhf3p6"}}'
+rolld q wasm state smart $NSERVICE_CONTRACT '{"reviews":{"address":"rollvaloper1hj5fveer5cjtn4wd6wstzugjfdxzl0xpmhf3p6"}}'
 ```
 
 ### Write a review for a non-validator
@@ -532,6 +630,6 @@ rolld q wasm state smart $REVIEWS_CONTRACT '{"reviews":{"address":"rollvaloper1h
 ```bash
 MESSAGE='{"write_review":{"val_addr":"NotAValidator","review":"hi this is a review"}}'
 
-rolld tx wasm execute $REVIEWS_CONTRACT "$MESSAGE" --from=acc0 \
+rolld tx wasm execute $NSERVICE_CONTRACT "$MESSAGE" --from=acc0 \
     --gas=auto --gas-adjustment=2.0 --yes
 ```

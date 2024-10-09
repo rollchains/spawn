@@ -120,3 +120,22 @@ sudo apt -y install docker.io
 git config --global user.email "yourEmail@gmail.com"
 git config --global user.name "Your Name"
 ```
+
+## CosmWasm
+
+Some tutorials require CosmWasm (Rust smart contracts) setup. This section is option, unless a tutorial is CosmWasm focused.
+CosmWasm requires [Rust](https://www.rust-lang.org/). You must have this installed as the contract will be built locally.
+
+```bash
+# Install rust - https://www.rust-lang.org/tools/install
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# or Update if you have it
+rustup update
+
+# Install other dependencies
+rustup target add wasm32-unknown-unknown
+
+cargo install cargo-generate --features vendored-openssl
+cargo install cargo-run-script
+```
