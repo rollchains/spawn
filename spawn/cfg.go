@@ -181,22 +181,26 @@ func (cfg *NewChainConfig) CreateNewChain() error {
 		return fmt.Errorf("error creating directory: %w", err)
 	}
 
+	logger.Info("Setting up main chain app", "name", NewDirName)
 	if err := cfg.SetupMainChainApp(); err != nil {
 		logger.Error("Error setting up main chain app", "err", err, "file", debugErrorFile(logger, NewDirName))
 		return fmt.Errorf("error setting up main chain app: %w", err)
 	}
 
+	logger.Info("Setting up interchain test", "name", NewDirName, "note", "this may take a minute while it downloads dependencies")
 	if err := cfg.SetupInterchainTest(); err != nil {
 		logger.Error("Error setting up interchain test", "err", err, "file", debugErrorFile(logger, NewDirName))
 		return fmt.Errorf("error setting up interchain test: %w", err)
 	}
 
+	logger.Info("Setting up chain metadata")
 	cfg.MetadataFile().SaveJSON(fmt.Sprintf("%s/chain_metadata.json", NewDirName))
 	cfg.ChainRegistryFile().SaveJSON(fmt.Sprintf("%s/chain_registry.json", NewDirName))
 	cfg.ChainRegistryAssetsFile().SaveJSON(fmt.Sprintf("%s/chain_registry_assets.json", NewDirName))
 
 	// setup local-interchain testnets
 	// *testnet.json (chains/ directory)
+	logger.Info("Setting up local interchain JSON")
 	cfg.SetupLocalInterchainJSON()
 
 	cfg.MakeModTidy()

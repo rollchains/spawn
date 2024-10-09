@@ -36,6 +36,7 @@ func (cfg *NewChainConfig) GitInitNewProjectRepo() {
 }
 
 func (cfg *NewChainConfig) MakeModTidy() {
+	cfg.Logger.Info("Running `go mod tidy`, this may take a minute on the first run...")
 	if err := os.Chdir(cfg.ProjectName); err != nil {
 		cfg.Logger.Error("Error changing to project directory", "err", err)
 	}

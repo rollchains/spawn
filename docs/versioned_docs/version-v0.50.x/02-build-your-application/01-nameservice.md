@@ -52,6 +52,10 @@ cd rollchain
 
 # scaffolds your new nameservice module
 spawn module new nameservice
+
+go clean -modcache
+
+go mod tidy
 ```
 
 This creates a new template module with the name `nameservice` in the `x` and `proto` directories. It also automatically connected to your application and is ready for use.
