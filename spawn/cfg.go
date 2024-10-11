@@ -160,6 +160,7 @@ func (cfg *NewChainConfig) AnnounceSuccessfulBuild() {
 	fmt.Printf("  - $ gh repo create %s --source=. --remote=upstream --push --private\n", projName)
 	fmt.Println("  - $ spawn module new <name>   # generate a new module scaffolding")
 	fmt.Println("  - $ make testnet              # build & start a testnet with IBC")
+	fmt.Println("  - $ make generate-webapp      # create cosmos webapp template")
 }
 
 func (cfg *NewChainConfig) GithubPath() string {
