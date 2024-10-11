@@ -59,9 +59,9 @@ for module in $base_namespace; do
   mv ./$module/* ./api/$module/
 
   # # incorrect reference to the modules with the builder
-  # find api/$module -type f -name '*.go' -exec sed -i -e 's|types "github.com/cosmos/cosmos-sdk/types"|types "cosmossdk.io/api/cosmos/base/v1beta1"|g' {} \;
-  # find api/$module -type f -name '*.go' -exec sed -i -e 's|types1 "github.com/cosmos/cosmos-sdk/x/bank/types"|types1 "cosmossdk.io/api/cosmos/bank/v1beta1"|g' {} \;
-  # find api/$module -type f -name '*.go' -exec sed -i -e 's|"cosmos/app/v1alpha1"|"cosmossdk.io/api/cosmos/app/v1alpha1"|g' {} \;
+  find api/$module -type f -name '*.go' -exec sed -i -e 's|types "github.com/cosmos/cosmos-sdk/types"|types "cosmossdk.io/api/cosmos/base/v1beta1"|g' {} \;
+  find api/$module -type f -name '*.go' -exec sed -i -e 's|types1 "github.com/cosmos/cosmos-sdk/x/bank/types"|types1 "cosmossdk.io/api/cosmos/bank/v1beta1"|g' {} \;
+  find api/$module -type f -name '*.go' -exec sed -i -e 's|"cosmos/app/v1alpha1"|"cosmossdk.io/api/cosmos/app/v1alpha1"|g' {} \;
 
   rm -rf ./$module
 done
