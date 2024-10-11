@@ -72,8 +72,6 @@ proto/nameservice/v1/query.proto
 These .proto file templates will be converted into Golang source code for you to use. Build the Go source code using the command:
 
 ```bash
-go clean -modcache
-
 make proto-gen
 ```
 
