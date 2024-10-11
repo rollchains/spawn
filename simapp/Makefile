@@ -188,17 +188,11 @@ mod-tidy:
 ###############################################################################
 ###                                Protobuf                                 ###
 ###############################################################################
-protoVer=0.13.2
-protoImageName=ghcr.io/cosmos/proto-builder:$(protoVer)
-protoImage=$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName)
-
 proto-all: proto-format proto-lint proto-gen format
 
 proto-gen:
-	@go install cosmossdk.io/orm/cmd/protoc-gen-go-cosmos-orm@v1.0.0-beta.3
 	@echo "Generating Protobuf files"
-	@$(protoImage) sh ./scripts/protocgen.sh
-# generate the stubs for the proto files from the proto directory
+	@sh ./scripts/protocgen.sh
 	@spawn stub-gen
 	@go mod tidy
 
