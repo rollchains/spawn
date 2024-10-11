@@ -228,7 +228,7 @@ You just build an IBC module that interacts with your other nameservice module! 
 
 ## What you Learned
 
-* Scaffolding ab IBC module
+* Scaffolding an IBC module
 * Importing another module
 * Adding business logic for an IBC request
 * Connecting two chains with a custom IBC protocol
