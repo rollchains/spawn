@@ -39,7 +39,7 @@ buf generate --template buf.gen.pulsar.yaml
 # Go back to then move files to their correct locations
 cd ..
 
-([ -z "$GO_MOD_PACKAGE" ] && echo "Go Mod Package is empty!!"; exit 1) && cp -r $GO_MOD_PACKAGE/x ./
+([ -z "$GO_MOD_PACKAGE" ] && echo "Go Mod Package is empty!!"; exit 1) && cp -r $GO_MOD_PACKAGE/* ./
 rm -rf github.com
 
 # Copy files over for dep injection
