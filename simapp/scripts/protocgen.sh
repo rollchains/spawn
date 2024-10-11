@@ -3,8 +3,6 @@
 set -e
 
 GO_MOD_PACKAGE="github.com/rollchains/spawn/simapp"
-
-echo "Generating gogo proto code"
 cd proto
 proto_dirs=$(find . -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
 
@@ -30,38 +28,23 @@ if ! [ -x "$(command -v protoc-gen-gocosmos)" ]; then
   go install cosmossdk.io/orm/cmd/protoc-gen-go-cosmos-orm@v1.0.0-beta.3
 fi
 
+echo "Generating gogo proto code"
 buf generate
 custom_modules=$(find . -name 'module' -type d -not -path "./proto/*"); echo $custom_modules
 base_namespace=$(echo $custom_modules | sed -e 's|/module||g' | sed -e 's|\./||g'); echo $base_namespace
 
-for module in $base_namespace; do
-  echo "Removing $module/module/v1/module.pb.go code"
-  rm -rf ../$module/module
-done
-
 echo "Generating pulsar proto code"
-# buf generate --template buf.gen.pulsar.yaml --exlude-paths=$module/module/v1
+buf generate --template buf.gen.pulsar.yaml
 
+# Go back to then move files to their correct locations
 cd ..
 
-sleep 1
-
-([ -z "$GO_MOD_PACKAGE" ] && echo "Go Mod Package is empty!!"; exit 1) && cp -r $GO_MOD_PACKAGE/* ./
+([ -z "$GO_MOD_PACKAGE" ] && echo "Go Mod Package is empty!!"; exit 1) && cp -r $GO_MOD_PACKAGE/x ./
 rm -rf github.com
 
-# # Copy files over for dep injection
+# Copy files over for dep injection
 rm -rf api && mkdir api
 
-
-
-
-# # get the 1 up directory (so ./cosmos/mint/module becomes ./cosmos/mint)
-# # remove the relative path starter from base namespaces. so ./cosmos/mint becomes cosmos/mint
-
-
-
-
-# # echo "Base namespace: $base_namespace"
 for module in $base_namespace; do
   echo " [+] Moving: ./$module to ./api/$module"
 
@@ -73,6 +56,9 @@ for module in $base_namespace; do
   find api/$module -type f -name '*.go' -exec sed -i -e 's|types "github.com/cosmos/cosmos-sdk/types"|types "cosmossdk.io/api/cosmos/base/v1beta1"|g' {} \;
   find api/$module -type f -name '*.go' -exec sed -i -e 's|types1 "github.com/cosmos/cosmos-sdk/x/bank/types"|types1 "cosmossdk.io/api/cosmos/bank/v1beta1"|g' {} \;
   find api/$module -type f -name '*.go' -exec sed -i -e 's|"cosmos/app/v1alpha1"|"cosmossdk.io/api/cosmos/app/v1alpha1"|g' {} \;
+
+  # remove incorrect reference from other generation
+  rm ./api/$module/module/v1/module.pb.go
 
   rm -rf ./$module
 done
