@@ -20,14 +20,11 @@ import (
 
 	"github.com/rollchains/spawn/simapp/x/example/keeper"
 	"github.com/rollchains/spawn/simapp/x/example/types"
-	// this line is used by starport scaffolding # 1
 )
 
 const (
 	// ConsensusVersion defines the current x/example module consensus version.
 	ConsensusVersion = 1
-
-// this line is used by starport scaffolding # simapp/module/const
 )
 
 var (

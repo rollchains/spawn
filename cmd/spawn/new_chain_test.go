@@ -41,7 +41,7 @@ func TestDisabledGeneration(t *testing.T) {
 		},
 		{
 			Name:          "stdmix1",
-			Disabled:      []string{spawn.Ignite, spawn.TokenFactory},
+			Disabled:      []string{spawn.TokenFactory},
 			NotContainAny: []string{"TokenFactoryKeeper"},
 		},
 		{

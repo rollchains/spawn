@@ -81,7 +81,7 @@ func (k Keeper) Logger() log.Logger {
 
 // InitGenesis initializes the module's state from a genesis state.
 func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) error {
-	// this line is used by starport scaffolding # genesis/module/init
+
 	if err := data.Params.Validate(); err != nil {
 		return err
 	}
@@ -95,8 +95,6 @@ func (k *Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 	if err != nil {
 		panic(err)
 	}
-
-	// this line is used by starport scaffolding # genesis/module/export
 
 	return &types.GenesisState{
 		Params: params,
