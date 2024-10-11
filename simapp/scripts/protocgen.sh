@@ -31,9 +31,16 @@ if ! [ -x "$(command -v protoc-gen-gocosmos)" ]; then
 fi
 
 buf generate
+custom_modules=$(find . -name 'module' -type d -not -path "./proto/*"); echo $custom_modules
+base_namespace=$(echo $custom_modules | sed -e 's|/module||g' | sed -e 's|\./||g'); echo $base_namespace
+
+for module in $base_namespace; do
+  echo "Removing $module/module/v1/module.pb.go code"
+  rm -rf ../$module/module
+done
 
 echo "Generating pulsar proto code"
-buf generate --template buf.gen.pulsar.yaml
+# buf generate --template buf.gen.pulsar.yaml --exlude-paths=$module/module/v1
 
 cd ..
 
@@ -44,11 +51,15 @@ rm -rf github.com
 
 # # Copy files over for dep injection
 rm -rf api && mkdir api
-custom_modules=$(find . -name 'module' -type d -not -path "./proto/*")
+
+
+
 
 # # get the 1 up directory (so ./cosmos/mint/module becomes ./cosmos/mint)
 # # remove the relative path starter from base namespaces. so ./cosmos/mint becomes cosmos/mint
-base_namespace=$(echo $custom_modules | sed -e 's|/module||g' | sed -e 's|\./||g')
+
+
+
 
 # # echo "Base namespace: $base_namespace"
 for module in $base_namespace; do
@@ -56,7 +67,7 @@ for module in $base_namespace; do
 
   mkdir -p api/$module
 
-  mv ./$module/* ./api/$module/
+  cp -r ./$module/* ./api/$module/
 
   # # incorrect reference to the modules with the builder
   find api/$module -type f -name '*.go' -exec sed -i -e 's|types "github.com/cosmos/cosmos-sdk/types"|types "cosmossdk.io/api/cosmos/base/v1beta1"|g' {} \;
