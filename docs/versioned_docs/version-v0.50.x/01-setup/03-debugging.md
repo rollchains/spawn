@@ -36,11 +36,15 @@ If the above does not work, your user or directory permissions may not be setup.
 
 If using WSL, try https://superuser.com/questions/1352207/windows-wsl-ubuntu-sees-wrong-permissions-on-files-in-mounted-disk.
 
+---
+
 ## Windows / WSL
 
 ### make: /mnt/c/Program: No such file or directory
 
-Delete your GOMODCACHE directory: `rm -rf $(go env GOMODCACHE)` or run the direct command `go clean -modcache`.
+Delete your GOMODCACHE directory: `go clean -modcache` or run the direct command `rm -rf $(go env GOMODCACHE)`.
+
+---
 
 ## Docker
 
@@ -50,7 +54,7 @@ Start the docker daemon. Run [docker engine](https://docs.docker.com/engine/) or
 
 ### docker: Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock
 
-You don't have permissions to interact with the Docker daemon. Run the following command to fix this.
+You don't have permissions to interact with the Docker daemon.
 
 1) Install properly with https://docs.docker.com/get-started/get-docker/
 
@@ -64,3 +68,15 @@ reboot # if you still get the error
 ```
 
 Technically you can also `sudo chmod 666 /var/run/docker.sock` but this is NOT advised. -->
+
+## Generation
+
+### remote: Repository not found. fatal: reposity not found
+
+This error is due to not having properly `make proto-gen`ed the project. View the [Application](#running-the-binary-gives-me-panic-reflect-newnil) section for the solution.
+
+## Application
+
+### Running the binary gives me `panic: reflect: New(nil)`
+
+The `make proto-gen` command was either not run, or is causing issues. This could be due to your users permissions or the filesystem. By default, the protoc docker image uses your current users id and group. Try switching as a super user (i.e. `su -`) or fixing your permissions. A very ugly hack is to run `chmod a+rwx -R ./rollchain` where `./rollchain` is the project you generated. This will cause git to change all files, but it does fix it. Unsure of the long term side effects that may come up from this.

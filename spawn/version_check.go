@@ -17,8 +17,8 @@ import (
 var (
 	RunCheckInterval   = 24 * time.Hour
 	howToInstallBinary = map[string]string{
-		"local-ic": "wget https://github.com/strangelove-ventures/interchaintest/releases/download/__VERSION__/local-ic && mv local-ic $HOME/go/bin && chmod +x $HOME/go/bin/local-ic",
-		"spawn":    "git clone https://github.com/rollchains/spawn.git && cd spawn && git checkout __VERSION__ && make install",
+		"local-ic": "git clone https://github.com/strangelove-ventures/interchaintest.git ictd --depth=1 -b __VERSION__ && cd ictd/local-interchain && make install && cd ../.. && rm -rf ictd",
+		"spawn":    "git clone https://github.com/rollchains/spawn.git --depth=1 -b __VERSION__ && cd spawn && make install && cd .. && rm -rf spawn",
 	}
 	BinaryToGithubAPI = map[string]string{
 		"local-ic": "https://api.github.com/repos/strangelove-ventures/interchaintest/releases",
@@ -160,7 +160,7 @@ func OutOfDateCheckLog(logger *slog.Logger, binName, current, latest string) boo
 
 	if isOutOfDate {
 		logger.Error(
-			"New "+binName+" version available",
+			"New "+binName+" available",
 			"current", current,
 			"latest", latest,
 			"install", GetInstallMsg(howToInstallBinary[binName], latest),

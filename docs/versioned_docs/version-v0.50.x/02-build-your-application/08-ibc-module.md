@@ -197,7 +197,7 @@ For example; transfer to transfer, nsibc to nsibc, but transfer to nsibc can not
 These values are found in the keys.go file as the module name. By default version is just the module name + "-1".
 :::
 
-Execute the command on the testnet to connect the two chains with the IBC module.
+Execute the command on the testnet to connect the two chains with the IBC module with the relayer.
 
 ```bash
 # This will take a minute.
@@ -228,7 +228,7 @@ You just build an IBC module that interacts with your other nameservice module! 
 
 ## What you Learned
 
-* Scaffolding ab IBC module
+* Scaffolding an IBC module
 * Importing another module
 * Adding business logic for an IBC request
 * Connecting two chains with a custom IBC protocol

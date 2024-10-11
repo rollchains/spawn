@@ -188,9 +188,13 @@ mod-tidy:
 ###############################################################################
 ###                                Protobuf                                 ###
 ###############################################################################
+CURRENT_UID := $(shell id -u)
+CURRENT_GID := $(shell id -g)
+
 protoVer=0.13.2
 protoImageName=ghcr.io/cosmos/proto-builder:$(protoVer)
-protoImage=$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName)
+# $(CURDIR)/.cache:/.cache:rw is macOS specific due to buf saving to a read-only directory
+protoImage=$(DOCKER) run --rm -v $(CURDIR):/workspace:rw -v $(CURDIR)/.cache:/.cache:rw --user ${CURRENT_UID}:${CURRENT_GID} --workdir /workspace $(protoImageName)
 
 proto-all: proto-format proto-lint proto-gen format
 
@@ -317,6 +321,11 @@ sh-testnet: mod-tidy
 explorer:
 	docker compose up
 
+.PHONY: generate-webapp
+generate-webapp:
+	sudo npm install --global create-cosmos-app
+	cca --name web -e spawn
+
 help:
 	@echo "Usage: make <target>"
 	@echo ""
@@ -328,5 +337,6 @@ help:
 	@echo "  sh-testnet          : Shell local devnet"
 	@echo "  ictest-basic        : Basic end-to-end test"
 	@echo "  ictest-ibc          : IBC end-to-end test"
+	@echo "  generate-webapp     : Create a new webapp template"
 
 .PHONY: help
