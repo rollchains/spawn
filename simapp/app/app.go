@@ -40,8 +40,6 @@ import (
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	"github.com/spf13/cast"
 
-	// this line is used by starport scaffolding # ibc/app/import
-
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
 	"cosmossdk.io/client/v2/autocli"
@@ -171,7 +169,6 @@ import (
 	//distr "github.com/cosmos/cosmos-sdk/x/distribution" // ?spawntag:ics
 	//"github.com/cosmos/cosmos-sdk/x/gov" // ?spawntag:ics
 	//"github.com/cosmos/cosmos-sdk/x/staking" // ?spawntag:ics
-	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
 const (
@@ -229,7 +226,6 @@ var maccPerms = map[string][]string{
 	tokenfactorytypes.ModuleName:                  {authtypes.Minter, authtypes.Burner},
 	ccvconsumertypes.ConsumerRedistributeName:     nil,
 	ccvconsumertypes.ConsumerToSendToProviderName: nil,
-	// this line is used by starport scaffolding # stargate/app/maccPerms
 }
 
 var (
@@ -284,8 +280,6 @@ type ChainApp struct {
 	PacketForwardKeeper *packetforwardkeeper.Keeper
 	WasmClientKeeper    wasmlckeeper.Keeper
 	RatelimitKeeper     ratelimitkeeper.Keeper
-
-	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
 	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
@@ -922,8 +916,6 @@ func NewChainApp(
 	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostStack)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
-	// this line is used by starport scaffolding # ibc/app/module
-
 	// --- Module Options ---
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
@@ -994,7 +986,6 @@ func NewChainApp(
 		app.ModuleManager,
 		map[string]module.AppModuleBasic{
 			genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
-			// this line is used by starport scaffolding # stargate/appConfig/moduleBasic
 		})
 	app.BasicModuleManager.RegisterLegacyAminoCodec(legacyAmino)
 	app.BasicModuleManager.RegisterInterfaces(interfaceRegistry)
@@ -1002,7 +993,6 @@ func NewChainApp(
 	// NOTE: upgrade module is required to be prioritized
 	app.ModuleManager.SetOrderPreBlockers(
 		upgradetypes.ModuleName,
-		// this line is used by starport scaffolding # stargate/app/preBlockers
 	)
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
@@ -1030,7 +1020,6 @@ func NewChainApp(
 		wasmlctypes.ModuleName,
 		ratelimittypes.ModuleName,
 		ccvconsumertypes.ModuleName,
-		// this line is used by starport scaffolding # stargate/app/beginBlockers
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -1053,7 +1042,6 @@ func NewChainApp(
 		wasmlctypes.ModuleName,
 		ratelimittypes.ModuleName,
 		ccvconsumertypes.ModuleName,
-		// this line is used by starport scaffolding # stargate/app/endBlockers
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -1098,7 +1086,6 @@ func NewChainApp(
 		wasmlctypes.ModuleName,
 		ratelimittypes.ModuleName,
 		ccvconsumertypes.ModuleName,
-		// this line is used by starport scaffolding # stargate/app/initGenesis
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)

@@ -16,7 +16,6 @@ SupportedFeatures = [
     "cosmwasm",
     "wasm-light-client",
     "optimistic-execution",
-    "ignite-cli",
 ]
 
 POS = "proof-of-stake"
@@ -47,7 +46,7 @@ def main():
         CmdCreator(
             "spawndefaultfeatures",
             POA,
-            "ibc-ratelimit,cosmwasm,wasm-light-client,ignite-cli".split(","),
+            "ibc-ratelimit,cosmwasm,wasm-light-client".split(","),
             "cosmos",
             "appd",
             "utoken",
@@ -83,7 +82,7 @@ def main():
         CmdCreator(
             "randmixone",
             POS,
-            "wasmlc,ignite".split(","),
+            "wasmlc".split(","),
             random_string(5, True),
             f"{random_string(6, True)}",
             f"u{random_string(5, True)}",
@@ -116,9 +115,7 @@ def main():
         CmdCreator(
             "randmixfour",
             POA,
-            "ignite,ignite,ignite,ignite,ignite,ignite,ignite,ignite,ignite,ignite,wasmlc,packetforward,tokenfactory".split(
-                ","
-            ),
+            "wasmlc,packetforward,tokenfactory".split(","),
             random_string(5, True),
             f"{random_string(6, True)}",
             f"u{random_string(5, True)}",

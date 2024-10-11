@@ -90,7 +90,6 @@ Feature Selector (( enter to toggle ))
   cosmwasm
   wasm-light-client
   ✔ optimistic-execution
-  ignite-cli
   ✔ block-explorer
 tokenfactory: Native token minting, sending, and burning on the chain
 ```

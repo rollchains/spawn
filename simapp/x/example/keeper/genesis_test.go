@@ -12,8 +12,6 @@ func TestGenesis(t *testing.T) {
 
 	genesisState := &types.GenesisState{
 		Params: types.DefaultParams(),
-
-		// this line is used by starport scaffolding # genesis/test/state
 	}
 
 	f.k.InitGenesis(f.ctx, genesisState)
@@ -21,5 +19,4 @@ func TestGenesis(t *testing.T) {
 	got := f.k.ExportGenesis(f.ctx)
 	require.NotNil(t, got)
 
-	// this line is used by starport scaffolding # genesis/test/assert
 }
