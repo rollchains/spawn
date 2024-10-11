@@ -53,9 +53,16 @@ cd rollchain
 # scaffolds your new nameservice module
 spawn module new nameservice
 
-go clean -modcache
+# proto-gen proto files to go
+#
+# If you get a /.cache permission error, run:
+# sudo chmod -R 777 $(pwd)/.cache
+# sudo chown -R $USER $(pwd)/.cache
+#
+# If you get a cannot find module error
+# go clean -modcache
+#
 
-# converts proto to go
 make proto-gen
 ```
 

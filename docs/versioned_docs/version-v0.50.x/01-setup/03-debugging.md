@@ -36,11 +36,15 @@ If the above does not work, your user or directory permissions may not be setup.
 
 If using WSL, try https://superuser.com/questions/1352207/windows-wsl-ubuntu-sees-wrong-permissions-on-files-in-mounted-disk.
 
+---
+
 ## Windows / WSL
 
 ### make: /mnt/c/Program: No such file or directory
 
-Delete your GOMODCACHE directory: `rm -rf $(go env GOMODCACHE)` or run the direct command `go clean -modcache`.
+Delete your GOMODCACHE directory: `go clean -modcache` or run the direct command `rm -rf $(go env GOMODCACHE)`.
+
+---
 
 ## Docker
 
@@ -50,7 +54,7 @@ Start the docker daemon. Run [docker engine](https://docs.docker.com/engine/) or
 
 ### docker: Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock
 
-You don't have permissions to interact with the Docker daemon. Run the following command to fix this.
+You don't have permissions to interact with the Docker daemon.
 
 1) Install properly with https://docs.docker.com/get-started/get-docker/
 
