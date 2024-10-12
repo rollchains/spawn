@@ -66,9 +66,10 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: spawn
+          path: /home/runner/go/bin
 
-      - name: Spawn Permission
-        run: chmod +x ./spawn && ls -l
+      - name: Spawn Permission # put into path
+        run: chmod +x /home/runner/go/bin/spawn && ls -l
 
       # === Chain Creation & Validation ===
       - name: Spawn Gen - '${{inputs.id}}'
@@ -88,6 +89,8 @@ jobs:
           cd mychain
           ${{ inputs.start-chain-cmd }}
 
+      # Runs the unit test after the chain is started in the background
+      # This way the work is parallelized
       - name: Unit Test - '${{inputs.id}}'
         run: |
           cd mychain
