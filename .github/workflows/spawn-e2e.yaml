@@ -74,7 +74,16 @@ jobs:
     needs: build-spawn
     uses: ./.github/workflows/reusable-e2e.yaml
     with:
-      id: ICS - Module Plugins
+      id: ICS - Module
       spawn-create-cmd: spawn new mychain --consensus=ics --bin=appd --bypass-prompt --bech32=roll --disabled=explorer --org=rollchains-org --denom=uroll --debug --log-level=debug
       spawn-extra-cmd: cd mychain && spawn module new aaaaaa && make proto-gen
       start-chain-cmd: HOME_DIR="~/.icsnetwork" CHAIN_ID="localchain-2" CLEAN=true BLOCK_TIME="2000ms" sh scripts/test_ics_node.sh &
+
+  poa-with-ibc-module:
+    needs: build-spawn
+    uses: ./.github/workflows/reusable-e2e.yaml
+    with:
+      id: POA - IBC Module
+      spawn-create-cmd: spawn new mychain --consensus=poa --bin=appd --bypass-prompt --bech32=roll --disabled=explorer --org=rollchains-org --denom=upoa --debug --log-level=debug
+      spawn-extra-cmd: cd mychain && spawn module new aaaaaa --ibc-module && make proto-gen
+      start-chain-cmd: HOME_DIR="~/.simapp" CHAIN_ID="localchain-10" CLEAN=true BLOCK_TIME="2000ms" sh scripts/test_node.sh &
