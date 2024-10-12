@@ -7,7 +7,7 @@ slug: /build/name-service-ibc-contract
 
 # IBC Name Service Contract
 
-You will build a new IBC contract with [CosmWasm](https://cosmwasm.com), enabling the same features we just built out in the IBC module.
+You will build a new IBC contract with [CosmWasm](https://cosmwasm.com), enabling the same features we just built out in the IBC module. While this is a part 3 of the series, it can be done standalone as it requires a new chain. It is a similar concept to the previous parts 1 and 2, but with a smart contract focus instead of a chain.
 
 ## Prerequisites
 - [System Setup](../01-setup/01-system-setup.md)
@@ -16,7 +16,7 @@ You will build a new IBC contract with [CosmWasm](https://cosmwasm.com), enablin
 
 ## Setup the Chain
 
-Build a new blockchain with CosmWasm enabled. THen generate a new module from the template for the reviews.
+Build a new blockchain with CosmWasm enabled.
 
 ```bash
 GITHUB_USERNAME=rollchains
@@ -29,18 +29,16 @@ spawn new cwchain \
 --disabled=block-explorer \
 --org=${GITHUB_USERNAME}
 
-
 # move into the chain directory
 cd cwchain
 
+# download latest dependencies
 go mod tidy
 ```
 
-Once the chain is started, continue on to the contract building steps
+## Build CosmWasm Contract
 
-## CosmWasm Build Contract
-
-CosmWasm has a template repository that is used to generate new contracts. A minimal contract will be built with the `nameservice-contract` name provided on a specific commit.
+CosmWasm has a template repository that is used to generate new contracts. A minimal contract will be built with the `nameservice-contract` name provided on a [specific commit](https://github.com/CosmWasm/cw-template/commits/a2a169164324aa1b48ab76dd630f75f504e41d99/).
 
 ```bash
 cargo generate --git https://github.com/CosmWasm/cw-template.git \
@@ -49,14 +47,21 @@ cargo generate --git https://github.com/CosmWasm/cw-template.git \
     -d minimal=true --tag a2a169164324aa1b48ab76dd630f75f504e41d99
 ```
 
+Open the contract in your code editor now to begin adding the application logic.
+
+:::note Info
+It is useful to install code rust extensions like [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer) and [even better toml](https://marketplace.visualstudio.com/items?itemName=tamasfe.even-better-toml) for an increased editing experience.
+:::
+
 ```bash
+# open using vscode in the terminal
 code nameservice-contract/
 ```
 
-<!-- TODO: WIP here: https://github.com/Reecepbcups/nameservice-contract -->
+## Update Contract Dependencies
 
+This version of the CosmWasm template has some outdated versions. Update these in the `Cargo.toml` file and add the "ibc3" capability (for IBC support).
 
-<!-- TODO: modify cargo.toml -->
 ```toml title="Cargo.toml"
 [dependencies]
 # highlight-start
@@ -68,11 +73,15 @@ cosmwasm-std = { version = "1.5.7", features = [
 # highlight-end
 ```
 
+Update your local environment with the dependencies.
+
 ```bash
 cargo update
 ```
 
 ## Setup State
+
+This Rust code defines the structure for a name service in a CosmWasm smart contract. It saves a map of all channels (outside chain connections) to a list of wallet address and their associated names.
 
 ```rust title="src/state.rs"
 // highlight-start
@@ -80,18 +89,25 @@ use std::collections::BTreeMap;
 
 use cw_storage_plus::Map;
 
-// Wallet  -> Name
+// Pair the wallet address to the name a user provides.
 pub type WalletMapping = BTreeMap<String, String>;
 
+/// create a new empty wallet mapping for a channel.
+/// useful if a channel is opened and we have no data yet
 pub fn new_wallet_mapping() -> WalletMapping {
     BTreeMap::new()
 }
 
+/// Name Service maps for each channel saved to a storage object
 pub const NAME_SERVICE: Map<String, WalletMapping> = Map::new("nameservice");
 // highlight-end
 ```
 
 ## Setup Interactions
+
+Now that the state is setup, focus on modeling the users interaction with the contract. Users should be able to set a name. This also requires an input for a "channel" since a contract could connect to multiple chains. It could be written in a way that a user could set it to all channels, but for simplicity, we will require a channel to be specified. Just as is set, a user should get the name with the same format: a channel and a wallet address. Then a new message type is added specifically for IBCExecution messages. This is the packet transfered over the network, between chains, and gives the ability to set a name elsewhere on its contract.
+
+The contract will call the IBCExecuteMsg when a user runs the ExecuteMsg.SendName function. This indirectly generates the packet and submits it for the user.
 
 ```rust title="src/msg.rs"
 use cosmwasm_schema::{cw_serde, QueryResponses};
@@ -130,7 +146,7 @@ pub struct GetNameResponse {
 
 ## Contract Logic
 
-Here are all the imports used in this. Replace your files top with these.
+Here are all the imports used in this. Replace your files top.
 
 ```rust title="src/contract.rs"
 // highlight-start
@@ -145,7 +161,9 @@ use cosmwasm_std::{to_json_binary, IbcMsg, IbcTimeout, StdError};
 // highlight-end
 ```
 
-<!-- TODO: -->
+Instantiate creates a new version of this contract that you control. Rather than being unimplemented, return a basic response saying it was Ok (successful) and add some extra logging metadata.
+
+
 ```rust title="src/contract.rs"
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -159,7 +177,10 @@ pub fn instantiate(
 }
 ```
 
-<!-- TODO: -->
+The ExecuteMsg::SetName method is allowed to be interacted from anyone. Just like instantiate we return a new Ok response. This time an add_message function is added. This will generate the packet as the user interacts, performing a new action from a previous action. This uses the IbcMsg::SendPacket built in type to create it for the user. Notice the data field includes the IbcExecuteMsg::SetName we defined before. This is transferred to the other version of this contract on another chain and processed.
+
+If the packet is not picked up by a relayer service provider within a few minutes, the packet will become void and stop attempting execution on the other chain's contract.
+
 ```rust title="src/contract.rs"
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
@@ -192,7 +213,8 @@ pub fn execute(
 }
 ```
 
-<!-- TODO: -->
+The users name is not set, but it is only useful if you can also get said data. Read from the `NAME_SERVICE` storage Map defined in `state.rs`. Using may load grabs the data if the channel has a name set. If no channel is found (no users have set a name from this chain), it returns an error to the user requesting. If a channel of pairs is found, it loads them and checks if the wallet address requested is set in it. If it is, return what the wallets name is set to. If the user with this wallet did not set a name, return an error.
+
 ```rust title="src/contract.rs"
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
@@ -216,7 +238,8 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 }
 ```
 
-<!-- TODO: -->
+The contract will receive a packet and must run logic to process it. This is called the `try_set_name` method. It updates a given channel to include a new wallet. If the wallet already exists, it will overwrite the name. It then returns the users name back, or an error, for our future IBC logic to handle.
+
 ```rust title="src/contract.rs"
 // highlight-start
 /// called on IBC packet receive in other chain
@@ -238,7 +261,7 @@ pub fn try_set_name(
 
 ## Create Transaction acknowledgement
 
-Create a new file, `ack.rs`, to handle the IBC ACK messages.
+Create a new file, `ack.rs`, to handle the IBC ACK (acknowledgement) messages. This just returns back to the user if their interaction was a success or an error.
 
 ```bash
 touch src/ack.rs
@@ -269,7 +292,11 @@ pub fn make_ack_fail(err: String) -> Binary {
 // highlight-end
 ```
 
-Add it to the lib.rs so the application can use it.
+:::note Note
+Rust has a lib.rs file that is the entry point for the Rust library. All files that are used must be mentioned here to have access to them.
+:::
+
+Add the ack logic to the lib.rs so the application can use it.
 
 ```rust title="src/lib.rs"
 // highlight-next-line
@@ -281,6 +308,10 @@ pub use crate::error::ContractError;
 ```
 
 ## Setup Errors
+
+If a relayer or contract try to connect to an unlike protocol, the InvalidVersion error will be returned to the attempted actor. This contract only supports 1 protocol version across networks because it must speak the same "language". If you speak english while another person speaks spanish, your interactions are incompatible. Contracts are like this too. They verify their protocol version in a format like "ics-20" or "ns-1" first to make sure they can communicate.
+
+OrderedChannel is a type of flow control for network packets, or interactions. This tutorial uses unordered paths so any packet that times out or fails does not block future packets from going through. If a relayer tries to make this an ordered path, the contract returns this error to stop them from doing so.
 
 ```rust title="src/error.rs"
 use cosmwasm_std::StdError;
@@ -297,15 +328,16 @@ pub enum ContractError {
     // Look at https://docs.rs/thiserror/1.0.21/thiserror/ for details.
 
     // highlight-start
-    #[error("only unordered channels are supported")]
-    OrderedChannel {},
-
     #[error("invalid IBC channel version. Got ({actual}), expected ({expected})")]
     InvalidVersion { actual: String, expected: String },
+
+    #[error("only unordered channels are supported")]
+    OrderedChannel {},
     // highlight-end
 }
 
 // highlight-start
+// There is an IBC specific error that is never returned.
 #[derive(Error, Debug)]
 pub enum Never {}
 // highlight-end
@@ -314,7 +346,7 @@ pub enum Never {}
 
 ## IBC Specific Logic
 
-Create a new file `ibc.rs`. Add this to the lib.rs
+Create a new file `ibc.rs`. Add this to the lib.rs. This is where our core IBC logic will go.
 
 ```bash
 touch src/ibc.rs
@@ -333,9 +365,7 @@ pub mod state;
 pub use crate::error::ContractError;
 ```
 
-Now begin working on the IBC logic.
-
-<!-- TODO: input what the below does -->
+Place the following in the ibc.rs file. Import all the types needed, set the IBC version to "ns-1" to stand for "nameservice-1", and add the basic validation logic for the contract. You must ensure contracts that try to talk together are verified to work together. This is that logic.
 
 ```rust title="src/ibc.rs"
 // highlight-start
@@ -397,7 +427,7 @@ pub fn validate_order_and_version(
 // highlight-end
 ```
 
-<!-- TODO: -->
+The contract verifies data on an attempted open of a new connection. Ensure the contracts talk the same protocol language, and that all the validation basic logic is connect. Then when a channel is closed, clear the data from storage for it. It is very rare you would want to close a channel.
 
 ```rust title="src/ibc.rs"
 // highlight-start
@@ -427,7 +457,7 @@ pub fn ibc_channel_close(
 // highlight-end
 ```
 
-<!-- TODO: input what the below does -->
+When a successful connection is made, the contract saves a new blank wallet mapping to the channel's unique id. 'channel-0' is the first. All  future connections are channel-1, channel-2, etc. This is the first step in the IBC process. The contract is now ready to receive packets once the handler logic is put in place on receive.
 
 ```rust title="src/ibc.rs"
 // highlight-start
@@ -451,7 +481,7 @@ pub fn ibc_channel_connect(
 // highlight-end
 ```
 
-<!-- TODO: input what the below does -->
+ibc_packet_receive handles incoming packets from already connected networks. The packet is forwarded to this contract and processed in `do_ibc_packet_receive`. It takes the channel and the packet data *(the IbcMsg::SetName sent out from the ExecuteMsg earlier)*, and tries to set the name on a wallet for this channel. If successful, it returns an acknowledgment of success. If not, it returns an acknowledgment of failure. The user will see this in their log event output.
 
 ```rust title="src/ibc.rs"
 // highlight-start
@@ -495,7 +525,7 @@ pub fn do_ibc_packet_receive(
 // highlight-end
 ```
 
-<!-- TODO: -->
+Sometimes after a failed acknowledgement the contract may want to rollback some data or make note of it for future reference. This contract is simple enough so no rollback or refunds are required. We just return a basic response to the user for both the ack or a timeout. Think of this similarly as a NoOp (no operation).
 
 ```rust title="src/ibc.rs"
 // highlight-start
@@ -521,20 +551,22 @@ pub fn ibc_packet_timeout(
 
 ## Build Contract From Source
 
+The contract can now be compiled from its source into the .wasm file. This is the binary executable that will be uploaded to the chain.
+
 ```bash
 cargo-run-script optimize
 ```
 
-
 ---
 
 
-### Upload Contract to both networks
+### Start the chains and connect
 
-Make sure you are in the `cwchain` directory to begin interacting and uploading the contract to the chain.
+Make sure you are in the `cwchain` directory to begin interacting and uploading the contract to the chain. It is time to start the cosmwasm chain and launch a testnet that connects to itself. The `self-ibc` chain is automatically generated for you on the creation with spawn. It launches 2 of your networks, localchain-1 and localchain-2, and connects them with a relayer operator at startup.
 
 ```bash
 # Build docker image, set configs, keys, and install binary
+#
 # Error 1 (ignored) codes are okay here if you already have
 # the keys and configs setup. If so you only have to `make local-image`
 # in future runs :)
@@ -543,6 +575,9 @@ make setup-testnet
 local-ic start self-ibc
 ```
 
+### Store the Contract on both chains
+
+Get the [RPC ](https://www.techtarget.com/searchapparchitecture/definition/Remote-Procedure-Call-RPC) interaction addresses for each network from the local-interchain testnet API. Upload the contract source to both chains using the different RPC addresses.
 
 ```bash
 RPC_1=`curl http://127.0.0.1:8080/info | jq -r .logs.chains[0].rpc_address`
@@ -557,7 +592,9 @@ rolld tx wasm store $CONTRACT_SOURCE --from=acc0 --gas=auto --gas-adjustment=2.0
 # rolld q wasm list-code --node=$RPC_2
 ```
 
-### Instantiate our Contract on oth chains
+### Instantiate our Contract on both chains
+
+You can now create your contract from the source on each chain.
 
 ```bash
 rolld tx wasm instantiate 1 '{}' --no-admin --from=acc0 --label="ns-1" --gas=auto --gas-adjustment=2.0 --yes --node=$RPC_1
@@ -570,6 +607,8 @@ NSERVICE_CONTRACT=roll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sjczpj
 ```
 
 ### Relayer connect
+
+The relayer must now connect the contracts together and create an IBC connection, link, between them. Use the Local-Interchain helper methods to connect the contracts across the chains. This command will take a second then show a bunch of logs. `Error context canceled` is fine to see. You will verify they were opened in the next step.
 
 ```bash
 # Import the testnet interaction helper functions
@@ -587,6 +626,8 @@ ICT_RELAYER_EXEC "$API_ADDR" "localchain-1" \
 
 ## Verify channels
 
+Verify the channels were created. Query either with the application binary of the relayer itself. If you see both a channel-0 and channel-1 in your logs, it was a success. If you only see channel-0 re-run the above relayer exec tx link command.
+
 ```bash
 # app binary
 rolld q ibc channel channels
@@ -595,7 +636,9 @@ rolld q ibc channel channels
 ICT_RELAYER_EXEC "$API_ADDR" "localchain-1" "rly q channels localchain-1"
 ```
 
-## Transaction against
+## Transaction interaction
+
+Using the ExecuteMsg::SetName method, set a name. This will be transferred to chain 2 behind the scenes. Flushing the relayer will force it to auto pick up pending IBC packets and transfer them across. Not running this may take up to 30 seconds for the relayer to automatically pick it up.
 
 ```bash
 # Set the name from chain 1
@@ -610,6 +653,8 @@ ICT_RELAYER_EXEC "$API_ADDR" "localchain-1" "rly tx flush"
 ---
 
 ### Verify data
+
+After the packet is sent over the network, processed, and acknowledged *(something that can be done in <30 seconds)*, you can query the data on chain 2. You can also dump all the contract data out to get HEX and BASE64 encoded data for what the contract state storage looks like.
 
 ```bash
 # query the name on chain 2, from chain 1
