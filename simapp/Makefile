@@ -194,8 +194,7 @@ CURRENT_GID := $(shell id -g)
 protoVer=0.13.2
 protoImageName=ghcr.io/cosmos/proto-builder:$(protoVer)
 # $(CURDIR)/.cache:/.cache:rw is macOS specific due to buf saving to a read-only directory
-# TODO: maybe mount instead? ref cosmwasm container / https://docs.docker.com/engine/storage/bind-mounts/
-protoImage=$(DOCKER) run --rm -v $(CURDIR):/workspace:rw -v $(CURDIR)/.cache/buf:/.cache/buf:rw --user ${CURRENT_UID}:${CURRENT_GID} --workdir /workspace $(protoImageName)
+protoImage=$(DOCKER) run --rm -v $(CURDIR):/workspace:rw --mount type=volume,source=tmp,target=/.cache --user ${CURRENT_UID}:${CURRENT_GID} --workdir /workspace $(protoImageName)
 
 proto-all: proto-format proto-lint proto-gen format
 
