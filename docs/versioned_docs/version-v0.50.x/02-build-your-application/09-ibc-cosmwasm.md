@@ -663,3 +663,15 @@ rolld q wasm state smart $NSERVICE_CONTRACT '{"get_name":{"channel":"channel-1",
 # dump contract state from the other chain
 rolld q wasm state all $NSERVICE_CONTRACT --node=$RPC_2
 ```
+
+## Summary
+
+You just build an IBC protocol using cosmwasm! It allowed you to set a name on another network entirely and securely with IBC.
+
+## What you Learned
+
+* Scaffolding an CosmWasm contract
+* Adding business logic for an IBC request
+* Implementing IBC in a contract
+* Connecting two CosmWasm contracts with a custom IBC protocol
+* Sending a packet from contract A to contract B
