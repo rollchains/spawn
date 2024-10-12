@@ -193,7 +193,6 @@ CURRENT_GID := $(shell id -g)
 
 protoVer=0.13.2
 protoImageName=ghcr.io/cosmos/proto-builder:$(protoVer)
-# $(CURDIR)/.cache:/.cache:rw is macOS specific due to buf saving to a read-only directory
 protoImage=$(DOCKER) run -e BUF_CACHE_DIR=/tmp/buf --rm -v $(CURDIR):/workspace:rw --user ${CURRENT_UID}:${CURRENT_GID} --workdir /workspace $(protoImageName)
 
 proto-all: proto-format proto-lint proto-gen format
