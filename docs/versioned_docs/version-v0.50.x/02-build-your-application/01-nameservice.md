@@ -55,14 +55,8 @@ spawn module new nameservice
 
 # proto-gen proto files to go
 #
-# If you get a /.cache permission error, run:
-# sudo chmod -R 777 $(pwd)/.cache
-# sudo chown -R $USER $(pwd)/.cache
-#
 # If you get a cannot find module error
 # go clean -modcache
-#
-
 make proto-gen
 ```
 
