@@ -17,6 +17,10 @@ on:
         type: string
         required: true
         description: 'The command which runs the chain via the shell'
+      spawn-extra-cmd:
+        type: string
+        required: false
+        description: 'Extra command to run after the chain is created'
 
 env:
   GO_VERSION: 1.22.3
@@ -68,7 +72,16 @@ jobs:
 
       # === Chain Creation & Validation ===
       - name: Spawn Gen - '${{inputs.id}}'
-        run: ${{ inputs.spawn-create-cmd }}
+        run: |
+          git config --global --add url."git@github.com:".insteadOf "https://github.com/"
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+          ${{ inputs.spawn-create-cmd }}
+          pwd
+
+      - name: Spawn Extra Generation
+        if : ${{ inputs.spawn-extra-cmd }}
+        run: ${{ inputs.spawn-extra-cmd }}
 
       - name: Build and Run '${{inputs.id}}'
         run: |
