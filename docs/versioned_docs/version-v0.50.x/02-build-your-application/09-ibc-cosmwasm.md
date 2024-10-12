@@ -654,7 +654,7 @@ ICT_RELAYER_EXEC "$API_ADDR" "localchain-1" "rly tx flush"
 
 ### Verify data
 
-After the packet is sent over the network, processed, and acknowledged *(something that can be done in <30 seconds)*, you can query the data on chain 2. You can also dump all the contract data out to get HEX and BASE64 encoded data for what the contract state storage looks like.
+After the packet is sent over the network, processed, and acknowledged *(something that can be done in less than 30 seconds)*, you can query the data on chain 2. You can also dump all the contract data out to get HEX and BASE64 encoded data for what the contract state storage looks like.
 
 ```bash
 # query the name on chain 2, from chain 1
