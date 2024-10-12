@@ -76,5 +76,5 @@ jobs:
     with:
       id: ICS - Module Plugins
       spawn-create-cmd: spawn new mychain --consensus=ics --bin=appd --bypass-prompt --bech32=roll --disabled=explorer --org=rollchains-org --denom=uroll --debug --log-level=debug
-      spawn-extra-cmd: cd mychain && spawn module new aaaaaa && make proto-gen
+      spawn-extra-cmd: cd mychain && ../spawn module new aaaaaa && make proto-gen
       start-chain-cmd: HOME_DIR="~/.icsnetwork" CHAIN_ID="localchain-2" CLEAN=true BLOCK_TIME="2000ms" sh scripts/test_ics_node.sh &
