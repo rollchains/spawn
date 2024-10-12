@@ -13,24 +13,7 @@ There are easy ways to get validators in a cosmwasm smart contract. The goal of 
 ## Prerequisites
 - [System Setup](../01-setup/01-system-setup.md)
 - [Install Spawn](../01-setup/02-install-spawn.md)
-
-## CosmWasm Setup
-
-CosmWasm requires [Rust](https://www.rust-lang.org/). You must have this installed as the contract will be built locally.
-
-```bash
-# Install rust - https://www.rust-lang.org/tools/install
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# or Update if you have it
-rustup update
-
-# Install other dependencies
-rustup target add wasm32-unknown-unknown
-
-cargo install cargo-generate --features vendored-openssl
-cargo install cargo-run-script
-```
+- [Rust + CosmWasm](../01-setup/01-system-setup.md#cosmwasm)
 
 ## Setup the Chain
 
