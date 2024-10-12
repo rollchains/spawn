@@ -246,6 +246,7 @@ service Msg {
 
 	t.Cleanup(func() {
 		os.RemoveAll(protoDir)
+		os.RemoveAll(path.Join(wd, "x"))
 	})
 }
 

@@ -344,6 +344,11 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 	if cfg.IsFeatureEnabled(InterchainSecurity) {
 		c.SetICSConsumerLink("localcosmos-1")
 	} else {
+		// Standalone testnet with no IBC connections
+		if err := localictypes.NewChainsConfig(c).SaveJSON(fmt.Sprintf("%s/chains/standalone.json", cfg.ProjectName)); err != nil {
+			panic(err)
+		}
+
 		// make this is an IBC testnet for POA/POS chains
 		c.SetAppendedIBCPathLink(CosmosHubProvider)
 	}
