@@ -33,10 +33,15 @@ make install
 # Install Local Interchain (testnet runner)
 make get-localic
 
+# Install docker container builder
+make get-heighliner
+
 # Verify installations were successful
 spawn
 
 local-ic
+
+heighliner
 
 # If you get "command 'spawn' not found", run the following
 # Linux / Windows / Some MacOS

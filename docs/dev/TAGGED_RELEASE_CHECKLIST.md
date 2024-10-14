@@ -7,7 +7,10 @@ This document outlines the steps required to verify the functionality of spawn a
 - [ ] ./scripts/bump_docs.sh
 - [ ] ./scripts/bump_localic.sh
 - [ ] Verify the README is up to date
-- [ ] Ensure examples run in the [../versioned_docs/](../versioned_docs/) for this release as expected, across multiple machines (MacOS, WSL, and Linux)
+- [ ] Ensure examples run in the [../versioned_docs/](../versioned_docs/) for this release as expected, across multiple machines
+    - [ ] MacOS
+    - [ ] Linux
+    - [ ] Windows (WSL)
 
 
 ## Semi-Automatic Verification

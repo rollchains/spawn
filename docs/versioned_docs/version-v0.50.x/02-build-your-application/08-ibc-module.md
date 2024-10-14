@@ -215,7 +215,7 @@ echo `ICT_RELAYER_CHANNELS $API_ADDR "localchain-1"`
 rolld tx nsibc example-tx nsibc channel-1 testname --from acc0 --chain-id localchain-1 --yes
 
 # View the logs
-rolld q tx 8A2009667022BE432B60158498C2256AEED0E86E9DFF79BD11CC9EA70DEC4A8A
+rolld q tx DCDBFA80AE95F7C010296623CDB89E1A537CCC6A279A952B5C66C82DA15652B0
 
 # Verify chain 2 set the name (
 # `rolld keys show -a acc0` from chain-1
