@@ -565,6 +565,13 @@ cargo-run-script optimize
 Make sure you are in the `cwchain` directory to begin interacting and uploading the contract to the chain. It is time to start the cosmwasm chain and launch a testnet that connects to itself. The `self-ibc` chain is automatically generated for you on the creation with spawn. It launches 2 of your networks, localchain-1 and localchain-2, and connects them with a relayer operator at startup.
 
 ```bash
+# move back into the cwchain directory
+cd ../
+
+# Install heighliner if you have not already
+# (Easily docker builder tool)
+make get-heighliner
+
 # Build docker image, set configs, keys, and install binary
 #
 # Error 1 (ignored) codes are okay here if you already have

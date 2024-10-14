@@ -37,7 +37,7 @@ rolld tx nameservice set alice --from=acc1 --yes
 
 # You can verify this transaction was successful
 # By querying it's unique ID.
-rolld q tx 565CE77057ACBF6FB5D174231455E61E65009CD628971937C19201328E0A1FFD
+rolld q tx EC3FBF3248E24B5FEB6A5F7F35BBB4634E9C75587119E3FBCF5C1FED05E5A399
 ```
 
 ## Interaction Get Name

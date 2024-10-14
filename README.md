@@ -26,7 +26,7 @@ If you do not have [`go 1.22+`](https://go.dev/doc/install), [`Docker`](https://
 
 ```bash
 # Download the the Spawn repository
-git clone https://github.com/rollchains/spawn.git --depth=1 --branch v0.50.8
+git clone https://github.com/rollchains/spawn.git --depth=1 --branch v0.50.9
 cd spawn
 
 # Install Spawn

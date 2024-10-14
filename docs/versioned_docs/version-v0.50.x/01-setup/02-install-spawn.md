@@ -19,7 +19,7 @@ Install Spawn from source.
 
 ```bash
 # Install from latest source
-git clone https://github.com/rollchains/spawn.git --depth 1 --branch v0.50.8
+git clone https://github.com/rollchains/spawn.git --depth 1 --branch v0.50.9
 
 # Change to this directory
 cd spawn
@@ -33,10 +33,15 @@ make install
 # Install Local Interchain (testnet runner)
 make get-localic
 
+# Install docker container builder
+make get-heighliner
+
 # Verify installations were successful
 spawn
 
 local-ic
+
+heighliner
 
 # If you get "command 'spawn' not found", run the following
 # Linux / Windows / Some MacOS
