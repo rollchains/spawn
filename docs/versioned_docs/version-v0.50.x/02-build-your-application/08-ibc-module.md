@@ -67,7 +67,7 @@ type Keeper struct {
 func NewKeeper(
 	...
 	// highlight-next-line
-	nsk *nameservicekeeper.Keeper,
+	nsk *nameservicekeeper.Keeper, // placed on the last line of NewKeeper
 ) Keeper {
     ...
 
@@ -97,9 +97,9 @@ You can find the `NameserviceKeeper` set just after the `NsibcKeeper` is set. If
 		app.IBCKeeper.ChannelKeeper,
 		app.IBCKeeper.PortKeeper,
 		scopedNsibc,
-		// highlight-next-line
-		&app.NameserviceKeeper, // This line added here
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		// highlight-next-line
+		&app.NameserviceKeeper, // placed on the last line of NewKeeper
 	)
 ```
 
