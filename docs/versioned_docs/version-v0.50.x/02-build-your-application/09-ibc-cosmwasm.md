@@ -618,16 +618,9 @@ NSERVICE_CONTRACT=roll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sjczpj
 The relayer must now connect the contracts together and create an IBC connection, link, between them. Use the Local-Interchain helper methods to connect the contracts across the chains. This command will take a second then show a bunch of logs. `Error context canceled` is fine to see. You will verify they were opened in the next step.
 
 ```bash
-# Import the testnet interaction helper functions
-# for local-interchain
-curl -s https://raw.githubusercontent.com/strangelove-ventures/interchaintest/main/local-interchain/bash/source.bash > ict_source.bash
-source ./ict_source.bash
-
-API_ADDR="http://localhost:8080"
-
 # This will take a moment.
-ICT_RELAYER_EXEC "$API_ADDR" "localchain-1" \
-    "rly tx link localchain-1_localchain-2 --src-port wasm.${NSERVICE_CONTRACT} --dst-port=wasm.${NSERVICE_CONTRACT} --order unordered --version ns-1"
+# Connects the 2 contracts together with the IBC relayer
+local-ic interact localchain-1 relayer-exec "rly tx link localchain-1_localchain-2 --src-port wasm.${NSERVICE_CONTRACT} --dst-port=wasm.${NSERVICE_CONTRACT} --order unordered --version ns-1"
 ```
 
 
@@ -640,7 +633,7 @@ Verify the channels were created. Query either with the application binary of th
 rolld q ibc channel channels
 
 # relayer
-ICT_RELAYER_EXEC "$API_ADDR" "localchain-1" "rly q channels localchain-1"
+local-ic interact localchain-1 relayer-exec "rly q channels localchain-1"
 ```
 
 ## Transaction interaction
@@ -654,7 +647,7 @@ rolld tx wasm execute $NSERVICE_CONTRACT "$MESSAGE" --from=acc0 --gas=auto --gas
 
 # This will take a moment
 # 'account sequence mismatch' errors are fine.
-ICT_RELAYER_EXEC "$API_ADDR" "localchain-1" "rly tx flush"
+local-ic interact localchain-1 relayer-exec "rly tx flush"
 ```
 
 ---

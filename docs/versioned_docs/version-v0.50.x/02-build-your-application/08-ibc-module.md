@@ -161,8 +161,12 @@ make install
 # `make proto-gen`, then re `make install`
 rolld
 
-# build docker image
-make local-image
+# Build docker image, set configs, keys, and install binary
+#
+# Error 1 (ignored) codes are okay here if you already have
+# the keys and configs setup. If so you only have to `make local-image`
+# in future runs :)
+make setup-testnet
 
 # run testnet between itself and an IBC relayer
 # this will take a minute
@@ -174,17 +178,16 @@ local-ic start self-ibc
 Pasting the following lines in your terminal will import helper functions to interact with the testnet.
 The source is publicly available on GitHub to review. It gives you the ability to interact with the testnet easily using special `ICT_` commands.
 
+:::note
+Local Interchain comes with a bash client helper for interaction as well. Check it out if you love bash
+
 ```bash
-# Import the testnet interaction helper functions
-# for local-interchain
 curl -s https://raw.githubusercontent.com/strangelove-ventures/interchaintest/main/local-interchain/bash/source.bash > ict_source.bash
 source ./ict_source.bash
-
-API_ADDR="http://localhost:8080"
-
-# Waits for the testnet to start
-ICT_POLL_FOR_START $API_ADDR 50 && echo "Testnet started"
 ```
+
+Further `local-ic interact` sub commands can be found in the [interchaintest/local-interchain documentation](https://github.com/strangelove-ventures/interchaintest/tree/main/local-interchain).
+:::
 
 ## Connect Your IBC Modules
 
@@ -200,12 +203,13 @@ These values are found in the keys.go file as the module name. By default versio
 Execute the command on the testnet to connect the two chains with the IBC module with the relayer.
 
 ```bash
-# This will take a minute.
-ICT_RELAYER_EXEC $API_ADDR "localchain-1" "rly tx connect localchain-1_localchain-2 --src-port=nsibc --dst-port=nsibc --order=unordered --version=nsibc-1"
+# This will take a minute as it connects multiple
+# networks together via the relayer process
+local-ic interact localchain-1 relayer-exec "rly tx connect localchain-1_localchain-2 --src-port=nsibc --dst-port=nsibc --order=unordered --version=nsibc-1"
 
 # Running the channels command now shows 2 channels, one for `transfer`
 # and 1 for `nsibc`, marked as channel-1.
-echo `ICT_RELAYER_CHANNELS $API_ADDR "localchain-1"`
+local-ic interact localchain-1 get_channels
 ```
 
 ## Submit Name Service Name Over IBC
@@ -219,7 +223,7 @@ rolld q tx DCDBFA80AE95F7C010296623CDB89E1A537CCC6A279A952B5C66C82DA15652B0
 
 # Verify chain 2 set the name (
 # `rolld keys show -a acc0` from chain-1
-ICT_QUERY "http://localhost:8080" "localchain-2" "nameservice resolve roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87"
+local-ic interact localchain-2 query "nameservice resolve roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87"
 ```
 
 ## Summary

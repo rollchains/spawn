@@ -24,8 +24,11 @@ func NewKeeper() Keeper {
 
   k := Keeper{
     ...
-	// highlight-next-line
-    NameMapping: collections.NewMap(sb, collections.NewPrefix(1), "name_mapping", collections.StringKey, collections.StringValue),
+	// highlight-start
+    NameMapping: collections.NewMap(sb, collections.NewPrefix(1),
+		"name_mapping", collections.StringKey, collections.StringValue,
+	),
+	// highlight-end
   }
 
 }
