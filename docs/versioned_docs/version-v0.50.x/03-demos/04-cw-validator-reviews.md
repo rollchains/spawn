@@ -354,7 +354,7 @@ func SetupTest(t *testing.T) *testFixture
 
 	// Setup Keeper.
     // highlight-next-line
-	f.k = keeper.NewKeeper(encCfg.Codec, storeService, logger, &wasmkeeper.Keeper{}, f.stakingKeeper, f.govModAddr)
+	f.k = keeper.NewKeeper(encCfg.Codec, runtime.NewKVStoreService(keys[types.StoreKey]), logger, &wasmkeeper.Keeper{}, f.stakingKeeper, f.govModAddr)
 }
 ```
 
