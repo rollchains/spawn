@@ -135,7 +135,7 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	wasmvm "github.com/CosmWasm/wasmvm"
+	wasmvm2 "github.com/CosmWasm/wasmvm/v2"
 
 	wasmlc "github.com/cosmos/ibc-go/modules/light-clients/08-wasm"
 	wasmlckeeper "github.com/cosmos/ibc-go/modules/light-clients/08-wasm/keeper"
@@ -187,6 +187,14 @@ var (
 			"token_factory", // spawntag:tokenfactory
 		}, ",")
 )
+
+// AllCapabilities returns all capabilities available with the current wasmvm
+// See https://github.com/CosmWasm/cosmwasm/blob/main/docs/CAPABILITIES-BUILT-IN.md
+func WasmCapabilities() []string {
+	d := wasmkeeper.BuiltInCapabilities()
+	d = append(d, "token_factory") // spawntag:tokenfactory
+	return d
+}
 
 // These constants are derived from the above variables.
 // These are the ones we will want to use in the code, based on
@@ -836,7 +844,7 @@ func NewChainApp(
 		app.GRPCQueryRouter(),
 		wasmDir,
 		wasmConfig,
-		strings.Join(AllCapabilities(), ","),
+		WasmCapabilities(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		wasmOpts...,
 	)
@@ -858,7 +866,7 @@ func NewChainApp(
 	dataDir := filepath.Join(homePath, "data")
 
 	var memCacheSizeMB uint32 = 100
-	lc08, err := wasmvm.NewVM(filepath.Join(dataDir, "08-light-client"), capabilities, 32, false, memCacheSizeMB)
+	lc08, err := wasmvm2.NewVM(filepath.Join(dataDir, "08-light-client"), WasmCapabilities(), 32, false, memCacheSizeMB)
 	if err != nil {
 		panic(fmt.Sprintf("failed to create VM for 08 light client: %s", err))
 	}
