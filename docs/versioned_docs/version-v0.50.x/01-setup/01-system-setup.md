@@ -121,6 +121,9 @@ CosmWasm requires [Rust](https://www.rust-lang.org/). You must have this install
 # Install rust - https://www.rust-lang.org/tools/install
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
+# Update shell env
+source $HOME/.cargo/env
+
 # or Update if you have it
 rustup update
 
