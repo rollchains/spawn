@@ -26,7 +26,7 @@ If you do not have [`go 1.22+`](https://go.dev/doc/install), [`Docker`](https://
 
 ```bash
 # Download the the Spawn repository
-git clone https://github.com/rollchains/spawn.git --depth=1 --branch v0.50.9
+git clone https://github.com/rollchains/spawn.git --depth=1 --branch v0.50.10
 cd spawn
 
 # Install Spawn
@@ -38,11 +38,11 @@ make get-localic
 # Attempt to run a command
 spawn help
 
-# Potential workaround if spawn is immediately killed when attempting run "spawn help" on a m* macbook. 
+# Potential workaround if spawn is immediately killed when attempting run "spawn help" on a m* macbook.
 # This may happen because of an xcode16 update.
-# To work around this as a temporary measure please change this line in the Make file. 
+# To work around this as a temporary measure please change this line in the Make file.
 LD_FLAGS = -X main.SpawnVersion=$(VERSION)
-# to 
+# to
 LD_FLAGS = -X main.SpawnVersion=$(VERSION) -s -w
 
 
