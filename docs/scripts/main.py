@@ -40,7 +40,6 @@ def clean_lines(text: str) -> list[str]:
     # remove comment lines
     sec = [line for line in text.split("\n") if not line.startswith("#")]
 
-
     for l in sec:
         l = l.strip()
         # if l starts with any in ignore-commands, remove the line from the section
@@ -58,7 +57,6 @@ def get_env_variables_from_lines(lines: list[str]) -> dict[str, str]:
         # DENOM=factory/roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87/mytoken
         match = re.match(r"([A-Z_]+)=(.*)", line)
         if match:
-            print("MATCH:", match)
             env_vars[match.group(1)] = match.group(2)
 
     return env_vars
@@ -88,14 +86,13 @@ def parse_docs(text: str):
             envs = get_env_variables_from_lines(sec) # TODO: keep up with these globally and unset at end? so we dont polute test
             for k, v in envs.items():
                 os.environ[k] = v
+                print(f"{k}={v}")
 
             if any([cmd in sec for cmd in BLOCKING_START_COMMANDS]):
-                pass
-
-            #     pid = subprocess.Popen(secStr, shell=True)
-            #     poll_for_start("http://127.0.0.1:26657", pid, waitSeconds=25)
-            # else:
-            #     os.system(sec)
+                pid = subprocess.Popen(secStr, shell=True)
+                poll_for_start("http://127.0.0.1:26657", pid, waitSeconds=25)
+            else:
+                os.system(secStr)
 
             input("Press Enter to continue...")
 
