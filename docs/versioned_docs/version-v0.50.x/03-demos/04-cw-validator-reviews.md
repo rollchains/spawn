@@ -13,7 +13,7 @@ There are easy ways to get validators in a cosmwasm smart contract. The goal of 
 ## Prerequisites
 - [System Setup](../01-setup/01-system-setup.md)
 - [Install Spawn](../01-setup/02-install-spawn.md)
-- [Rust + CosmWasm](../01-setup/01-system-setup.md#cosmwasm)
+- [Rust + CosmWasm](../01-setup/01-system-setup.md)
 
 ## Setup the Chain
 
