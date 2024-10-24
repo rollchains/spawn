@@ -66,7 +66,7 @@ The `denom_creation_fee` is a cost the application can set for creating new toke
 The `denom_creation_gas_consume` is the amount of indirect resource cost to consume for creating a new token.
 It is a more indirect approach to charging and is a better experience overall for developers on a network.
 
-```bash
+```text
 params:
   denom_creation_fee: []
   denom_creation_gas_consume: "100000"
@@ -92,7 +92,7 @@ rolld q tokenfactory denoms-from-creator $(rolld keys show acc0 -a)
 
 <details>
 <summary>denoms-from-creator output</summary>
-```bash
+```text
 denoms:
 - factory/roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87/mytoken
 ```
@@ -129,7 +129,7 @@ rolld q bank denom-metadata $DENOM
 
 <details>
 <summary>bank denom-metadata output</summary>
-```bash
+```text
 metadata:
   base: factory/roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87/mytoken
   denom_units:
@@ -162,7 +162,7 @@ rolld q bank balances $(rolld keys show acc0 -a)
 
 <details>
 <summary>bank balances output</summary>
-```bash
+```text
 balances:
 - amount: "5000000"
   denom: factory/roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87/mytoken
@@ -189,7 +189,7 @@ rolld q bank balances $(rolld keys show acc1 -a)
 
 <details>
 <summary>mint-to output</summary>
-```bash
+```text
 balances:
 - amount: "1000000"
   denom: factory/roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87/mytoken
@@ -206,7 +206,7 @@ note, you can check for just a specific token balance with
 rolld q bank balance $(rolld keys show acc0 -a) $DENOM
 ```
 
-```bash
+```text
 balance:
   amount: "5000000"
   denom: factory/roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87/mytoken
