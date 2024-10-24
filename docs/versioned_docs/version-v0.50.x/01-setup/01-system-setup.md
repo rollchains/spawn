@@ -93,6 +93,7 @@ If you do not have these components installed, follow the instructions below to 
   </TabItem>
 
   <TabItem value="ubuntu-linux" label="Linux (Ubuntu)">
+  <!-- markdown-link-check-disable -->
   ```bash
   # Base
   sudo apt install make gcc git jq wget
@@ -114,6 +115,7 @@ If you do not have these components installed, follow the instructions below to 
   git config --global user.name "Your Name"
   ```
   </TabItem>
+  <!-- markdown-link-check-enable -->
 
   <TabItem value="cosmwasm-rust" label="CosmWasm (Rust)">
   Some tutorials require CosmWasm (Rust smart contracts) setup. This section is option, unless a tutorial is CosmWasm focused.
