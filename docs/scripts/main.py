@@ -13,6 +13,7 @@ parent_dir = os.path.dirname(curr_dir)
 BLOCKING_START_COMMANDS = ["local-ic start", "make testnet", "make sh-testnet"]
 ignore_commands = ["gh repo create"]
 
+START_PID = -1
 DEBUGGING = False
 
 def main():
@@ -47,9 +48,7 @@ def clean_lines(text: str) -> list[str]:
             sec.remove(l)
 
     # remove blank lines
-    sec = [line for line in sec if line.strip() != ""]
-
-    return sec
+    return [line for line in sec if line.strip() != ""]
 
 def get_env_variables_from_lines(lines: list[str]) -> dict[str, str]:
     env_vars = {}
@@ -62,7 +61,7 @@ def get_env_variables_from_lines(lines: list[str]) -> dict[str, str]:
     return env_vars
 
 def parse_docs(text: str):
-
+    global START_PID
 
     # split the text by ```bash
     sections = text.split("```bash")
@@ -83,18 +82,24 @@ def parse_docs(text: str):
             # if sec contains anything from within BLOCKING_START_COMMANDS, it should run in its
             # own terminal
 
-            envs = get_env_variables_from_lines(sec) # TODO: keep up with these globally and unset at end? so we dont polute test
+            # TODO: keep up with these globally and unset at end? so we dont polute test
+            envs = get_env_variables_from_lines(sec)
             for k, v in envs.items():
                 os.environ[k] = v
                 print(f"{k}={v}")
 
             if any([cmd in sec for cmd in BLOCKING_START_COMMANDS]):
-                pid = subprocess.Popen(secStr, shell=True)
-                poll_for_start("http://127.0.0.1:26657", pid, waitSeconds=25)
+                START_PID = subprocess.Popen(secStr, shell=True).pid
+                print(f"Started process with pid: {START_PID}")
+                poll_for_start("http://127.0.0.1:26657", START_PID, waitSeconds=60)
             else:
                 os.system(secStr)
+                time.sleep(2)
 
-            input("Press Enter to continue...")
+            # input("--- Press Enter to continue...")
+
+    # TODO: verification logic here
+    # Kill / cleanup the instance (direct from pid would be nice, or just a killall <binary>)
 
 if __name__ == '__main__':
     main()
