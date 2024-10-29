@@ -4,7 +4,7 @@ CWD := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 
 # don't override user values
 ifeq (,$(VERSION))
-  VERSION := $(shell git tag --sort=taggerdate | tail -1)
+  VERSION := $(shell git tag --sort=version:refname | tail -1)
   # if VERSION is empty, then populate it with branch's name and raw commit hash
   ifeq (,$(VERSION))
     VERSION := $(BRANCH)-$(COMMIT)
