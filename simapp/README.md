@@ -70,3 +70,38 @@ yarn
 # publish
 npm publish
 ```
+
+
+## Connect to a TS locally without publish
+
+```bash
+cd chain-js
+yarn link
+
+mkdir t # testing
+cd t
+
+npm i typescript --save-dev
+npx tsc --init
+
+touch index.ts
+
+    ```ts
+    import {nameservice} from '@reecepbcups/chain-js';
+
+    console.log(`Hello world`);
+
+    const client = nameservice.ClientFactory.createRPCQueryClient({ rpcEndpoint: 'http://localhost:26657' });
+
+    client.then((client) => {
+        client.nameservice.v1.params().then((res) => {
+            console.log(res);
+        });
+    });
+    ```
+
+yarn link "@reecepbcups/chain-js" # TODO: just simlink directly with relative paths
+
+npx ts-node index.ts
+
+```
