@@ -41,17 +41,30 @@ Start the testnet with `make testnet`, and open the webapp `cd ./web && yarn dev
 
 # Install Telescope
 
-telescope generate # the chainname-js
-cd chainname-js
+telescope generate --name chain-js # TODO: how do I default set other information? like the __CHAINNAME__ ?
+    ```
+    ? [__CHAINNAME__] Enter chain name in all lowercase, e.g. osmosis localchain
+    ? [__USERFULLNAME__] Enter author full name reece williams
+    ? [__USEREMAIL__] Enter author email reecepbcups@gmail.com
+    ? [__MODULENAME__] Enter the module name chain-js
+    ? [__MODULEDESC__] Enter the module description desc of chain-js
+    ? [__USERNAME__] Enter your github username reecepbcups
+    ? [__ACCESS__] Module access? public
+    ? [__LICENSE__] Which license? MIT
+    ? [scoped] use npm scopes? Yes
+    ```
 
-telescope install # amino, cosmos, cosmos_proto, gogoproto, google, ibc
-# attempt 2: cosmos, cosmos_proto, gogoproto, ibc
+cd chain-js
+
+telescope install @protobufs/tendermint @protobufs/ibc @protobufs/google @protobufs/gogoproto @protobufs/cosmos_proto @protobufs/cosmos
 
 cp -r ../proto/* ./proto # I dislike this step, why? Can't I use the parent package for my custom modules, but then relative for the installed ones?
 
-telescope transpile
+telescope transpile --protoDirs=./proto --outPath=./src/codegen --config ../.telescope.json
 
-# install pacakge in
+yarn add @cosmology/lcd
+
+# install package
 yarn
 
 # publish
