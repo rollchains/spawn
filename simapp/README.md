@@ -32,3 +32,28 @@ Generate the template base with spawn. Requires [npm](https://nodejs.org/en/down
 - `make generate-webapp` *[Cosmology Webapp Template](https://github.com/cosmology-tech/create-cosmos-app)*
 
 Start the testnet with `make testnet`, and open the webapp `cd ./web && yarn dev`
+
+## Typescript Client
+
+<https://cosmology.zone/learn/telescope/overview-of-telescope>
+
+```bash
+
+# Install Telescope
+
+telescope generate # the chainname-js
+cd chainname-js
+
+telescope install # amino, cosmos, cosmos_proto, gogoproto, google, ibc
+# attempt 2: cosmos, cosmos_proto, gogoproto, ibc
+
+cp -r ../proto/* ./proto # I dislike this step, why? Can't I use the parent package for my custom modules, but then relative for the installed ones?
+
+telescope transpile
+
+# install pacakge in
+yarn
+
+# publish
+npm publish
+```

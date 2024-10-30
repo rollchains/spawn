@@ -325,8 +325,19 @@ explorer:
 
 .PHONY: generate-webapp
 generate-webapp:
+ ifeq (, $(shell which create-cosmos-app))
+#  $(error "No create-cosmos-app in $(PATH), consider doing apt-get install lzop")
 	sudo npm install --global create-cosmos-app
+ endif
 	cca --name web -e spawn
+
+.PHONY: generate-typescript
+generate-typescript:
+ ifeq (, $(shell which telescope))
+	sudo npm install -g @cosmology/telescope
+ endif
+ echo "TODO: Run telescope here"
+
 
 help:
 	@echo "Usage: make <target>"
