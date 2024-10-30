@@ -8,3 +8,4 @@ findAndReplace() {
 }
 
 findAndReplace "*.md" "s/$OLD_VERSION/$NEW_VERSION/g"
+findAndReplace "install.sh" "s/$OLD_VERSION/$NEW_VERSION/g"
