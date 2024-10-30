@@ -3,8 +3,8 @@ package decorators
 import (
 	"fmt"
 
+	"cosmossdk.io/x/authz"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/cosmos/gogoproto/proto"
 )
 

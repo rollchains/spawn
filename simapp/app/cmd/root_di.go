@@ -9,7 +9,7 @@ import (
 
 	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/address"
-	"cosmossdk.io/core/legacy"
+	"cosmossdk.io/core/registry"
 	"cosmossdk.io/core/transaction"
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
@@ -20,9 +20,9 @@ import (
 	"github.com/gordian-engine/gcosmos/gserver"
 
 	"cosmossdk.io/server/v2/cometbft"
-	"cosmossdk.io/x/auth/tx"
-	authtxconfig "cosmossdk.io/x/auth/tx/config"
-	"cosmossdk.io/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/tx"
+	authtxconfig "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
+	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/rollchains/spawn/simapp" // TODO: rename me to just `github.com/rollchains/myunit`
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -146,7 +146,7 @@ func ProvideClientContext(
 	appCodec codec.Codec,
 	interfaceRegistry codectypes.InterfaceRegistry,
 	txConfigOpts tx.ConfigOptions,
-	legacyAmino legacy.Amino,
+	legacyAmino registry.AminoRegistrar,
 	addressCodec address.Codec,
 	validatorAddressCodec address.ValidatorAddressCodec,
 	consensusAddressCodec address.ConsensusAddressCodec,

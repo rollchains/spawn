@@ -30,11 +30,7 @@ import (
 	vestingmodulev1 "cosmossdk.io/api/cosmos/vesting/module/v1"
 	"cosmossdk.io/depinject/appconfig"
 	"cosmossdk.io/x/accounts"
-	_ "cosmossdk.io/x/auth"           // import for side-effects
-	_ "cosmossdk.io/x/auth/tx/config" // import for side-effects
-	authtypes "cosmossdk.io/x/auth/types"
-	_ "cosmossdk.io/x/auth/vesting" // import for side-effects
-	vestingtypes "cosmossdk.io/x/auth/vesting/types"
+	_ "cosmossdk.io/x/accounts" // import for side-effects
 	"cosmossdk.io/x/authz"
 	_ "cosmossdk.io/x/authz/module" // import for side-effects
 	_ "cosmossdk.io/x/bank"         // import for side-effects
@@ -65,6 +61,10 @@ import (
 	stakingtypes "cosmossdk.io/x/staking/types"
 	_ "cosmossdk.io/x/upgrade" // import for side-effects
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+	authtxconfig "github.com/cosmos/cosmos-sdk/x/auth/tx/config" // import for side-effects
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	_ "github.com/cosmos/cosmos-sdk/x/auth/vesting" // import for side-effects
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 
 	"github.com/cosmos/cosmos-sdk/runtime"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
@@ -161,6 +161,17 @@ var (
 						vestingtypes.ModuleName,
 						circuittypes.ModuleName,
 						pooltypes.ModuleName,
+					},
+					// When ExportGenesis is not specified, the export genesis module order
+					// is equal to the init genesis order
+					// ExportGenesis: []string{},
+					// Uncomment if you want to set a custom migration order here.
+					// OrderMigrations: []string{},
+					// SkipStoreKeys is an optional list of store keys to skip when constructing the
+					// module's keeper. This is useful when a module does not have a store key.
+					SkipStoreKeys: []string{
+						authtxconfig.DepinjectModuleName,
+						validate.ModuleName,
 					},
 					// When ExportGenesis is not specified, the export genesis module order
 					// is equal to the init genesis order

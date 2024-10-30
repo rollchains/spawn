@@ -6,14 +6,13 @@ import (
 	"github.com/spf13/viper"
 
 	clienthelpers "cosmossdk.io/client/v2/helpers"
-	coreapp "cosmossdk.io/core/app"
-	"cosmossdk.io/core/legacy"
+	coreapp "cosmossdk.io/core/appmodule"
+	"cosmossdk.io/core/registry"
 	"cosmossdk.io/core/transaction"
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
 	"cosmossdk.io/runtime/v2"
 	"cosmossdk.io/x/accounts"
-	authkeeper "cosmossdk.io/x/auth/keeper"
 	authzkeeper "cosmossdk.io/x/authz/keeper"
 	bankkeeper "cosmossdk.io/x/bank/keeper"
 	circuitkeeper "cosmossdk.io/x/circuit/keeper"
@@ -30,6 +29,7 @@ import (
 	slashingkeeper "cosmossdk.io/x/slashing/keeper"
 	stakingkeeper "cosmossdk.io/x/staking/keeper"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -46,7 +46,7 @@ var DefaultNodeHome string
 // capabilities aren't needed for testing.
 type SimApp[T transaction.Tx] struct {
 	*runtime.App[T]
-	legacyAmino       legacy.Amino
+	legacyAmino       registry.AminoRegistrar
 	appCodec          codec.Codec
 	txConfig          client.TxConfig
 	interfaceRegistry codectypes.InterfaceRegistry

@@ -17,7 +17,7 @@ import (
 	"cosmossdk.io/server/v2/api/grpc"
 	"cosmossdk.io/server/v2/store"
 	confixcmd "cosmossdk.io/tools/confix/cmd"
-	authcmd "cosmossdk.io/x/auth/client/cli"
+	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	"github.com/rollchains/spawn/simapp" // TODO: rename me to just `github.com/rollchains/myunit`
 
 	"github.com/cosmos/cosmos-sdk/client"
