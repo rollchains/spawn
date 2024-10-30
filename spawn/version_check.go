@@ -209,7 +209,7 @@ func DoOutdatedNotificationRunCheck(logger *slog.Logger) bool {
 }
 
 func WriteLastTimeToFile(logger *slog.Logger, lastCheckFile string, t time.Time) error {
-	return os.WriteFile(lastCheckFile, []byte(t.Format(time.RFC3339)), 0644)
+	return os.WriteFile(lastCheckFile, []byte(t.Format(time.RFC3339)), 0666)
 }
 
 // GetLatestVersionCheckFile grabs the check file used to determine when to run the version check.
@@ -236,7 +236,7 @@ func GetLatestVersionCheckFile(logger *slog.Logger) (string, error) {
 		}
 
 		epoch := time.Unix(0, 0)
-		if err := os.WriteFile(lastCheckFile, []byte(epoch.Format(time.RFC3339)), 0644); err != nil {
+		if err := os.WriteFile(lastCheckFile, []byte(epoch.Format(time.RFC3339)), 0666); err != nil {
 			logger.Error("Error writing last check file", "err", err)
 			return "", err
 		}

@@ -458,7 +458,7 @@ func debugErrorFile(logger *slog.Logger, newDirname string) string {
 	}
 
 	fullPath := path.Join(debugDir, fname)
-	if err := os.WriteFile(fullPath, []byte(errFileText), 0644); err != nil {
+	if err := os.WriteFile(fullPath, []byte(errFileText), 0766); err != nil {
 		logger.Error("Error saving debug file", "err", err)
 	}
 

@@ -68,5 +68,5 @@ func (mf MetadataFile) SaveJSON(loc string) error {
 		return err
 	}
 
-	return os.WriteFile(loc, bz, 0644)
+	return os.WriteFile(loc, bz, 0666)
 }

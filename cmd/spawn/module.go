@@ -433,7 +433,8 @@ func AddModuleToAppGo(logger *slog.Logger, extName string, feats *features) erro
 	logger.Debug("initParamsKeeper register", "extName", extName, "start", start, "end", end)
 	appGoLines = append(appGoLines[:end-3], append([]string{fmt.Sprintf(`	paramsKeeper.Subspace(%stypes.ModuleName)`, extName)}, appGoLines[end-3:]...)...)
 
-	return os.WriteFile(appGoPath, []byte(strings.Join(appGoLines, "\n")), 0644)
+	// 777 is used as some users have weird setup / group environments w/ MacOS. 766 is more ideal but .sh files need to be executed.
+	return os.WriteFile(appGoPath, []byte(strings.Join(appGoLines, "\n")), 0777)
 }
 
 // appendNewImportsToSource appends new imports to the source file at the end of the import block (before the closing `)` ).

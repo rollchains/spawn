@@ -254,9 +254,10 @@ func (fc *FileContent) Save() error {
 		return nil
 	}
 
-	if err := os.MkdirAll(path.Dir(fc.NewPath), 0755); err != nil {
+	// 777 is used as some users have weird setup / group environments w/ MacOS. 766 is more ideal but .sh files need to be executed.
+	if err := os.MkdirAll(path.Dir(fc.NewPath), 0777); err != nil {
 		return err
 	}
 
-	return os.WriteFile(fc.NewPath, []byte(fc.Contents), 0644)
+	return os.WriteFile(fc.NewPath, []byte(fc.Contents), 0777)
 }

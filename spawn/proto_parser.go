@@ -405,7 +405,7 @@ func ApplyMissingRPCMethodsToGoSourceFiles(logger *slog.Logger, missingRPCMethod
 			// append to the file content after a new line at the end
 			content = append(content, []byte("\n"+code)...)
 
-			if err := os.WriteFile(fileLoc, content, 0644); err != nil {
+			if err := os.WriteFile(fileLoc, content, 0666); err != nil {
 				logger.Error("error", "err", err)
 				return err
 			}
