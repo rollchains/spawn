@@ -6,12 +6,14 @@ import (
 	"github.com/spf13/viper"
 
 	clienthelpers "cosmossdk.io/client/v2/helpers"
-	coreapp "cosmossdk.io/core/appmodule"
 	"cosmossdk.io/core/registry"
 	"cosmossdk.io/core/transaction"
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
 	"cosmossdk.io/runtime/v2"
+	serverstore "cosmossdk.io/server/v2/store"
+	"cosmossdk.io/store/v2"
+	"cosmossdk.io/store/v2/root"
 	"cosmossdk.io/x/accounts"
 	authzkeeper "cosmossdk.io/x/authz/keeper"
 	bankkeeper "cosmossdk.io/x/bank/keeper"
@@ -31,9 +33,9 @@ import (
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 
+	"cosmossdk.io/core/server"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/std"
 	_ "github.com/cosmos/cosmos-sdk/x/genutil"
 )
@@ -49,7 +51,8 @@ type SimApp[T transaction.Tx] struct {
 	legacyAmino       registry.AminoRegistrar
 	appCodec          codec.Codec
 	txConfig          client.TxConfig
-	interfaceRegistry codectypes.InterfaceRegistry
+	interfaceRegistry server.InterfaceRegistry
+	store             store.RootStore
 
 	// keepers
 	AccountsKeeper        accounts.Keeper
@@ -93,8 +96,9 @@ func NewSimApp[T transaction.Tx](
 	viper *viper.Viper,
 ) *SimApp[T] {
 	var (
-		app        = &SimApp[T]{}
-		appBuilder *runtime.AppBuilder[T]
+		app          = &SimApp[T]{}
+		appBuilder   *runtime.AppBuilder[T]
+		storeBuilder root.Builder
 
 		// merge the AppConfig and other configuration in one config
 		appConfig = depinject.Configs(
@@ -188,6 +192,17 @@ func NewSimApp[T transaction.Tx](
 		panic(err)
 	}
 
+	// store/v2 follows a slightly more eager config life cycle than server components
+	storeConfig, err := serverstore.UnmarshalConfig(viper.AllSettings())
+	if err != nil {
+		panic(err)
+	}
+
+	app.store, err = storeBuilder.Build(logger, storeConfig)
+	if err != nil {
+		panic(err)
+	}
+
 	/****  Module Options ****/
 
 	// RegisterUpgradeHandlers is used for registering any on-chain upgrades.
@@ -213,7 +228,7 @@ func (app *SimApp[T]) AppCodec() codec.Codec {
 }
 
 // InterfaceRegistry returns SimApp's InterfaceRegistry.
-func (app *SimApp[T]) InterfaceRegistry() coreapp.InterfaceRegistry {
+func (app *SimApp[T]) InterfaceRegistry() server.InterfaceRegistry {
 	return app.interfaceRegistry
 }
 
@@ -227,7 +242,6 @@ func (app *SimApp[T]) GetConsensusAuthority() string {
 	return app.ConsensusParamsKeeper.GetAuthority()
 }
 
-// GetStore gets the app store.
-func (app *SimApp[T]) GetStore() any {
-	return app.App.GetStore()
+func (app *SimApp[T]) Store() store.RootStore {
+	return app.store
 }

@@ -2,10 +2,8 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"io"
 
-	dbm "github.com/cosmos/cosmos-db"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -20,6 +18,7 @@ import (
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	"github.com/rollchains/spawn/simapp" // TODO: rename me to just `github.com/rollchains/myunit`
 
+	corestore "cosmossdk.io/core/store"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/keys"
@@ -55,14 +54,15 @@ func initRootCmd[T transaction.Tx](
 		// snapshot.Cmd(newApp), // TODO add to comet server
 	)
 
-	logger, err := serverv2.NewLogger(viper.New(), rootCmd.OutOrStdout())
-	if err != nil {
-		panic(fmt.Sprintf("failed to create logger: %v", err))
-	}
+	// TODO: ?
+	// logger, err := serverv2.NewLogger(viper.New(), rootCmd.OutOrStdout())
+	// if err != nil {
+	// 	panic(fmt.Sprintf("failed to create logger: %v", err))
+	// }
 
 	// add keybase, auxiliary RPC, query, genesis, and tx child commands
 	rootCmd.AddCommand(
-		genesisCommand(moduleManager, appExport[T]),
+		genesisCommand(moduleManager, appExport),
 		queryCommand(),
 		txCommand(),
 		keys.Commands(),
@@ -70,13 +70,14 @@ func initRootCmd[T transaction.Tx](
 	)
 
 	// wire server commands
-	if err = serverv2.AddCommands(
+	if err := serverv2.AddCommands(
 		rootCmd,
 		newApp,
-		logger,
+		serverv2.DefaultServerConfig(),
+		// logger,
 		makeComponent(clientCtx),
 		grpc.New[T](),
-		store.New[T](newApp),
+		store.New[T](),
 	); err != nil {
 		panic(err)
 	}
@@ -85,25 +86,25 @@ func initRootCmd[T transaction.Tx](
 // genesisCommand builds genesis-related `simd genesis` command. Users may provide application specific commands as a parameter
 func genesisCommand[T transaction.Tx](
 	moduleManager *runtimev2.MM[T],
-	appExport func(logger log.Logger,
-		height int64,
-		forZeroHeight bool,
-		jailAllowedAddrs []string,
-		viper *viper.Viper,
-		modulesToExport []string,
-	) (servertypes.ExportedApp, error),
+	appExport servertypes.AppExporter,
 	cmds ...*cobra.Command,
 ) *cobra.Command {
-	compatAppExporter := func(logger log.Logger, db dbm.DB, traceWriter io.Writer, height int64, forZeroHeight bool, jailAllowedAddrs []string, appOpts servertypes.AppOptions, modulesToExport []string) (servertypes.ExportedApp, error) {
-		viperAppOpts, ok := appOpts.(*viper.Viper)
-		if !ok {
-			return servertypes.ExportedApp{}, errors.New("appOpts is not viper.Viper")
-		}
+	// compatAppExporter := func(logger log.Logger,
+	// 	db corestore.KVStoreWithBatch,
+	// 	traceWriter io.Writer,
+	// 	height int64,
+	// 	forZeroHeight bool,
+	// 	jailAllowedAddrs []string,
+	// 	opts servertypes.AppOptions,
+	// 	modulesToExport []string) (servertypes.ExportedApp, error) {
+	// 	viperAppOpts, ok := appOpts.(*viper.Viper)
+	// 	if !ok {
+	// 		return servertypes.ExportedApp{}, errors.New("appOpts is not viper.Viper")
+	// 	}
+	// 	return appExport(logger, height, forZeroHeight, jailAllowedAddrs, viperAppOpts, modulesToExport)
+	// }
 
-		return appExport(logger, height, forZeroHeight, jailAllowedAddrs, viperAppOpts, modulesToExport)
-	}
-
-	cmd := genutilcli.Commands(moduleManager.Modules()[genutiltypes.ModuleName].(genutil.AppModule), moduleManager, compatAppExporter)
+	cmd := genutilcli.Commands(moduleManager.Modules()[genutiltypes.ModuleName].(genutil.AppModule), moduleManager, appExport)
 	for _, subCmd := range cmds {
 		cmd.AddCommand(subCmd)
 	}
@@ -157,27 +158,34 @@ func txCommand() *cobra.Command {
 }
 
 // appExport creates a new simapp (optionally at a given height) and exports state.
-func appExport[T transaction.Tx](
+func appExport(
 	logger log.Logger,
+	db corestore.KVStoreWithBatch,
+	traceStore io.Writer,
 	height int64,
 	forZeroHeight bool,
 	jailAllowedAddrs []string,
-	viper *viper.Viper,
+	appOpts servertypes.AppOptions,
 	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
-	// overwrite the FlagInvCheckPeriod
-	viper.Set(server.FlagInvCheckPeriod, 1)
-
-	var simApp *simapp.SimApp[T]
-	if height != -1 {
-		simApp = simapp.NewSimApp[T](logger, viper)
-
-		if err := simApp.LoadHeight(uint64(height)); err != nil {
-			return servertypes.ExportedApp{}, err
-		}
-	} else {
-		simApp = simapp.NewSimApp[T](logger, viper)
+	viperAppOpts, ok := appOpts.(*viper.Viper)
+	if !ok {
+		return servertypes.ExportedApp{}, errors.New("appOpts is not viper.Viper")
 	}
+
+	// overwrite the FlagInvCheckPeriod
+	viperAppOpts.Set(server.FlagInvCheckPeriod, 1)
+
+	simApp := simapp.NewSimApp(logger, viperAppOpts)
+	// if height != -1 {
+	// 	simApp = simapp.NewSimApp(logger, viperAppOpts)
+
+	// 	if err := simApp.LoadHeight(height); err != nil {
+	// 		return servertypes.ExportedApp{}, err
+	// 	}
+	// } else {
+	// 	simApp = simapp.NewSimApp(logger, viperAppOpts)
+	// }
 
 	return simApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
 }

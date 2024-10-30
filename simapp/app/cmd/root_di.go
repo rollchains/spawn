@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -42,7 +43,7 @@ func NewRootCmdWithServer[T transaction.Tx](
 var cmd *cobra.Command
 
 // NewRootCmd creates a new root command for simd. It is called once in the main function.
-func NewRootCmd[T transaction.Tx]() *cobra.Command {
+func NewRootCmd[T transaction.Tx](homeDir string) *cobra.Command {
 	// <spawntag:cometbft
 	cmd = NewRootCmdWithServer(func(cc client.Context) serverv2.ServerComponent[T] {
 		return cometbft.New[T](
@@ -58,13 +59,15 @@ func NewRootCmd[T transaction.Tx]() *cobra.Command {
 	cmd = NewRootCmdWithServer(func(cc client.Context) serverv2.ServerComponent[transaction.Tx] {
 		ctx = context.WithValue(ctx, client.ClientContextKey, client.Context{
 			ChainID: "gcosmos", // TODO:
-			HomeDir: simapp.DefaultNodeHome,
+			HomeDir: homeDir,
 		})
+
+		dataDir := filepath.Join(homeDir, "data")
 
 		log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 		codec := gccodec.NewTxDecoder(cc.TxConfig)
-		c, err := gserver.NewComponent(ctx, log, codec, cc.Codec)
+		c, err := gserver.NewComponent(ctx, log, dataDir, codec, cc.Codec)
 		if err != nil {
 			panic(err)
 		}
