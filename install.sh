@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# curl -sSL https://raw.githubusercontent.com/rollchains/spawn/release/v0.50/install.sh | bash -s -- v0.50
+# curl -sSL https://raw.githubusercontent.com/rollchains/spawn/release/v0.50/install.sh | bash
 #
 
 VERSION=${1:-"v0.50.10"}
@@ -25,21 +25,27 @@ echo "Downloading spawn $VERSION for $OS/$ARCH..."
 
 VERSION_NORMALIZED=$(echo $VERSION | tr -d 'v')
 
-URL="${BASE_URL}/${APP_NAME}_${VERSION_NORMALIZED}_${OS}_${ARCH}.tar.gz"
+URL="${BASE_URL}/spawn_${VERSION_NORMALIZED}_${OS}_${ARCH}.tar.gz"
 
 TARGET_DIR="$(go env GOPATH)/bin"
 mkdir -p "$TARGET_DIR"
 
-wget -O "/tmp/${APP_NAME}.tar.gz" "$URL"
-
 mkdir -p /tmp/spawn-install
-tar -xvf "/tmp/${APP_NAME}.tar.gz" -C /tmp/spawn-install
+wget -O "/tmp/spawn-install/spawn.tar.gz" "$URL"
+tar -xvf "/tmp/spawn-install/spawn.tar.gz" -C /tmp/spawn-install
 
-mv "/tmp/spawn-install/${APP_NAME}" "$TARGET_DIR"
+mv "/tmp/spawn-install/spawn" "$TARGET_DIR"
 chmod +x "$TARGET_DIR/spawn"
 
-echo "Installation complete. spawn is now available in $TARGET_DIR"
-echo "To make spawn available from any terminal session, add the following line to your .bashrc or .zshrc:"
-echo "export PATH=\"\$PATH:$TARGET_DIR\""
+
+# see if the command spawn is avaliable in `which spawn`
+if [ -x "$(command -v spawn)" ]; then
+    echo "Spawn Installation complete. spawn is now available in $TARGET_DIR. Run the command 'spawn' from any terminal session."
+else
+    echo "Spawn is not available in your PATH"
+    echo "To make spawn available from any terminal session, add the following line to your .bashrc or .zshrc:"
+    echo 'export PATH="$PATH:$(go env GOPATH)/bin"'
+fi
+
 
 rm -rf /tmp/spawn-install
