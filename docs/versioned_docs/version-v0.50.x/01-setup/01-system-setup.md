@@ -26,25 +26,30 @@ If you do not have these components installed, follow the instructions below to 
 
 ## Install Dependencies
 
+Install [VSCode](https://code.visualstudio.com/download) if you do not already have a file editor. Once installed, the following extensions are useful
+- [Golang Syntax Highlighting](https://marketplace.visualstudio.com/items?itemName=golang.Go)
+- [Protobuf 3 Highlighting](https://marketplace.visualstudio.com/items?itemName=zxh404.vscode-proto3)
+- [Improved Errors](https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens)
+
 <Tabs defaultValue="macos">
   <TabItem value="macos" label="MacOS">
+
   ```bash
+  # Setup Homebrew (https://brew.sh/)
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  sudo echo 'export PATH=$PATH:/opt/homebrew/bin' >> ~/.zshrc
+
   # Base
-  brew install make
-  brew install gcc
-  brew install wget
-  brew install jq
+  brew install make wget jq gh gcc go
 
-  # Github CLI - https://github.com/cli/cli
-  brew install gh
-  gh auth login
-
-  # Golang
-  brew install go
+  # (optional) Github CLI login
+  # gh auth login
 
   # Docker
   brew install --cask docker
-  open -a Docker # start docker desktop
+
+  # Start docker desktop
+  open -a Docker
   # settings -> General -> Start Docker Desktop when you sign in to your computer
   # Apply & Restart
 
@@ -55,13 +60,13 @@ If you do not have these components installed, follow the instructions below to 
   </TabItem>
 
   <TabItem value="windows" label="Windows (WSL)" default>
+
   ```bash
   # Install WSL in powershell
   wsl --install
-  Restart-Computer
 
   # Setup WSL Ubuntu Image
-  wsl.exe --install Ubuntu-24.04
+  wsl.exe --install -d Ubuntu-24.04
 
   # Open wsl instance
   wsl
@@ -69,18 +74,19 @@ If you do not have these components installed, follow the instructions below to 
   # update and add snap if not already installed
   sudo apt update && sudo apt install snapd
 
-  # Install Go (Snap)
-  sudo snap install go --channel=1.23/stable --classic
+  # Install Go (https://go.dev/wiki/Ubuntu)
+  sudo apt update
+  sudo apt install golang -y
 
   # Install Base
-  sudo apt install make gcc git jq wget
+  sudo apt install make gcc git jq wget -y
 
-  # Install github-cli
-  sudo snap install gh
+  # Optional: Install github-cli
+  # sudo snap install gh
 
   # Install docker
-  https://docs.docker.com/desktop/wsl/#turn-on-docker-desktop-wsl-2
-  # or snap:
+  # If you can't use snap, setup from:
+  # - https://docs.docker.com/desktop/wsl/#turn-on-docker-desktop-wsl-2
   sudo snap install docker
 
   # Fix versioning for interaction of commands
@@ -90,9 +96,13 @@ If you do not have these components installed, follow the instructions below to 
   git config --global user.email "yourEmail@gmail.com"
   git config --global user.name "Your Name"
   ```
+
+  After installing VSCode and having your system setup, open a terminal and run `code` to open vscode. You can open the current directory with `code .`, where `.` in computer terms stands for the current directory.
+
   </TabItem>
 
   <TabItem value="ubuntu-linux" label="Linux (Ubuntu)">
+
   <!-- markdown-link-check-disable -->
   ```bash
   # Base

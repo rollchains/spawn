@@ -46,7 +46,7 @@ heighliner
 
 ## Command not found error
 
-# If you get "command 'spawn' not found", run the following
+If you get "command 'spawn' not found", run:
 
 ```bash
 # Gets your operating system
@@ -62,6 +62,7 @@ esac
 echo "Your operating system is: $machine"
 echo -e "\nAdding the go binary location to your PATH for global access.\n\tIt will now prompt you for your password."
 
+# Adds the location of the binaries to your PATH for global execution.
 cmd='export PATH=$PATH:$(go env GOPATH)/bin'
 if [ $machine == "Linux" ]; then
     sudo echo "$cmd" >> ~/.bashrc && source ~/.bashrc
