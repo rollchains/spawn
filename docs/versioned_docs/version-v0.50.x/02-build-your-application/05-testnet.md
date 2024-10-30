@@ -28,9 +28,9 @@ The chain will begin to create (mint) new blocks. You can see the logs of the ne
 
 ### Interact Set Name
 
-Using the newly built binary *(rolld from the --bin flag when the chain was created)*, you are going to execute the `set` transaction to your name. In this example, use "alice". This links account `acc1` address to the desired name in the keeper.
+Using the newly built binary executable *(rolld from the --bin flag when the chain was created)*, you are going to execute the `set` action to your name. In this example, use "alice". This links account `acc1` address to the desired name in the keeper.
 
-Then, resolve this name with the nameservice lookup. `$(rolld keys show acc1 -a)` is a substitute for the acc1's address. You can also use just `roll1hj5fveer5cjtn4wd6wstzugjfdxzl0xpg2te87` here.
+You can either query or set data in the network using the command executable. If you wish to perform an action you submit a transaction (tx). If you wish to read data  you are querying (q). The next sub command specifies which module will receive the action on. In this case, the `nameservice` module since our module is named nameservice. Then the `set` command is called, which was defined in the autocli.go.
 
 ```bash
 rolld tx nameservice set alice --from=acc1 --yes

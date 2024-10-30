@@ -7,7 +7,8 @@ slug: /build/name-service-application
 
 # Save Storage Structure
 
-You now need to set the data structure in the keeper to store the wallet to name pair. Keeper's are where the data is stored for future use.
+You now need to set the data structure in the keeper to store the wallet to name pair. Keepers are where the data is stored for future use and handle the business logic.
+Think of it like a box where you store your data and the methods used to modify this data. It is self contained and only gets further access if you allow the keeper to do so (shown in [part 2](../02-build-your-application/08-ibc-module.md)).
 
 ```go title="x/nameservice/keeper/keeper.go"
 
@@ -33,8 +34,6 @@ func NewKeeper() Keeper {
 
 }
 ```
-
-![keeper NewKeeper NameMapping](https://github.com/rollchains/spawn/assets/31943163/47ed4a41-4df2-4a5d-9ac5-bfb23aeefd94)
 
 ---
 

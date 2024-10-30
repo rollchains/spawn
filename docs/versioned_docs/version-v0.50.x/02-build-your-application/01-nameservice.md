@@ -18,6 +18,14 @@ Building your first Cosmos-SDK blockchain with Spawn. This tutorial focuses on a
 * Interacting with the network
 :::
 
+## How a Name Service works
+
+Imagine you have a set of labeled containers, each with a unique name like "Essentials" "Electronics" and "Books". The label on each container is called the key, and what’s stored inside is the value. For example, the key "Books" leads you to a container full of books, while "Essentials" might have things like toiletries or basic supplies.
+
+In a nameservice, this key-value system lets you quickly find or access specific data by referencing a unique name, or key, which reliably points you to the related value. This is useful for mapping names to specific information or resources, so with just the name, you can always find exactly what you're looking for.
+
+For this tutorial we map a human readable name (like `"alice"`) to a complex wallet address (like `roll1efd63aw40lxf3n4mhf7dzhjkr453axur57cawh`) so it is easier to understand and view as a user.
+
 ## Prerequisites
 - [System Setup](../01-setup/01-system-setup.md)
 - [Install Spawn](../01-setup/02-install-spawn.md)
