@@ -158,8 +158,8 @@ func (fc *FileContent) RemoveGordian() {
 
 	fc.DeleteFile(path.Join("app", "cmd", "gordian_patch.go")) // TODO: this is temp?
 
-	fc.RemoveGoModImport("github.com/rollchains/gordian")
-	fc.RemoveGoModImport("github.com/rollchains/gordian/gcosmos")
+	fc.RemoveGoModImport("github.com/gordian-engine/gordian")
+	fc.RemoveGoModImport("github.com/gordian-engine/gcosmos")
 }
 
 func (fc *FileContent) RemoveTokenFactory() {

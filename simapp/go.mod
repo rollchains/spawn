@@ -17,7 +17,7 @@ replace (
 
 //TODO: remove everything below after tags are created
 replace (
-	cosmossdk.io/api => cosmossdk.io/api v0.7.3-0.20240815194237-858ec2fcb897 // main
+	cosmossdk.io/api => cosmossdk.io/api v0.7.3-0.20241030153507-470e0859462b// main
 	cosmossdk.io/client/v2 => cosmossdk.io/client/v2 v2.0.0-20240905174638-8ce77cbb2450
 	cosmossdk.io/core => cosmossdk.io/core v0.12.1-0.20240906083041-6033330182c7 // main
 	cosmossdk.io/store => cosmossdk.io/store v1.0.0-rc.0.0.20240906090851-36d9b25e8981 // main
@@ -63,41 +63,22 @@ replace (
 // TODO:
 // Gordian Integration
 replace (
-	github.com/rollchains/gordian => /home/reece/Desktop/Programming/Go/gordian
+	github.com/gordian-engine/gordian => /home/reece/Desktop/Programming/Go/gordian
+	github.com/gordian-engine/gcosmos => /home/reece/Desktop/Programming/Go/gcosmos
 // github.com/rollchains/gordian/gcosmos => /home/reece/Desktop/Programming/Go/gcosmos
 )
 
 require (
-	cosmossdk.io/api v0.8.0
-	cosmossdk.io/client/v2 v2.0.0-beta.5
+	cosmossdk.io/api v0.7.3-0.20241030153507-470e0859462b
 	cosmossdk.io/collections v0.4.1-0.20240802064046-23fac2f1b8ab
 	cosmossdk.io/core v1.0.0
+	cosmossdk.io/core/testing v0.0.0-20240923163230-04da382a9f29
 	cosmossdk.io/log v1.4.1
 	cosmossdk.io/store v1.1.1
-	cosmossdk.io/tools/confix v0.1.2
-	cosmossdk.io/x/accounts v0.0.0-20240226161501-23359a0b6d91
-	cosmossdk.io/x/authz v0.0.0-00010101000000-000000000000
-	cosmossdk.io/x/bank v0.0.0-20240226161501-23359a0b6d91
-	cosmossdk.io/x/circuit v0.1.1
-	cosmossdk.io/x/consensus v0.0.0-20240911130545-9e7848985491
-	cosmossdk.io/x/distribution v0.0.0-20240906090851-36d9b25e8981
-	cosmossdk.io/x/evidence v0.1.1
-	cosmossdk.io/x/feegrant v0.1.1
-	cosmossdk.io/x/gov v0.0.0-20231113122742-912390d5fc4a
-	cosmossdk.io/x/group v0.0.0-00010101000000-000000000000
-	cosmossdk.io/x/mint v0.0.0-20240909082436-01c0e9ba3581
-	cosmossdk.io/x/params v0.0.0-00010101000000-000000000000
-	cosmossdk.io/x/protocolpool v0.0.0-20230925135524-a1bc045b3190
-	cosmossdk.io/x/slashing v0.0.0-00010101000000-000000000000
-	cosmossdk.io/x/staking v0.0.0-00010101000000-000000000000
-	cosmossdk.io/x/tx v1.0.0-alpha.1
-	cosmossdk.io/x/upgrade v0.1.4
 	github.com/cometbft/cometbft v1.0.0-rc1.0.20240908111210-ab0be101882f
 	github.com/cometbft/cometbft/api v1.0.0-rc.1.0.20240909080621-90c99d9658b0
 	github.com/cosmos/cosmos-db v1.0.3-0.20240911104526-ddc3f09bfc22
-	github.com/cosmos/cosmos-sdk v0.53.0
 	github.com/cosmos/gogoproto v1.7.0
-	github.com/cosmos/ibc-go/v9 v9.0.0
 	github.com/spf13/cast v1.7.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
@@ -112,12 +93,12 @@ require (
 	cosmossdk.io/errors/v2 v2.0.0-20240731132947-df72853b3ca5 // indirect
 	cosmossdk.io/math v1.3.0 // indirect
 	cosmossdk.io/store/v2 v2.0.0-20241028185935-7b9a89b5689c // indirect
-	cosmossdk.io/x/nft v0.0.0-20241028185935-7b9a89b5689c // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/DataDog/zstd v1.5.6 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/cockroachdb/apd/v2 v2.0.2 // indirect
 	github.com/cockroachdb/errors v1.11.3 // indirect
 	github.com/cockroachdb/fifo v0.0.0-20240816210425-c5d0cb0b6fc0 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect

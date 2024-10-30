@@ -200,11 +200,14 @@ cloud.google.com/go/workflows v1.6.0/go.mod h1:6t9F5h/unJz41YqfBmqSASJSXccBLtD1V
 cloud.google.com/go/workflows v1.7.0/go.mod h1:JhSrZuVZWuiDfKEFxU0/F1PQjmpnpcoISEXH2bcHC3M=
 cosmossdk.io/api v0.7.3-0.20240815194237-858ec2fcb897 h1:YV9M+9pClbzPncO5XMSc3kIgDWjb7DdZ/DtURaWqle8=
 cosmossdk.io/api v0.7.3-0.20240815194237-858ec2fcb897/go.mod h1:oqpDMZQpEgSo0Cm4F+0yxoC9UQbo/SlodZR4zeOqBsE=
+cosmossdk.io/api v0.7.6 h1:PC20PcXy1xYKH2KU4RMurVoFjjKkCgYRbVAD4PdqUuY=
+cosmossdk.io/api v0.7.6/go.mod h1:IcxpYS5fMemZGqyYtErK7OqvdM0C8kdW3dq8Q/XIG38=
 cosmossdk.io/client/v2 v2.0.0-20240905174638-8ce77cbb2450/go.mod h1:HBereCqcck5s+c91cXcbchGBxy/wJMkYLivpWAvnf1U=
 cosmossdk.io/collections v0.4.1-0.20240802064046-23fac2f1b8ab h1:E/IWad76v1Nc4Atswaccpt7twJ0VwHkbY94/PhmZfTo=
 cosmossdk.io/collections v0.4.1-0.20240802064046-23fac2f1b8ab/go.mod h1:Or+5eVAo1aiS1DnPK90eQykGc59LGBWtqwBoJcxXTmw=
 cosmossdk.io/core v0.12.1-0.20240906083041-6033330182c7 h1:1uZhb/TVewamHZMF4M37XZxScX/zcp4/oHFcvD20AvQ=
 cosmossdk.io/core v0.12.1-0.20240906083041-6033330182c7/go.mod h1:abgLjeFLhtuKIYZWSPlVUgQBrKObO7ULV35KYfexE90=
+cosmossdk.io/core/testing v0.0.0-20240923163230-04da382a9f29/go.mod h1:8s2tPeJtSiQuoyPmr2Ag7meikonISO4Fv4MoO8+ORrs=
 cosmossdk.io/depinject v1.0.0 h1:dQaTu6+O6askNXO06+jyeUAnF2/ssKwrrszP9t5q050=
 cosmossdk.io/depinject v1.0.0/go.mod h1:zxK/h3HgHoA/eJVtiSsoaRaRA2D5U4cJ5thIG4ssbB8=
 cosmossdk.io/errors v1.0.1 h1:bzu+Kcr0kS/1DuPBtUFdWjzLqyUuCiyHjyJB6srBV/0=
@@ -235,6 +238,7 @@ cosmossdk.io/x/epochs v0.0.0-20240522060652-a1ae4c3e0337/go.mod h1:PhLn1pMBilyRC
 cosmossdk.io/x/evidence v0.0.0-20240911130545-9e7848985491/go.mod h1:f1OavXCs2DbxVUIj9A5FzlxvhSwzFte5vnl4rA2CAO4=
 cosmossdk.io/x/feegrant v0.0.0-20240911130545-9e7848985491/go.mod h1:B1v8em9ELqLWEDx98YJQ7B+GOPeOwdIRp+waTHKKJKs=
 cosmossdk.io/x/gov v0.0.0-20240911130545-9e7848985491/go.mod h1:K+t59/43yOKwuire7wxjKujOyIA2B/oE7TiSOf70V+8=
+cosmossdk.io/x/group v0.0.0-20240911130545-9e7848985491 h1:1bc2bBhiPevYTuDtVFSeenYgyUFzlPlYPMo/N5Bwre4=
 cosmossdk.io/x/group v0.0.0-20240911130545-9e7848985491/go.mod h1:ILneF8TME/tyPCQZbrRqxu9drZ2Ny1OikeRnwOG9LQM=
 cosmossdk.io/x/mint v0.0.0-20240909082436-01c0e9ba3581/go.mod h1:yHf7jYxy5P9flApH6NsNaZTIrIEqy88xe0bPumNy/IQ=
 cosmossdk.io/x/nft v0.0.0-20240911130545-9e7848985491 h1:1mEqvTfYpesg1E53uDmvFTTLAb5zrKiAxLMb4LTCJdE=
@@ -282,6 +286,7 @@ github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRF
 github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239/go.mod h1:2FmKhYUyUczH0OGQWaF5ceTx0UBShxjsH6f8oGKYe2c=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
+github.com/aws/aws-sdk-go v1.40.45 h1:QN1nsY27ssD/JmW4s83qmSb+uL6DG4GmCDzjmJB4xUI=
 github.com/aws/aws-sdk-go v1.44.122/go.mod h1:y4AeaBuwd2Lk+GepC1E9v0qOiTws0MIWAX4oIKwKHZo=
 github.com/aws/aws-sdk-go v1.54.6 h1:HEYUib3yTt8E6vxjMWM3yAq5b+qjj/6aKA62mkgux9g=
 github.com/aws/aws-sdk-go v1.54.6/go.mod h1:eRwEWoyTWFMVYVQzKMNHWP5/RV4xIUGMQfXQHfHkpNU=

@@ -16,8 +16,8 @@ import (
 	"cosmossdk.io/runtime/v2"
 	serverv2 "cosmossdk.io/server/v2"
 
-	"github.com/rollchains/gordian/gcosmos/gccodec"
-	"github.com/rollchains/gordian/gcosmos/gserver"
+	"github.com/gordian-engine/gcosmos/gccodec"
+	"github.com/gordian-engine/gcosmos/gserver"
 
 	"cosmossdk.io/server/v2/cometbft"
 	"cosmossdk.io/x/auth/tx"
