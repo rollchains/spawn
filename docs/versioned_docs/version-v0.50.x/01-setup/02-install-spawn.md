@@ -42,21 +42,32 @@ spawn
 local-ic
 
 heighliner
+```
+
+## Command not found error
 
 # If you get "command 'spawn' not found", run the following
-# Linux / Windows / Some MacOS
-echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
-source ~/.bashrc
 
-# MacOS
-echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.zshrc
-source ~/.zshrc
+```bash
+# Gets your operating system
+unameOut="$(uname -s)"
+case "${unameOut}" in
+    Linux*)     machine=Linux;;
+    Darwin*)    machine=Mac;;
+    CYGWIN*)    machine=Cygwin;;
+    MINGW*)     machine=MinGw;;
+    MSYS_NT*)   machine=MSys;;
+    *)          machine="UNKNOWN:${unameOut}"
+esac
+echo "Your operating system is: $machine"
+echo -e "\nAdding the go binary location to your PATH for global access.\n\tIt will now prompt you for your password."
 
-# Legacy MacOS Go
-echo 'export PATH=$PATH:$HOME/go/bin' >> ~/.zshrc
-source ~/.zshrc
-
-# Sometimes it can be good to also clear your cache
-# especially WSL users
-go clean -cache
+cmd='export PATH=$PATH:$(go env GOPATH)/bin'
+if [ $machine == "Linux" ]; then
+    sudo echo "$cmd" >> ~/.bashrc && source ~/.bashrc
+elif [ $machine == "Mac" ]; then
+    sudo echo "$cmd" >> ~/.zshrc && source ~/.zshrc
+else
+    echo 'Please add the following to your PATH: $(go env GOPATH)/bin'
+fi
 ```
