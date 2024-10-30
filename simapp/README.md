@@ -68,7 +68,7 @@ yarn add @cosmology/lcd
 yarn
 
 # publish
-npm publish
+# npm publish
 ```
 
 
