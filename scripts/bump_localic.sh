@@ -1,7 +1,7 @@
 #!/bin/sh
 # sh scripts/bump_localic.sh
 
-NEW_VERSION=v8.7.1
+NEW_VERSION=v8.8.0
 
 find . -type f -name "*.md"
 
