@@ -6,7 +6,7 @@ slug: /demo/cw-validator-reviews
 
 # CosmWasm Validator Reviews
 
-You will build a new chain with [CosmWasm](https://cosmwasm.com), enabling a proof-of-stake validator review system. You will write a contract to collect and manage validator reviews, integrate it with the chain, and update validator data automatically through a Cosmos-SDK endblocker module.
+You will build a new chain with [CosmWasm](https://cosmwasm.com), enabling a proof-of-stake validator review system. You will write a contract to collect and manage validator reviews, integrate it with the chain, and update validator data automatically through the Cosmos-SDK endblocker module.
 
 There are easy ways to get validators in a cosmwasm smart contract. The goal of this tutorial is to teach how to pass data from the SDK to a contract.
 
@@ -34,7 +34,7 @@ spawn new rollchain \
 # move into the chain directory
 cd rollchain
 
-# Generate the Cosmos-SDK reviews module
+# Generate the reviews module
 spawn module new reviews
 
 # build the proto to code
@@ -64,7 +64,7 @@ code validator-reviews-contract/
 
 The contract state and base structure is set in the state.rs file. There are 2 groups of data that must be managed, validators and the reviews for validators.
 
-- `Validators` have unique addresses and name stored on the chain. This data will be passed from the Cosmos-SDK to the contract.
+- `Validators` have unique addresses and name stored on the chain. This data will be passed from the SDK to the contract.
 - `Reviews` will save a user wallets address and their text reviews for a validator.
 
 ```rust title="src/state.rs"
@@ -95,7 +95,7 @@ By default contracts get 3 messages, `InstantiateMsg`, `ExecuteMsg`, and `QueryM
 - **Execute** is where the main logic of the contract is. Add a `WriteReview` message to allow users to write reviews. The user must know who they want to write a review for and what it says.
 - **Query** is for reading data from the contract. Add 2 queries, one to get all validators available and one to get reviews for a specific validator.
 
-The `SudoMsg` is a default type not typically used. `Sudo` stands for `Super User DO` where the super user is the chain. **Only** the chain can submit data to this message type. A `SetValidators` message is added to allow the chain to update the validators list within the contract. This is the pass through from the Cosmos-SDK to the contract.
+The `SudoMsg` is a default type not typically used. `Sudo` stands for `Super User DO` where the super user is the chain. **Only** the chain can submit data to this message type. A `SetValidators` message is added to allow the chain to update the validators list within the contract. This is the pass through from the SDK to the contract.
 
 ```rust title="src/msg.rs"
 use cosmwasm_schema::{cw_serde, QueryResponses};
@@ -288,7 +288,7 @@ The .wasm file is then saved to `./artifacts/validator_reviews_contract.wasm`.
 
 ## Modify the Module
 
-The contract is complete but we need to pass the data into the contract from the chain. This is done through the cosmos-sdk reviews module generated earlier. The module will be updated to include the wasm contract and the endblocker will be updated to pass the validator data to the contract.
+The contract is complete but we need to pass the data into the contract from the chain. This is done through the sdk reviews module generated earlier. The module will be updated to include the wasm contract and the endblocker will be updated to pass the validator data to the contract.
 
 ### Setup the Keeper
 
@@ -360,7 +360,7 @@ func SetupTest(t *testing.T) *testFixture
 
 ### Dependency Inject (v2)
 
-Similar to the keeper_test issue, CosmWasm does not have support for Cosmos-SDK v2 depinject. This will be updated in the future. For now, set the keeper to nil and provide Staking reference. You do not need to know what this does. Just resolve the error on the line with a copy paste.
+Similar to the keeper_test issue, CosmWasm does not have support for SDK v2 depinject. This will be updated in the future. For now, set the keeper to nil and provide Staking reference. You do not need to know what this does. Just resolve the error on the line with a copy paste.
 
 ```go title="x/reviews/depinject.go"
 func ProvideModule(in ModuleInputs) ModuleOutputs {

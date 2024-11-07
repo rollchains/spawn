@@ -7,7 +7,7 @@ slug: /demo/ibc
 
 # IBC Demo
 
-In this tutorial, we'll create and interact with a new Cosmos-SDK blockchain called "rollchain", with the token denomination "uroll". This chain has tokenfactory and Proof of Authority, but we'll disable cosmwasm.
+In this tutorial, we'll create and interact with a new Interchain blockchain called "rollchain", with the token denomination "uroll". This chain has tokenfactory and Proof of Authority, but we'll disable cosmwasm.
 
 ## Prerequisites
 - [System Setup](../01-setup/01-system-setup.md)
@@ -74,7 +74,7 @@ rolld tx ibc-transfer transfer transfer channel-0 cosmos1hj5fveer5cjtn4wd6wstzug
 # Query the other side to confirm it went through
 sleep 10
 
-# Interact with the other chain without having to install the cosmos binary
+# Interact with the other chain without having to install the binary
 # - Endpoints found at: GET http://127.0.0.1:8080/info
 # - make get-localic
 local-ic interact localcosmos-1 query 'bank balances cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr'
@@ -91,4 +91,4 @@ gh repo create rollchain --source=. --remote=upstream --push --private
 
 ## Conclusion
 
-In this tutorial, you configured a new custom chain, launched a testnet for it, tested a cross chain token transfer, and confirmed it was successful. This tutorial demonstrates just how easy it is to create a brand new custom Cosmos-SDK blockchain from scratch with spawn.
+In this tutorial, you configured a new custom chain, launched a testnet for it, tested a cross chain token transfer, and confirmed it was successful. This tutorial demonstrates just how easy it is to create a new Interchain blockchain from scratch with spawn.

@@ -9,7 +9,7 @@ slug: /build/name-service
 # Overview
 
 :::note Synopsis
-Building your first Cosmos-SDK blockchain with Spawn. This tutorial focuses on a 'nameservice' where you set your account to a name you choose.
+Building your first Interchain blockchain with Spawn. This tutorial focuses on a 'nameservice' where you set your account to a name you choose.
 
 * Generating a new chain
 * Creating a new module
