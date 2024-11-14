@@ -36,14 +36,6 @@ make get-localic
 # Attempt to run a command
 spawn help
 
-# Potential workaround if spawn is immediately killed when attempting run "spawn help" on a m* macbook.
-# This may happen because of an xcode16 update.
-# To work around this as a temporary measure please change this line in the Make file.
-LD_FLAGS = -X main.SpawnVersion=$(VERSION)
-# to
-LD_FLAGS = -X main.SpawnVersion=$(VERSION) -s -w
-
-
 # If you get "command 'spawn' not found", add to path.
 # Run the following in your terminal to test
 # Then add to ~/.bashrc (linux / windows) or ~/.zshrc (mac)
