@@ -88,6 +88,8 @@ from_scratch () {
     update_test_genesis '.consensus_params["block"]["max_gas"]="100000000"'
     # crisis
     update_test_genesis `printf '.app_state["crisis"]["constant_fee"]={"denom":"%s","amount":"1000"}' $DENOM`
+    # abci
+    update_test_genesis '.consensus["params"]["abci"]["vote_extensions_enable_height"]="1"'
 
     # === CUSTOM MODULES ===
     # tokenfactory
