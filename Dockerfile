@@ -3,7 +3,7 @@
 # docker build . -t spawn:local
 # docker run -it spawn:local
 
-FROM golang:1.22.3 as builder
+FROM golang:1.22.11 AS builder
 
 WORKDIR /app
 
@@ -21,7 +21,7 @@ RUN make build
 RUN mv ./bin/spawn /go/bin
 
 # Reduces the size of the final image from 4GB -> 0.25GB
-FROM debian:12.6-slim as final
+FROM debian:12.6-slim AS final
 
 RUN apt update && apt install -y libc6-dev gcc make ca-certificates
 
