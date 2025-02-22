@@ -5,10 +5,12 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	"cosmossdk.io/core/address"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	sdkaddress "github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil/integration"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
@@ -25,6 +27,7 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
+	"github.com/rollchains/spawn/simapp/app"
 	module "github.com/rollchains/spawn/simapp/x/example"
 	"github.com/rollchains/spawn/simapp/x/example/keeper"
 	"github.com/rollchains/spawn/simapp/x/example/types"
@@ -60,6 +63,16 @@ func SetupTest(t *testing.T) *testFixture {
 	t.Helper()
 	f := new(testFixture)
 
+	cfg := sdk.GetConfig() // do not seal, more set later
+	cfg.SetBech32PrefixForAccount(app.Bech32PrefixAccAddr, app.Bech32PrefixAccPub)
+	cfg.SetBech32PrefixForValidator(app.Bech32PrefixValAddr, app.Bech32PrefixValPub)
+	cfg.SetBech32PrefixForConsensusNode(app.Bech32PrefixConsAddr, app.Bech32PrefixConsPub)
+	cfg.SetCoinType(app.CoinType)
+
+	validatorAddressCodec := sdkaddress.NewBech32Codec(app.Bech32PrefixValAddr)
+	accountAddressCodec := sdkaddress.NewBech32Codec(app.Bech32PrefixAccAddr)
+	consensusAddressCodec := sdkaddress.NewBech32Codec(app.Bech32PrefixConsAddr)
+
 	// Base setup
 	logger := log.NewTestLogger(t)
 	encCfg := moduletestutil.MakeTestEncodingConfig()
@@ -71,7 +84,7 @@ func SetupTest(t *testing.T) *testFixture {
 	f.ctx = sdk.NewContext(integration.CreateMultiStore(keys, logger), cmtproto.Header{}, false, logger)
 
 	// Register SDK modules.
-	registerBaseSDKModules(logger, f, encCfg, keys)
+	registerBaseSDKModules(logger, f, encCfg, keys, accountAddressCodec, validatorAddressCodec, consensusAddressCodec)
 
 	// Setup Keeper.
 	f.k = keeper.NewKeeper(encCfg.Codec, runtime.NewKVStoreService(keys[types.ModuleName]), logger, f.govModAddr)
@@ -96,6 +109,9 @@ func registerBaseSDKModules(
 	f *testFixture,
 	encCfg moduletestutil.TestEncodingConfig,
 	keys map[string]*storetypes.KVStoreKey,
+	ac address.Codec,
+	validator address.Codec,
+	consensus address.Codec,
 ) {
 	registerModuleInterfaces(encCfg)
 
