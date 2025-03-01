@@ -117,6 +117,10 @@ func (a AppModule) InitGenesis(ctx sdk.Context, marshaler codec.JSONCodec, messa
 		panic(err)
 	}
 
+	if err := a.keeper.InitGenesis(ctx, &genesisState); err != nil {
+		panic(err)
+	}
+
 	return nil
 }
 
