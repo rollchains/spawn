@@ -16,7 +16,6 @@ import (
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
@@ -120,7 +119,7 @@ func registerBaseSDKModules(
 		encCfg.Codec, runtime.NewKVStoreService(keys[authtypes.StoreKey]),
 		authtypes.ProtoBaseAccount,
 		maccPerms,
-		authcodec.NewBech32Codec(sdk.Bech32MainPrefix), sdk.Bech32MainPrefix,
+		ac, app.Bech32PrefixAccAddr,
 		f.govModAddr,
 	)
 
@@ -136,8 +135,8 @@ func registerBaseSDKModules(
 	f.stakingKeeper = stakingkeeper.NewKeeper(
 		encCfg.Codec, runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
 		f.accountkeeper, f.bankkeeper, f.govModAddr,
-		authcodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
-		authcodec.NewBech32Codec(sdk.Bech32PrefixConsAddr),
+		validator,
+		consensus,
 	)
 
 	// Mint Keeper.
