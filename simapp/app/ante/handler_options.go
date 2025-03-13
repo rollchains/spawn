@@ -44,12 +44,13 @@ type AccountKeeper interface {
 // AnteHandler decorators.
 type HandlerOptions struct {
 	Cdc                    codec.BinaryCodec
-	AccountKeeper          anteinterfaces.AccountKeeper
+	AccountKeeper          AccountKeeper
 	BankKeeper             BankKeeper
 	FeegrantKeeper         ante.FeegrantKeeper
 	ExtensionOptionChecker ante.ExtensionOptionChecker
 	SignModeHandler        *txsigning.HandlerMap
 	SigGasConsumer         func(meter storetypes.GasMeter, sig signing.SignatureV2, params authtypes.Params) error
+	TxFeeChecker           ante.TxFeeChecker // safe to be nil
 
 	// <spawntag:wasm
 	WasmConfig            *wasmtypes.WasmConfig
@@ -58,7 +59,6 @@ type HandlerOptions struct {
 	// spawntag:wasm>
 
 	// <spawntag:evm
-	TxFeeChecker    ante.TxFeeChecker
 	MaxTxGasWanted  uint64
 	FeeMarketKeeper anteinterfaces.FeeMarketKeeper
 	EvmKeeper       anteinterfaces.EVMKeeper
@@ -86,9 +86,6 @@ func (options HandlerOptions) Validate() error {
 	if options.SignModeHandler == nil {
 		return errorsmod.Wrap(errortypes.ErrLogic, "sign mode handler is required for AnteHandler")
 	}
-	if options.TxFeeChecker == nil {
-		return errorsmod.Wrap(errortypes.ErrLogic, "tx fee checker is required for AnteHandler")
-	}
 	if options.CircuitKeeper == nil {
 		return errorsmod.Wrap(errortypes.ErrLogic, "circuit keeper is required for ante builder")
 	}
@@ -106,6 +103,9 @@ func (options HandlerOptions) Validate() error {
 	// spawntag:wasm>
 
 	// <spawntag:evm
+	if options.TxFeeChecker == nil {
+		return errorsmod.Wrap(errortypes.ErrLogic, "tx fee checker is required for AnteHandler")
+	}
 	if options.FeeMarketKeeper == nil {
 		return errorsmod.Wrap(errortypes.ErrLogic, "fee market keeper is required for AnteHandler")
 	}

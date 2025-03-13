@@ -234,6 +234,7 @@ func (fc *FileContent) RemoveEVM() {
 	fc.ReplaceAll("localchain_9000", "localchain")
 
 	fc.DeleteFile(path.Join("ante", "handler_options_test.go"))
+	fc.DeleteFile(path.Join("ante", "ante_evm.go"))
 
 	// fc.RemoveModuleFromText("wasmkeeper",
 	// 	path.Join("app", "encoding.go"),

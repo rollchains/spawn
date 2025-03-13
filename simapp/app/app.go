@@ -189,8 +189,8 @@ import (
 	"github.com/evmos/os/x/feemarket"
 	feemarketkeeper "github.com/evmos/os/x/feemarket/keeper"
 	feemarkettypes "github.com/evmos/os/x/feemarket/types"
-	"github.com/rollchains/spawn/simapp/app/ante"
 	chainante "github.com/rollchains/spawn/simapp/app/ante"
+	// authante "github.com/cosmos/cosmos-sdk/x/auth/ante" // ?spawntag:evm
 )
 
 const (
@@ -1278,13 +1278,12 @@ func NewChainApp(
 		TXCounterStoreService: runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
 		CircuitKeeper:         &app.CircuitKeeper,
 		ConsumerKeeper:        app.ConsumerKeeper,
-
-		EvmKeeper:              app.EVMKeeper,                           // spawntag:evm
-		ExtensionOptionChecker: evmostypes.HasDynamicFeeExtensionOption, // spawntag:evm
-		// SigGasConsumer:         ante.DefaultSigVerificationGasConsumer, // ?spawntag:evm
-		SigGasConsumer: evmosante.SigVerificationGasConsumer,                   // spawntag:evm
-		MaxTxGasWanted: cast.ToUint64(appOpts.Get(srvflags.EVMMaxTxGasWanted)), // spawntag:evm
-		TxFeeChecker:   evmosevmante.NewDynamicFeeChecker(app.FeeMarketKeeper), // spawntag:evm
+		// SigGasConsumer:         authante.DefaultSigVerificationGasConsumer, // ?spawntag:evm
+		EvmKeeper:              app.EVMKeeper,                                          // spawntag:evm
+		ExtensionOptionChecker: evmostypes.HasDynamicFeeExtensionOption,                // spawntag:evm
+		SigGasConsumer:         evmosante.SigVerificationGasConsumer,                   // spawntag:evm
+		MaxTxGasWanted:         cast.ToUint64(appOpts.Get(srvflags.EVMMaxTxGasWanted)), // spawntag:evm
+		TxFeeChecker:           evmosevmante.NewDynamicFeeChecker(app.FeeMarketKeeper), // spawntag:evm
 	})
 
 	// must be before Loading version
@@ -1376,7 +1375,7 @@ func (app *ChainApp) FinalizeBlock(req *abci.RequestFinalizeBlock) (*abci.Respon
 	return app.BaseApp.FinalizeBlock(req)
 }
 
-func (app *ChainApp) setAnteHandler(options ante.HandlerOptions) {
+func (app *ChainApp) setAnteHandler(options chainante.HandlerOptions) {
 	if err := options.Validate(); err != nil {
 		panic(err)
 	}

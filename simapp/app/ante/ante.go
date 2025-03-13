@@ -17,6 +17,7 @@ func NewAnteHandler(options HandlerOptions) sdk.AnteHandler {
 	) (newCtx sdk.Context, err error) {
 		var anteHandler sdk.AnteHandler
 
+		// <spawntag:evm
 		txWithExtensions, ok := tx.(authante.HasExtensionOptionsTx)
 		if ok {
 			opts := txWithExtensions.GetExtensionOptions()
@@ -38,6 +39,7 @@ func NewAnteHandler(options HandlerOptions) sdk.AnteHandler {
 				return anteHandler(ctx, tx, sim)
 			}
 		}
+		// spawntag:evm>
 
 		// handle as totally normal Cosmos SDK tx
 		switch tx.(type) {
