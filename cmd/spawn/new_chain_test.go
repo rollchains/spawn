@@ -49,6 +49,11 @@ func TestDisabledGeneration(t *testing.T) {
 			Disabled:      []string{spawn.CosmWasm, spawn.WasmLC},
 			NotContainAny: []string{"wasmkeeper", "wasmtypes"},
 		},
+		{
+			Name:          "noevm",
+			Disabled:      []string{spawn.EVM},
+			NotContainAny: []string{"evmkeeper", "evmos/os"},
+		},
 	}
 
 	// single module removal

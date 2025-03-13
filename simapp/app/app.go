@@ -1488,15 +1488,19 @@ func (a *ChainApp) DefaultGenesis() map[string]json.RawMessage {
 	genesis := a.BasicModuleManager.DefaultGenesis(a.appCodec)
 
 	// <spawntag:evm
-	mintGenState := NewMintGenesisState()
+	mintGenState := minttypes.DefaultGenesisState()
+	mintGenState.Params.MintDenom = BaseDenom
 	genesis[minttypes.ModuleName] = a.appCodec.MustMarshalJSON(mintGenState)
 
-	evmGenState := NewEVMGenesisState()
+	evmGenState := evmtypes.DefaultGenesisState()
+	evmGenState.Params.ActiveStaticPrecompiles = evmtypes.AvailableStaticPrecompiles
 	genesis[evmtypes.ModuleName] = a.appCodec.MustMarshalJSON(evmGenState)
 
 	// NOTE: for the example chain implementation we are also adding a default token pair,
-	// which is the base denomination of the chain (i.e. the WONDO contract)
-	erc20GenState := NewErc20GenesisState()
+	// which is the base denomination of the chain (i.e. the WTOKEN contract)
+	erc20GenState := erc20types.DefaultGenesisState()
+	erc20GenState.TokenPairs = ExampleTokenPairs
+	erc20GenState.Params.NativePrecompiles = append(erc20GenState.Params.NativePrecompiles, WTokenContractMainnet)
 	genesis[erc20types.ModuleName] = a.appCodec.MustMarshalJSON(erc20GenState)
 	// spawntag:evm>
 
