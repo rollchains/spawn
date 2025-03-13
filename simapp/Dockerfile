@@ -1,8 +1,14 @@
-FROM golang:1.22-alpine AS go-builder
+FROM golang:1.23.4-alpine3.20 AS build-env
 
 SHELL ["/bin/sh", "-ecuxo", "pipefail"]
 
-RUN apk add --no-cache ca-certificates build-base git
+RUN set -eux; apk add --no-cache \
+    ca-certificates \
+    build-base \
+    git \
+    linux-headers \
+    bash \
+    binutils-gold
 
 WORKDIR /code
 
@@ -29,16 +35,15 @@ RUN LEDGER_ENABLED=false BUILD_TAGS=muslc LINK_STATICALLY=true make build \
   && (file /code/build/wasmd | grep "statically linked")
 
 # --------------------------------------------------------
-FROM alpine:3.16
+FROM alpine:3.21
 
 COPY --from=go-builder /code/build/wasmd /usr/bin/wasmd
 
-# Install dependencies used for Starship
-RUN apk add --no-cache curl make bash jq sed
+RUN apk add --no-cache ca-certificates curl make bash jq sed
 
 WORKDIR /opt
 
 # rest server, tendermint p2p, tendermint rpc
-EXPOSE 1317 26656 26657
+EXPOSE 1317 26656 26657 8545 8546
 
 CMD ["/usr/bin/wasmd", "version"]

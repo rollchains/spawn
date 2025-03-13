@@ -205,6 +205,7 @@ func newApp(
 		logger, db, traceStore, true,
 		appOpts,
 		wasmOpts,
+		app.EVMAppOptions, // spawntag:evm
 		baseappOptions...,
 	)
 }
@@ -244,6 +245,7 @@ func appExport(
 		height == -1,
 		appOpts,
 		nil,
+		app.EVMAppOptions, // spawntag:evm
 	)
 
 	if height != -1 {
