@@ -311,7 +311,16 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 // TODO: allow selecting for other chains to generate from (ethos, saga)
 // SetupLocalInterchainJSON sets up the local-interchain testnets configuration files.
 func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
-	c := localictypes.NewChainBuilder(cfg.ProjectName, "localchain-1", cfg.BinDaemon, cfg.Denom, cfg.Bech32Prefix).
+
+	// if EVM is enabled, the chainID is _9000
+	chainID := "localchain-1"
+	chainID2 := "localchain-2"
+	if cfg.IsFeatureEnabled(EVM) {
+		chainID = "localchain_9000-1"
+		chainID2 = "localchain_9000-2"
+	}
+
+	c := localictypes.NewChainBuilder(cfg.ProjectName, chainID, cfg.BinDaemon, cfg.Denom, cfg.Bech32Prefix).
 		SetBlockTime("2000ms").
 		SetDockerImage(ibc.NewDockerImage(strings.ToLower(cfg.ProjectName), "local", "")).
 		SetTrustingPeriod("336h").
@@ -361,7 +370,7 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 	// Create a testnet that is thisnetwork -> thisnetwork (great for IBC module testing)
 	// To complex for now to support (ICS1+Chain & ICS2+Chain2)
 	if !cfg.IsFeatureEnabled(InterchainSecurity) {
-		chainB := localictypes.NewChainBuilder(cfg.ProjectName, "localchain-2", cfg.BinDaemon, cfg.Denom, cfg.Bech32Prefix).
+		chainB := localictypes.NewChainBuilder(cfg.ProjectName, chainID2, cfg.BinDaemon, cfg.Denom, cfg.Bech32Prefix).
 			SetBlockTime("2000ms").
 			SetDockerImage(ibc.NewDockerImage(strings.ToLower(cfg.ProjectName), "local", "")).
 			SetTrustingPeriod("336h").

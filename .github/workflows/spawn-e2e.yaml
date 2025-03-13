@@ -87,3 +87,5 @@ jobs:
       spawn-create-cmd: spawn new mychain --consensus=poa --bin=appd --bypass-prompt --bech32=roll --disabled=explorer --org=rollchains-org --denom=upoa --debug --log-level=debug
       spawn-extra-cmd: cd mychain && spawn module new aaaaaa --ibc-module && make proto-gen
       start-chain-cmd: HOME_DIR="~/.simapp" CHAIN_ID="localchain-10" CLEAN=true BLOCK_TIME="2000ms" sh scripts/test_node.sh &
+
+  # TODO: evm verification

@@ -28,7 +28,7 @@ var (
 
 	Denom = "mydenom"
 	Name  = "appName"
-	// ChainID = "localchain-1" // ?spawntag:evm
+	// ChainID = "localchain_9000-1" // ?spawntag:evm
 	ChainID = "localchain_9000-1" // spawntag:evm
 	Binary  = "wasmd"
 	Bech32  = "mybechprefix"

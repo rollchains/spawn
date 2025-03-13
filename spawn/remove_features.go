@@ -223,6 +223,8 @@ func (fc *FileContent) RemoveEVM() {
 
 	// TODO: test_node update genesis areas & handle ante
 
+	fc.ReplaceAll("localchain_9000", "localchain")
+
 	// fc.RemoveModuleFromText("wasmkeeper",
 	// 	path.Join("app", "encoding.go"),
 	// 	path.Join("app", "app_test.go"),
