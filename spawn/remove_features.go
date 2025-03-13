@@ -207,23 +207,33 @@ func (fc *FileContent) RemoveEVM() {
 	// TODO: ante/ ?
 	fc.DeleteFile(path.Join("app", "config.go"))
 	fc.DeleteFile(path.Join("app", "token_pair.go"))
+	fc.DeleteFile(path.Join("app", "precompiles.go"))
 
 	for _, word := range []string{
 		// "WasmKeeper", "wasmtypes", "wasmStack",
 		// "wasmOpts", "TXCounterStoreService", "WasmConfig",
 		// "wasmDir", "tokenfactorybindings", "github.com/CosmWasm/wasmd",
 		"feemarketkeeper", "FeeMarketKeeper", "feemarkettypes", "feemarket",
-		"evmtypes", "EVMKeeper", "Erc20Keeper",
+		"evmtypes", "EVMKeeper", "Erc20Keeper", "evmostypes",
 		"erc20keeper", "erc20types", "github.com/evmos/os", "evmosserverconfig",
 	} {
 		fc.RemoveModuleFromText(word,
 			appGo,
+			path.Join("commands.go"),
 		)
+	}
+
+	if fc.ContainsPath(path.Join("test_node")) {
+		fc.RemoveModuleFromText("evm")
+		fc.RemoveModuleFromText("erc20")
+		fc.RemoveModuleFromText("feemarket")
 	}
 
 	// TODO: test_node update genesis areas & handle ante
 
 	fc.ReplaceAll("localchain_9000", "localchain")
+
+	fc.DeleteFile(path.Join("ante", "handler_options_test.go"))
 
 	// fc.RemoveModuleFromText("wasmkeeper",
 	// 	path.Join("app", "encoding.go"),
@@ -243,8 +253,6 @@ func (fc *FileContent) RemoveEVM() {
 	// 	path.Join("cmd", "wasmd", "root.go"),
 	// 	path.Join("workflows", "interchaintest-e2e.yml"),
 	// )
-
-	// fc.DeleteFile(path.Join("interchaintest", "cosmwasm_test.go"))
 	// fc.DeleteDirectoryContents(path.Join("interchaintest", "contracts"))
 }
 

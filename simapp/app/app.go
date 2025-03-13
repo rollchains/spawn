@@ -373,7 +373,7 @@ func NewChainApp(
 	appCodec := encodingConfig.Codec
 	legacyAmino := encodingConfig.Amino
 	txConfig := encodingConfig.TxConfig
-	// spawntag:evm
+	// spawntag:evm>
 
 	// Below we could construct and set an application specific mempool and
 	// ABCI 1.0 PrepareProposal and ProcessProposal handlers. These defaults are

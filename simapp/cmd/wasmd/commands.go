@@ -149,13 +149,14 @@ func initRootCmd(
 		txCommand(),
 	)
 
-	// TODO: verify this can be done for normal chains too, if so make sh-testnet is good to go
-	// add general tx flags to the root command
+	// <spawntag:evm
 	var err error
+	// add general tx flags to the root command
 	rootCmd, err = srvflags.AddTxFlags(rootCmd)
 	if err != nil {
 		panic(err)
 	}
+	// spawntag:evm>
 }
 
 func addModuleInitFlags(startCmd *cobra.Command) {
