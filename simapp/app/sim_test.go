@@ -284,7 +284,8 @@ func setupSimulationApp(t *testing.T, msg string) (simtypes.Config, dbm.DB, simt
 	appOptions[flags.FlagHome] = dir // ensure a unique folder
 	appOptions[server.FlagInvCheckPeriod] = simcli.FlagPeriodValue
 
-	app := NewChainApp(logger, db, nil, true, appOptions, nil,
+	app := NewChainApp(logger, db, nil, true, appOptions,
+		nil,           // spawntag:wasm
 		EVMAppOptions, // spawntag:evm
 		fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
 	return config, db, appOptions, app
@@ -337,7 +338,8 @@ func TestAppStateDeterminism(t *testing.T) {
 			}
 
 			db := dbm.NewMemDB()
-			app := NewChainApp(logger, db, nil, true, appOptions, nil,
+			app := NewChainApp(logger, db, nil, true, appOptions,
+				nil,           // spawntag:wasm
 				EVMAppOptions, // spawntag:evm
 				interBlockCacheOpt(), baseapp.SetChainID(SimAppChainID))
 
