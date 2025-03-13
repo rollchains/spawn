@@ -77,7 +77,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
-	"github.com/cosmos/cosmos-sdk/std"
+
+	// "github.com/cosmos/cosmos-sdk/std" // ?spawntag:evm
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
@@ -196,7 +197,8 @@ const (
 	appName      = "CosmosSimApp"
 	NodeDir      = ".myapplicationd"
 	Bech32Prefix = "mybechprefix"
-	ChainID      = "ondo_9000-1" // spawntag:evm
+	// ChainID      = "localchain-1" // ?spawntag:evm
+	ChainID = "localchain_9000-1" // spawntag:evm
 )
 
 var (
@@ -210,10 +212,13 @@ var (
 		}, ",")
 )
 
+// <spawntag:evm
 func init() {
 	// manually update the power reduction based on the base denom unit (10^18 [evm] or 10^6 [cosmos])
 	sdk.DefaultPowerReduction = math.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(BaseDenomUnit), nil))
 }
+
+// spawntag:evm>
 
 // These constants are derived from the above variables.
 // These are the ones we will want to use in the code, based on
@@ -227,8 +232,8 @@ var (
 	// BaseDenomUnit = 6 // ?spawntag:evm
 	BaseDenomUnit int64 = 18 // spawntag:evm
 
-	DisplayDenom = "STAKE" // TODO:
-	BaseDenom    = "stake" // TODO: astake vs ustake?
+	BaseDenom    = "mydenom"
+	DisplayDenom = "MY_DENOM_DISPLAY" // TODO: ?
 
 	// Bech32PrefixAccAddr defines the Bech32 prefix of an account's address
 	Bech32PrefixAccAddr = Bech32Prefix
@@ -354,20 +359,21 @@ func NewChainApp(
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *ChainApp {
 
-	// TODO: figure this out
-	// interfaceRegistry := GetInterfaceRegistry()
-	// appCodec := codec.NewProtoCodec(interfaceRegistry)
-	// legacyAmino := codec.NewLegacyAmino()
-	// txConfig := authtx.NewTxConfig(appCodec, authtx.DefaultSignModes)
+	// TODO: verify
+	// interfaceRegistry := GetInterfaceRegistry() // ?spawntag:evm
+	// appCodec := codec.NewProtoCodec(interfaceRegistry) // ?spawntag:evm
+	// legacyAmino := codec.NewLegacyAmino() // ?spawntag:evm
+	// txConfig := authtx.NewTxConfig(appCodec, authtx.DefaultSignModes) // ?spawntag:evm
+	// std.RegisterLegacyAminoCodec(legacyAmino) // ?spawntag:evm
+	// std.RegisterInterfaces(interfaceRegistry) // ?spawntag:evm
 
+	// <spawntag:evm
 	encodingConfig := evmosencoding.MakeConfig()
+	interfaceRegistry := encodingConfig.InterfaceRegistry
 	appCodec := encodingConfig.Codec
 	legacyAmino := encodingConfig.Amino
-	interfaceRegistry := encodingConfig.InterfaceRegistry
 	txConfig := encodingConfig.TxConfig
-
-	std.RegisterLegacyAminoCodec(legacyAmino)
-	std.RegisterInterfaces(interfaceRegistry)
+	// spawntag:evm
 
 	// Below we could construct and set an application specific mempool and
 	// ABCI 1.0 PrepareProposal and ProcessProposal handlers. These defaults are

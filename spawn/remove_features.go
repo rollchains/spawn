@@ -15,6 +15,7 @@ var (
 	POA                 = "poa"
 	POS                 = "staking" // if ICS is used, we remove staking
 	CosmWasm            = "cosmwasm"
+	EVM                 = "evm"
 	WasmLC              = "wasmlc"
 	PacketForward       = "packetforward"
 	IBCRateLimit        = "ibc-ratelimit"
@@ -57,6 +58,8 @@ func AliasName(name string) string {
 		return InterchainSecurity
 	case BlockExplorer, "explorer", "pingpub":
 		return BlockExplorer
+	case EVM, "ethereum":
+		return EVM
 	default:
 		panic(fmt.Sprintf("AliasName: unknown feature to remove: %s", name))
 	}
@@ -87,6 +90,8 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 			fc.RemovePacketForward()
 		case IBCRateLimit:
 			fc.RemoveIBCRateLimit()
+		case EVM:
+			fc.RemoveEVM()
 		// other
 		case OptimisticExecution:
 			fc.RemoveOptimisticExecution()
@@ -190,6 +195,55 @@ func (fc *FileContent) RemoveCosmWasm(isWasmClientDisabled bool) {
 
 	fc.DeleteFile(path.Join("interchaintest", "cosmwasm_test.go"))
 	fc.DeleteDirectoryContents(path.Join("interchaintest", "contracts"))
+}
+
+func (fc *FileContent) RemoveEVM() {
+	text := "evm"
+	fc.RemoveGoModImport("github.com/evmos/os")
+	fc.RemoveGoModImport("github.com/ethereum/go-ethereum") // TODO:?
+
+	fc.HandleAllTagged(text)
+
+	// TODO: ante/ ?
+	fc.DeleteFile(path.Join("app", "config.go"))
+	fc.DeleteFile(path.Join("app", "token_pair.go"))
+
+	for _, word := range []string{
+		// "WasmKeeper", "wasmtypes", "wasmStack",
+		// "wasmOpts", "TXCounterStoreService", "WasmConfig",
+		// "wasmDir", "tokenfactorybindings", "github.com/CosmWasm/wasmd",
+		"feemarketkeeper", "FeeMarketKeeper", "feemarkettypes", "feemarket",
+		"evmtypes", "EVMKeeper", "Erc20Keeper",
+		"erc20keeper", "erc20types", "github.com/evmos/os", "evmosserverconfig",
+	} {
+		fc.RemoveModuleFromText(word,
+			appGo,
+		)
+	}
+
+	// TODO: test_node update genesis areas & handle ante
+
+	// fc.RemoveModuleFromText("wasmkeeper",
+	// 	path.Join("app", "encoding.go"),
+	// 	path.Join("app", "app_test.go"),
+	// 	path.Join("app", "test_helpers.go"),
+	// 	path.Join("cmd", "wasmd", "root.go"),
+	// )
+
+	// fc.RemoveModuleFromText(text,
+	// 	appAnte,
+	// 	path.Join("app", "sim_test.go"),
+	// 	path.Join("app", "test_helpers.go"),
+	// 	path.Join("app", "test_support.go"),
+	// 	path.Join("interchaintest", "setup.go"),
+	// 	path.Join("cmd", "wasmd", "commands.go"),
+	// 	path.Join("app", "app_test.go"),
+	// 	path.Join("cmd", "wasmd", "root.go"),
+	// 	path.Join("workflows", "interchaintest-e2e.yml"),
+	// )
+
+	// fc.DeleteFile(path.Join("interchaintest", "cosmwasm_test.go"))
+	// fc.DeleteDirectoryContents(path.Join("interchaintest", "contracts"))
 }
 
 func (fc *FileContent) RemoveWasmLightClient() {

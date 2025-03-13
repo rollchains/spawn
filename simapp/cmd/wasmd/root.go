@@ -10,6 +10,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -21,6 +22,7 @@ import (
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	evmoskeyring "github.com/evmos/os/crypto/keyring"
 	"github.com/rollchains/spawn/simapp/app"
 	"github.com/rollchains/spawn/simapp/app/params"
 )
@@ -56,6 +58,9 @@ func NewRootCmd() *cobra.Command {
 		WithInput(os.Stdin).
 		WithAccountRetriever(authtypes.AccountRetriever{}).
 		WithHomeDir(app.DefaultNodeHome).
+		WithBroadcastMode(flags.FlagBroadcastMode). // spawntag:evm
+		WithKeyringOptions(evmoskeyring.Option()).  // spawntag:evm
+		WithLedgerHasProtobuf(true).                // spawntag:evm
 		WithViper("")
 
 	rootCmd := &cobra.Command{
@@ -109,7 +114,7 @@ func NewRootCmd() *cobra.Command {
 		},
 	}
 
-	initRootCmd(rootCmd, encodingConfig.TxConfig, encodingConfig.InterfaceRegistry, encodingConfig.Codec, tempApp.BasicModuleManager)
+	initRootCmd(rootCmd, tempApp)
 
 	// add keyring to autocli opts
 	autoCliOpts := tempApp.AutoCliOpts()

@@ -28,6 +28,7 @@ var (
 		{ID: "ibc-packetforward", IsSelected: true, Details: "Packet forwarding"},
 		{ID: "ibc-ratelimit", IsSelected: false, Details: "Thresholds for outflow as a percent of total channel value"},
 		{ID: "cosmwasm", IsSelected: false, Details: "Cosmos smart contracts"},
+		{ID: "evm", IsSelected: false, Details: "Ethereum Virtual Machine Integration"},
 		{ID: "wasm-light-client", IsSelected: false, Details: "08 Wasm Light Client"},
 		{ID: "optimistic-execution", IsSelected: true, Details: "Pre-process blocks ahead of consensus request"},
 		{ID: "block-explorer", IsSelected: false, Details: "Ping Pub Explorer"},
@@ -154,6 +155,11 @@ var newChain = &cobra.Command{
 		disabled = append(disabled, disabledConsensus...)
 		disabled = spawn.NormalizeDisabledNames(disabled, parentDeps)
 
+		if isEnabled(spawn.EVM, disabled) && isEnabled(spawn.CosmWasm, disabled) {
+			logger.Error("EVM and CosmWasm cannot be enabled together", "err", "not supported yet due to a required cosmos-sdk/store fork")
+			return
+		}
+
 		logger.Debug("Disabled features final", "features", disabled)
 
 		cfg := &spawn.NewChainConfig{
@@ -173,6 +179,15 @@ var newChain = &cobra.Command{
 			return
 		}
 	},
+}
+
+func isEnabled(name string, disabled []string) bool {
+	for _, d := range disabled {
+		if d == name {
+			return false
+		}
+	}
+	return true
 }
 
 func normalizeWhitelistVarRun(f *pflag.FlagSet, name string) pflag.NormalizedName {
