@@ -100,7 +100,7 @@ func (fc *FileContent) DeleteDirectoryContents(path string) {
 func (fc *FileContent) ReplaceTestNodeScript(cfg *NewChainConfig) {
 	if fc.IsPath(path.Join("scripts", "test_node.sh")) || fc.IsPath(path.Join("scripts", "test_ics_node.sh")) {
 		fc.ReplaceAll("export BINARY=${BINARY:-wasmd}", fmt.Sprintf("export BINARY=${BINARY:-%s}", cfg.BinDaemon))
-		fc.ReplaceAll("export DENOM=${DENOM:-token}", fmt.Sprintf("export DENOM=${DENOM:-%s}", cfg.Denom))
+		fc.ReplaceAll("export DENOM=${DENOM:-mydenom}", fmt.Sprintf("export DENOM=${DENOM:-%s}", cfg.Denom))
 
 		fc.ReplaceAll(`export HOME_DIR=$(eval echo "${HOME_DIR:-"~/.simapp"}")`, fmt.Sprintf(`export HOME_DIR=$(eval echo "${HOME_DIR:-"~/%s"}")`, cfg.HomeDir))
 		fc.ReplaceAll(`HOME_DIR="~/.simapp"`, fmt.Sprintf(`HOME_DIR="~/%s"`, cfg.HomeDir))
@@ -134,6 +134,7 @@ func (fc *FileContent) ReplaceApp(cfg *NewChainConfig) {
 		fc.ReplaceAll(".myapplicationd", cfg.HomeDir)
 		fc.ReplaceAll(`CosmosSimApp`, cfg.ProjectName)
 		fc.ReplaceAll(`mybechprefix`, cfg.Bech32Prefix)
+		fc.ReplaceAll(`mydenom`, cfg.Denom)
 	}
 }
 

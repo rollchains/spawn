@@ -311,7 +311,8 @@ func NewTestNetworkFixture() network.TestFixture {
 	}
 	defer os.RemoveAll(dir)
 
-	app := NewChainApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(dir), nil,
+	app := NewChainApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(dir),
+		nil,           // spawntag:wasm
 		EVMAppOptions, // spawntag:evm
 	)
 	appCtr := func(val network.ValidatorI) servertypes.Application {

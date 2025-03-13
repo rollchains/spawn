@@ -123,7 +123,8 @@ func TestAppImportExport(t *testing.T) {
 		require.NoError(t, os.RemoveAll(newDir))
 	}()
 
-	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions, nil,
+	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions,
+		nil,           // spawntag:wasm
 		EVMAppOptions, // spawntag:evm
 		fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
 
@@ -239,7 +240,8 @@ func TestAppSimulationAfterImport(t *testing.T) {
 		require.NoError(t, os.RemoveAll(newDir))
 	}()
 
-	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions, nil,
+	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions,
+		nil,           // spawntag:wasm
 		EVMAppOptions, // spawntag:evm
 		fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
 

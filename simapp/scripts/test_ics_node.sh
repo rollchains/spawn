@@ -16,7 +16,7 @@ export KEYALGO="secp256k1"
 export KEYRING=${KEYRING:-"test"}
 export HOME_DIR=$(eval echo "${HOME_DIR:-"~/.simapp"}")
 export BINARY=${BINARY:-wasmd}
-export DENOM=${DENOM:-token}
+export DENOM=${DENOM:-mydenom}
 
 export CLEAN=${CLEAN:-"false"}
 export RPC=${RPC:-"26657"}

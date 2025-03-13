@@ -14,7 +14,7 @@ export KEYALGO="secp256k1"
 export KEYRING=${KEYRING:-"test"}
 export HOME_DIR=$(eval echo "${HOME_DIR:-"~/.simapp"}")
 export BINARY=${BINARY:-wasmd}
-export DENOM=${DENOM:-token}
+export DENOM=${DENOM:-mydenom}
 
 export CLEAN=${CLEAN:-"false"}
 export RPC=${RPC:-"26657"}
@@ -121,7 +121,7 @@ from_scratch () {
   BINARY genesis add-genesis-account $KEY2 100000000000000000000000000$DENOM,90000000test --keyring-backend $KEYRING --append
 
   # Sign genesis transaction
-  BINARY genesis gentx $KEY 1000000000000000000000$DENOM --gas-prices ${BASEFEE}${DENOM} --keyring-backend $KEYRING --chain-id $CHAIN_ID
+  BINARY genesis gentx $KEY 1000000000000000000000$DENOM --gas-prices 0${DENOM} --keyring-backend $KEYRING --chain-id $CHAIN_ID
 
   BINARY genesis collect-gentxs
 

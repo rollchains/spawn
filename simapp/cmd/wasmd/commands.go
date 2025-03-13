@@ -280,7 +280,7 @@ func appExport(
 		traceStore,
 		height == -1,
 		appOpts,
-		nil,
+		nil,               // spawntag:wasm
 		app.EVMAppOptions, // spawntag:evm
 	)
 
