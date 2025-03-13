@@ -24,7 +24,7 @@ var (
 	BlockExplorer       = "block-explorer"
 
 	appGo   = path.Join("app", "app.go")
-	appAnte = path.Join("app", "ante.go")
+	appAnte = path.Join("app", "ante", "ante_cosmos.go")
 )
 
 // used for fuzz testing

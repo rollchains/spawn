@@ -7,10 +7,23 @@ import (
 	evmoscosmosante "github.com/evmos/os/ante/cosmos"
 	evmante "github.com/evmos/os/ante/evm"
 	evmtypes "github.com/evmos/os/x/evm/types"
+
+	sdkmath "cosmossdk.io/math"
+	circuitante "cosmossdk.io/x/circuit/ante"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
+	consumerdemocracy "github.com/cosmos/interchain-security/v5/app/consumer-democracy"
+	ccvdemocracyante "github.com/cosmos/interchain-security/v5/app/consumer-democracy/ante"
+	ccvconsumerante "github.com/cosmos/interchain-security/v5/app/consumer/ante"
+	poaante "github.com/strangelove-ventures/poa/ante"
 )
 
 // newCosmosAnteHandler creates the default ante handler for Cosmos transactions
-func newCosmosAnteHandler(options HandlerOptions) sdk.AnteHandler {
+func NewCosmosAnteHandler(options HandlerOptions) sdk.AnteHandler {
+	poaDoGenTxRateValidation := false
+	poaRateFloor := sdkmath.LegacyMustNewDecFromStr("0.10")
+	poaRateCeil := sdkmath.LegacyMustNewDecFromStr("0.50")
+
 	return sdk.ChainAnteDecorators(
 		evmoscosmosante.NewRejectMessagesDecorator(), // reject MsgEthereumTxs
 		evmoscosmosante.NewAuthzLimiterDecorator( // disable the Msg types that cannot be included on an authz.MsgExec msgs field
@@ -18,6 +31,13 @@ func newCosmosAnteHandler(options HandlerOptions) sdk.AnteHandler {
 			sdk.MsgTypeURL(&sdkvesting.MsgCreateVestingAccount{}),
 		),
 		ante.NewSetUpContextDecorator(),
+		ccvconsumerante.NewMsgFilterDecorator(options.ConsumerKeeper),
+		ccvconsumerante.NewDisabledModulesDecorator("/cosmos.evidence", "/cosmos.slashing"),
+		ccvdemocracyante.NewForbiddenProposalsDecorator(consumerdemocracy.IsProposalWhitelisted, consumerdemocracy.IsModuleWhiteList),
+		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit), // after setup context to enforce limits early
+		wasmkeeper.NewCountTXDecorator(options.TXCounterStoreService),
+		wasmkeeper.NewGasRegisterDecorator(options.WasmKeeper.GetGasRegister()),
+		circuitante.NewCircuitBreakerDecorator(options.CircuitKeeper),
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
 		ante.NewValidateBasicDecorator(),
 		ante.NewTxTimeoutHeightDecorator(),
@@ -31,6 +51,10 @@ func newCosmosAnteHandler(options HandlerOptions) sdk.AnteHandler {
 		ante.NewSigGasConsumeDecorator(options.AccountKeeper, options.SigGasConsumer),
 		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
+		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
 		evmante.NewGasWantedDecorator(options.EvmKeeper, options.FeeMarketKeeper),
+		poaante.NewPOADisableStakingDecorator(),
+		poaante.NewPOADisableWithdrawDelegatorRewards(),
+		poaante.NewCommissionLimitDecorator(poaDoGenTxRateValidation, poaRateFloor, poaRateCeil),
 	)
 }

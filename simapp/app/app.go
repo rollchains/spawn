@@ -85,7 +85,6 @@ import (
 	signingtype "github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	"github.com/cosmos/cosmos-sdk/x/auth/posthandler"
@@ -190,6 +189,7 @@ import (
 	"github.com/evmos/os/x/feemarket"
 	feemarketkeeper "github.com/evmos/os/x/feemarket/keeper"
 	feemarkettypes "github.com/evmos/os/x/feemarket/types"
+	"github.com/rollchains/spawn/simapp/app/ante"
 	chainante "github.com/rollchains/spawn/simapp/app/ante"
 )
 
@@ -1265,30 +1265,27 @@ func NewChainApp(
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 
-	// TODO: ante handler setup for normal apps
-	app.setAnteHandler(txConfig, cast.ToUint64(appOpts.Get(srvflags.EVMMaxTxGasWanted))) // spawntag:evm
+	app.setAnteHandler(chainante.HandlerOptions{
+		Cdc:                   app.appCodec,
+		AccountKeeper:         app.AccountKeeper,
+		BankKeeper:            app.BankKeeper,
+		FeegrantKeeper:        app.FeeGrantKeeper,
+		FeeMarketKeeper:       app.FeeMarketKeeper,
+		SignModeHandler:       txConfig.SignModeHandler(),
+		IBCKeeper:             app.IBCKeeper,
+		WasmKeeper:            &app.WasmKeeper,
+		WasmConfig:            &wasmConfig,
+		TXCounterStoreService: runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
+		CircuitKeeper:         &app.CircuitKeeper,
+		ConsumerKeeper:        app.ConsumerKeeper,
 
-	anteHandler, err := NewAnteHandler(
-		HandlerOptions{
-			HandlerOptions: ante.HandlerOptions{
-				AccountKeeper:   app.AccountKeeper,
-				BankKeeper:      app.BankKeeper,
-				SignModeHandler: txConfig.SignModeHandler(),
-				FeegrantKeeper:  app.FeeGrantKeeper,
-				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
-			},
-			IBCKeeper:             app.IBCKeeper,
-			WasmConfig:            &wasmConfig,
-			WasmKeeper:            &app.WasmKeeper,
-			TXCounterStoreService: runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
-			CircuitKeeper:         &app.CircuitKeeper,
-			ConsumerKeeper:        app.ConsumerKeeper,
-		},
-	)
-	if err != nil {
-		panic(fmt.Errorf("failed to create AnteHandler: %s", err))
-	}
-	app.SetAnteHandler(anteHandler)
+		EvmKeeper:              app.EVMKeeper,                           // spawntag:evm
+		ExtensionOptionChecker: evmostypes.HasDynamicFeeExtensionOption, // spawntag:evm
+		// SigGasConsumer:         ante.DefaultSigVerificationGasConsumer, // ?spawntag:evm
+		SigGasConsumer: evmosante.SigVerificationGasConsumer,                   // spawntag:evm
+		MaxTxGasWanted: cast.ToUint64(appOpts.Get(srvflags.EVMMaxTxGasWanted)), // spawntag:evm
+		TxFeeChecker:   evmosevmante.NewDynamicFeeChecker(app.FeeMarketKeeper), // spawntag:evm
+	})
 
 	// must be before Loading version
 	// requires the snapshot store to be created and registered as a BaseAppOption
@@ -1379,20 +1376,7 @@ func (app *ChainApp) FinalizeBlock(req *abci.RequestFinalizeBlock) (*abci.Respon
 	return app.BaseApp.FinalizeBlock(req)
 }
 
-func (app *ChainApp) setAnteHandler(txConfig client.TxConfig, maxGasWanted uint64) {
-	options := chainante.HandlerOptions{
-		Cdc:                    app.appCodec,
-		AccountKeeper:          app.AccountKeeper,
-		BankKeeper:             app.BankKeeper,
-		ExtensionOptionChecker: evmostypes.HasDynamicFeeExtensionOption,
-		EvmKeeper:              app.EVMKeeper,
-		FeegrantKeeper:         app.FeeGrantKeeper,
-		FeeMarketKeeper:        app.FeeMarketKeeper,
-		SignModeHandler:        txConfig.SignModeHandler(),
-		SigGasConsumer:         evmosante.SigVerificationGasConsumer,
-		MaxTxGasWanted:         maxGasWanted,
-		TxFeeChecker:           evmosevmante.NewDynamicFeeChecker(app.FeeMarketKeeper),
-	}
+func (app *ChainApp) setAnteHandler(options ante.HandlerOptions) {
 	if err := options.Validate(); err != nil {
 		panic(err)
 	}
