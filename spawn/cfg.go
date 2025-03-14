@@ -63,6 +63,13 @@ type NewChainConfig struct {
 	Logger          *slog.Logger
 }
 
+func (cfg NewChainConfig) CoinType() uint64 {
+	if cfg.IsFeatureEnabled(EVM) {
+		return 60
+	}
+	return 118
+}
+
 // NodeHome returns the full path to the node home directory
 // ex: $HOME/.simapp
 func (cfg NewChainConfig) NodeHome() string {
@@ -324,6 +331,7 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 		SetBlockTime("2000ms").
 		SetDockerImage(ibc.NewDockerImage(strings.ToLower(cfg.ProjectName), "local", "")).
 		SetTrustingPeriod("336h").
+		SetCoinType(int(cfg.CoinType())).
 		SetHostPortOverride(localictypes.BaseHostPortOverride()).
 		SetDefaultSDKv47Genesis(2)
 
@@ -374,6 +382,7 @@ func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 			SetBlockTime("2000ms").
 			SetDockerImage(ibc.NewDockerImage(strings.ToLower(cfg.ProjectName), "local", "")).
 			SetTrustingPeriod("336h").
+			SetCoinType(int(cfg.CoinType())).
 			SetDefaultSDKv47Genesis(2)
 
 		c.SetIBCPaths([]string{}) // clear IBC paths

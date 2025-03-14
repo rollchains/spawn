@@ -101,7 +101,7 @@ func (cfg NewChainConfig) NewChainExplorerConfig() ChainExplorer {
 		Api:        []Endpoint{NewEndpoint("api.localhost", "http://127.0.0.1:1317")},
 		Rpc:        []Endpoint{NewEndpoint("rpc.localhost", "http://127.0.0.1:26657")},
 		SdkVersion: "0.50",
-		CoinType:   "118",
+		CoinType:   fmt.Sprintf("%d", cfg.CoinType()),
 		MinTxFee:   "800",
 		AddrPrefix: cfg.Bech32Prefix,
 		Logo:       logo,

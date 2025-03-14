@@ -64,7 +64,8 @@ var (
 		Bin:            Binary,
 		Bech32Prefix:   Bech32,
 		Denom:          Denom,
-		CoinType:       "118",
+		// CoinType:       "118", // ?spawntag:evm
+		CoinType:       "60", // spawntag:evm
 		GasPrices:      "0" + Denom,
 		TrustingPeriod: "504h",
 	}

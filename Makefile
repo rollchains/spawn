@@ -99,7 +99,7 @@ template-poa: install
 	spawn new myproject --consensus=proof-of-authority --disable evm --debug --no-git --bin=rolld --bech32=roll --denom=uroll --bypass-prompt --log-level=debug
 
 template-ics: install
-	spawn new myproject --consensus=interchain-security --debug --no-git --bin=rolld --bech32=roll --denom=uroll --bypass-prompt --log-level=debug
+	spawn new myproject --consensus=interchain-security --disable cosmwasm --debug --no-git --bin=rolld --bech32=roll --denom=uroll --bypass-prompt --log-level=debug
 
 
 .DEFAULT_GOAL := install

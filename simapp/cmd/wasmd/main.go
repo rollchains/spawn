@@ -24,8 +24,7 @@ func main() {
 func setupSDKConfig() {
 	config := sdk.GetConfig()
 	SetBech32Prefixes(config)
-	// config.SetCoinType(118) // ?spawntag:evm
-	config.SetCoinType(60) // spawntag;evm
+	config.SetCoinType(app.CoinType)
 	config.SetPurpose(44)
 	config.Seal()
 }

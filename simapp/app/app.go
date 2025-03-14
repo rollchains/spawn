@@ -230,7 +230,8 @@ var (
 	// DefaultNodeHome default home directories for appd
 	DefaultNodeHome = os.ExpandEnv("$HOME/") + NodeDir
 
-	CoinType uint32 = 118
+	// CoinType uint32 = 118 // ?spawntag:evm
+	CoinType uint32 = 60 // spawntag:evm
 
 	// BaseDenomUnit = 6 // ?spawntag:evm
 	BaseDenomUnit int64 = 18 // spawntag:evm
