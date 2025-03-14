@@ -11,18 +11,21 @@ import (
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	channelkeeper "github.com/cosmos/ibc-go/v8/modules/core/04-channel/keeper"
 	"github.com/ethereum/go-ethereum/common"
 	bankprecompile "github.com/evmos/os/precompiles/bank"
 	"github.com/evmos/os/precompiles/bech32"
 	distprecompile "github.com/evmos/os/precompiles/distribution"
 	evidenceprecompile "github.com/evmos/os/precompiles/evidence"
 	govprecompile "github.com/evmos/os/precompiles/gov"
+	ics20precompile "github.com/evmos/os/precompiles/ics20"
 	"github.com/evmos/os/precompiles/p256"
 	slashingprecompile "github.com/evmos/os/precompiles/slashing"
 	stakingprecompile "github.com/evmos/os/precompiles/staking"
 	erc20Keeper "github.com/evmos/os/x/erc20/keeper"
 	"github.com/evmos/os/x/evm/core/vm"
 	evmkeeper "github.com/evmos/os/x/evm/keeper"
+	transferkeeper "github.com/evmos/os/x/ibc/transfer/keeper"
 )
 
 const bech32PrecompileBaseGas = 6_000
@@ -36,6 +39,8 @@ func NewAvailableStaticPrecompiles(
 	bankKeeper bankkeeper.Keeper,
 	erc20Keeper erc20Keeper.Keeper,
 	authzKeeper authzkeeper.Keeper,
+	transferKeeper transferkeeper.Keeper,
+	channelKeeper channelkeeper.Keeper,
 	evmKeeper *evmkeeper.Keeper,
 	govKeeper govkeeper.Keeper,
 	slashingKeeper slashingkeeper.Keeper,
@@ -67,6 +72,17 @@ func NewAvailableStaticPrecompiles(
 		panic(fmt.Errorf("failed to instantiate distribution precompile: %w", err))
 	}
 
+	ibcTransferPrecompile, err := ics20precompile.NewPrecompile(
+		stakingKeeper,
+		transferKeeper,
+		channelKeeper,
+		authzKeeper,
+		evmKeeper,
+	)
+	if err != nil {
+		panic(fmt.Errorf("failed to instantiate ICS20 precompile: %w", err))
+	}
+
 	bankPrecompile, err := bankprecompile.NewPrecompile(bankKeeper, erc20Keeper)
 	if err != nil {
 		panic(fmt.Errorf("failed to instantiate bank precompile: %w", err))
@@ -94,6 +110,7 @@ func NewAvailableStaticPrecompiles(
 	// Stateful precompiles
 	precompiles[stakingPrecompile.Address()] = stakingPrecompile
 	precompiles[distributionPrecompile.Address()] = distributionPrecompile
+	precompiles[ibcTransferPrecompile.Address()] = ibcTransferPrecompile
 	precompiles[bankPrecompile.Address()] = bankPrecompile
 	precompiles[govPrecompile.Address()] = govPrecompile
 	precompiles[slashingPrecompile.Address()] = slashingPrecompile

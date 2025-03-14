@@ -29,8 +29,9 @@ import (
 	ibcfee "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"
 	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
 	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
-	"github.com/cosmos/ibc-go/v8/modules/apps/transfer"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
+
+	// "github.com/cosmos/ibc-go/v8/modules/apps/transfer" // ?spawntag:evm
+	// ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper" // ?spawntag:evm
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v8/modules/core"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
@@ -39,6 +40,8 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	transfer "github.com/evmos/os/x/ibc/transfer"                 // spawntag:evm
+	ibctransferkeeper "github.com/evmos/os/x/ibc/transfer/keeper" // spawntag:evm
 	"github.com/spf13/cast"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
@@ -764,7 +767,8 @@ func NewChainApp(
 
 	// <spawntag:evm
 	app.FeeMarketKeeper = feemarketkeeper.NewKeeper(
-		appCodec, authtypes.NewModuleAddress(govtypes.ModuleName),
+		appCodec,
+		authtypes.NewModuleAddress(govtypes.ModuleName),
 		keys[feemarkettypes.StoreKey],
 		tkeys[feemarkettypes.TransientKey],
 		app.GetSubspace(feemarkettypes.ModuleName),
@@ -774,7 +778,9 @@ func NewChainApp(
 
 	// NOTE: it's required to set up the EVM keeper before the ERC-20 keeper, because it is used in its instantiation.
 	app.EVMKeeper = evmkeeper.NewKeeper(
-		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey],
+		appCodec,
+		keys[evmtypes.StoreKey],
+		tkeys[evmtypes.TransientKey],
 		authtypes.NewModuleAddress(govtypes.ModuleName),
 		app.AccountKeeper,
 		app.BankKeeper,
@@ -793,26 +799,26 @@ func NewChainApp(
 		app.EVMKeeper,
 		app.StakingKeeper,
 		app.AuthzKeeper,
-		// &app.TransferKeeper, // TODO(reece): impl
-		nil,
+		&app.TransferKeeper,
 	)
 
 	// NOTE: we are adding all available EVM extensions.
 	// Not all of them need to be enabled, which can be configured on a per-chain basis.
+	corePrecompiles := NewAvailableStaticPrecompiles(
+		*app.StakingKeeper,
+		app.DistrKeeper,
+		app.BankKeeper,
+		app.Erc20Keeper,
+		app.AuthzKeeper, // TODO: get off fork so we can support this
+		app.TransferKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.EVMKeeper,
+		app.GovKeeper,
+		app.SlashingKeeper,
+		app.EvidenceKeeper,
+	)
 	app.EVMKeeper.WithStaticPrecompiles(
-		NewAvailableStaticPrecompiles(
-			*app.StakingKeeper,
-			app.DistrKeeper,
-			app.BankKeeper,
-			app.Erc20Keeper,
-			app.AuthzKeeper,
-			// app.TransferKeeper,
-			// app.IBCKeeper.ChannelKeeper,
-			app.EVMKeeper,
-			app.GovKeeper,
-			app.SlashingKeeper,
-			app.EvidenceKeeper,
-		),
+		corePrecompiles,
 	)
 
 	// spawntag:evm>
@@ -880,6 +886,7 @@ func NewChainApp(
 		app.AccountKeeper,
 		app.BankKeeper,
 		scopedTransferKeeper,
+		app.Erc20Keeper, // spawntag:evm
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
