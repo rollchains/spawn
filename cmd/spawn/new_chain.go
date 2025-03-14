@@ -155,11 +155,6 @@ var newChain = &cobra.Command{
 		disabled = append(disabled, disabledConsensus...)
 		disabled = spawn.NormalizeDisabledNames(disabled, parentDeps)
 
-		if isEnabled(spawn.EVM, disabled) && isEnabled(spawn.CosmWasm, disabled) {
-			logger.Error("EVM and CosmWasm cannot be enabled together", "err", "not supported yet due to a required cosmos-sdk/store fork")
-			return
-		}
-
 		logger.Debug("Disabled features final", "features", disabled)
 
 		cfg := &spawn.NewChainConfig{
@@ -174,20 +169,16 @@ var newChain = &cobra.Command{
 			Logger:          logger,
 		}
 
+		if cfg.IsFeatureEnabled(spawn.EVM) && cfg.IsFeatureEnabled(spawn.CosmWasm) {
+			logger.Error("EVM and CosmWasm cannot be enabled together", "err", "not supported yet due to a required cosmos-sdk/store fork")
+			return
+		}
+
 		if err := cfg.ValidateAndRun(true); err != nil {
 			logger.Error("Error creating new chain", "err", err)
 			return
 		}
 	},
-}
-
-func isEnabled(name string, disabled []string) bool {
-	for _, d := range disabled {
-		if d == name {
-			return false
-		}
-	}
-	return true
 }
 
 func normalizeWhitelistVarRun(f *pflag.FlagSet, name string) pflag.NormalizedName {
