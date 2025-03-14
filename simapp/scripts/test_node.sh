@@ -5,6 +5,8 @@
 # CHAIN_ID="localchain_9000-1" HOME_DIR="~/.simapp" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_node.sh
 # CHAIN_ID="localchain_9000-2" HOME_DIR="~/.simapp" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_node.sh
 
+set -eu
+
 export KEY="acc0"
 export KEY2="acc1"
 
@@ -23,7 +25,6 @@ export PROFF=${PROFF:-"6060"}
 export P2P=${P2P:-"26656"}
 export GRPC=${GRPC:-"9090"}
 export GRPC_WEB=${GRPC_WEB:-"9091"}
-export PROFF_LADDER=${PROFF_LADDER:-"6060"}
 export ROSETTA=${ROSETTA:-"8080"}
 export BLOCK_TIME=${BLOCK_TIME:-"5s"}
 
@@ -74,7 +75,6 @@ from_scratch () {
   # wasm1hj5fveer5cjtn4wd6wstzugjfdxzl0xpvsr89g
   add_key $KEY2 "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise"
 
-  # chain initial setup
   BINARY init $MONIKER --chain-id $CHAIN_ID --default-denom $DENOM
 
   update_test_genesis () {
@@ -164,10 +164,4 @@ sed -i -e 's/address = ":8080"/address = "0.0.0.0:'$ROSETTA'"/g' $HOME_DIR/confi
 # Faster blocks
 sed -i -e 's/timeout_commit = "5s"/timeout_commit = "'$BLOCK_TIME'"/g' $HOME_DIR/config/config.toml
 
-
-# if chain_id contains and _, it is evm
-if [[ $CHAIN_ID == *"_"* ]]; then
-  BINARY start --pruning=nothing --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC" --json-rpc.api eth,txpool,personal,net,debug,web3 --chain-id "$CHAIN_ID" --home=$HOME_DIR
-else
-  BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC"
-fi
+BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC"
