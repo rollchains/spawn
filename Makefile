@@ -87,19 +87,19 @@ help: Makefile
 
 # ---- Developer Templates ----
 template-staking: install
-	spawn new myproject --consensus=proof-of-stake --disable=explorer,evm --debug --bech32=roll --bin=appd --bypass-prompt --log-level=debug --org=reece
+	spawn new myproject --consensus=proof-of-stake --disable=explorer --debug --bech32=roll --bin=appd --bypass-prompt --log-level=debug --org=reece
 
 template-evm: install
-	spawn new myproject --consensus=proof-of-stake --disable=explorer,cosmwasm --debug --bech32=roll --bin=appd --bypass-prompt --log-level=debug --org=reece
+	spawn new myproject --consensus=proof-of-stake --disable=explorer --debug --bech32=roll --bin=appd --bypass-prompt --log-level=debug --org=reece
 
 template-no-evm: install
 	spawn new myproject --consensus=proof-of-stake --disable=evm --debug --bech32=roll --bin=appd --bypass-prompt --log-level=debug --org=reece
 
 template-poa: install
-	spawn new myproject --consensus=proof-of-authority --disable evm --debug --no-git --bin=rolld --bech32=roll --denom=uroll --bypass-prompt --log-level=debug
+	spawn new myproject --consensus=proof-of-authority --debug --no-git --bin=rolld --bech32=roll --denom=uroll --bypass-prompt --log-level=debug
 
 template-ics: install
-	spawn new myproject --consensus=interchain-security --disable cosmwasm --debug --no-git --bin=rolld --bech32=roll --denom=uroll --bypass-prompt --log-level=debug
+	spawn new myproject --consensus=interchain-security --debug --no-git --bin=rolld --bech32=roll --denom=uroll --bypass-prompt --log-level=debug
 
 
 .DEFAULT_GOAL := install

@@ -8,6 +8,7 @@ toolchain go1.23.1
 replace (
 	cosmossdk.io/core => cosmossdk.io/core v0.11.0
 	cosmossdk.io/store => github.com/evmos/cosmos-sdk/store v0.0.0-20240718141609-414cbd051fbe // spawntag:evm
+	github.com/CosmWasm/wasmd => github.com/rollchains/wasmd v0.50.0-evm // spawntag:evm
 	// github.com/cosmos/cosmos-sdk => github.com/rollchains/cosmos-sdk v0.50.11 // ?spawntag:evm
 	github.com/cosmos/cosmos-sdk => github.com/strangelove-ventures/cosmos-sdk v0.0.0-20250225193519-2db6669c943f // https://github.com/strangelove-ventures/cosmos-sdk/pull/2 // spawntag:evm
 	github.com/ethereum/go-ethereum => github.com/evmos/go-ethereum v1.10.26-evmos-rc4 // spawntag:evm

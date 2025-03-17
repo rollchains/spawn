@@ -169,11 +169,6 @@ var newChain = &cobra.Command{
 			Logger:          logger,
 		}
 
-		if cfg.IsFeatureEnabled(spawn.EVM) && cfg.IsFeatureEnabled(spawn.CosmWasm) {
-			logger.Error("EVM and CosmWasm cannot be enabled together", "err", "not supported yet due to a required cosmos-sdk/store fork")
-			return
-		}
-
 		if err := cfg.ValidateAndRun(true); err != nil {
 			logger.Error("Error creating new chain", "err", err)
 			return
