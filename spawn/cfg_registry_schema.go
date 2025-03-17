@@ -144,6 +144,11 @@ func (cfg NewChainConfig) ChainRegistryFile() types.ChainRegistryFormat {
 func (cfg NewChainConfig) ChainRegistryAssetsFile() types.ChainRegistryAssetsList {
 	display := strings.TrimPrefix(strings.ToUpper(cfg.Denom), "U")
 
+	exponent := 6
+	if cfg.IsFeatureEnabled(EVM) {
+		exponent = 18
+	}
+
 	return types.ChainRegistryAssetsList{
 		Schema:    DefaultChainRegistryAssetsSchema,
 		ChainName: cfg.ProjectName,
@@ -157,7 +162,7 @@ func (cfg NewChainConfig) ChainRegistryAssetsFile() types.ChainRegistryAssetsLis
 					},
 					{
 						Denom:    display, // TOKEN
-						Exponent: 6,
+						Exponent: exponent,
 					},
 				},
 				Base:    cfg.Denom, // utoken
