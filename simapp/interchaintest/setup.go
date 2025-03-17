@@ -39,6 +39,8 @@ var (
 
 	ChainImage = ibc.NewDockerImage("wasmd", "local", "1025:1025")
 
+	Precompiles = []string{"0x0000000000000000000000000000000000000100", "0x0000000000000000000000000000000000000400", "0x0000000000000000000000000000000000000800", "0x0000000000000000000000000000000000000801", "0x0000000000000000000000000000000000000802", "0x0000000000000000000000000000000000000803", "0x0000000000000000000000000000000000000804", "0x0000000000000000000000000000000000000805"} // spawntag:evm
+
 	DefaultGenesis = []cosmos.GenesisKV{
 		// default
 		cosmos.NewGenesisKV("app_state.gov.params.voting_period", VotingPeriod),
@@ -48,6 +50,10 @@ var (
 		// tokenfactory: set create cost in set denom or in gas usage.
 		cosmos.NewGenesisKV("app_state.tokenfactory.params.denom_creation_fee", nil),
 		cosmos.NewGenesisKV("app_state.tokenfactory.params.denom_creation_gas_consume", 1), // cost 1 gas to create a new denom
+		cosmos.NewGenesisKV("app_state.feemarket.params.no_base_fee", true),                // spawntag:evm
+		cosmos.NewGenesisKV("app_state.feemarket.params.base_fee", "0.000000000000000000"), // spawntag:evm
+		cosmos.NewGenesisKV("app_state.evm.params.evm_denom", Denom),                       // spawntag:evm
+		cosmos.NewGenesisKV("app_state.evm.params.active_static_precompiles", Precompiles), // spawntag:evm
 
 	}
 
