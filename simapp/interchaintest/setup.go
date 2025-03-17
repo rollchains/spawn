@@ -36,6 +36,7 @@ var (
 	ChainID = "localchain_9000-1" // spawntag:evm
 	Binary  = "wasmd"
 	Bech32  = "mybechprefix"
+	ibcPath = "ibc-path"
 
 	NumberVals         = 1
 	NumberFullNodes    = 0

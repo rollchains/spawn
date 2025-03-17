@@ -17,10 +17,6 @@ import (
 	"go.uber.org/zap/zaptest"
 )
 
-const (
-	ibcPath = "ibc-path"
-)
-
 func TestIBCBasic(t *testing.T) {
 	t.Parallel()
 
