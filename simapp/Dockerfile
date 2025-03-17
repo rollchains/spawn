@@ -37,7 +37,7 @@ RUN LEDGER_ENABLED=false BUILD_TAGS=muslc LINK_STATICALLY=true make build \
 # --------------------------------------------------------
 FROM alpine:3.21
 
-COPY --from=go-builder /code/build/wasmd /usr/bin/wasmd
+COPY --from=build-env /code/build/wasmd /usr/bin/wasmd
 
 RUN apk add --no-cache ca-certificates curl make bash jq sed
 
