@@ -76,12 +76,12 @@ jobs:
         # names of `make` commands to run tests
         test:
           - "ictest-basic"
-          - "ictest-ibc"
           - "ictest-wasm"
-          - "ictest-packetforward"
           - "ictest-poa"
           - "ictest-tokenfactory"
-          - "ictest-ratelimit"
+          - "ictest-ibc"  # // spawntag:not-evm
+          - "ictest-packetforward"  # // spawntag:not-evm
+          - "ictest-ratelimit"  # // spawntag:not-evm
       fail-fast: false
 
     steps:
