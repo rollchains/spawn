@@ -67,7 +67,7 @@ func EVMAppOptions(chainID string) error {
 
 	err = evmtypes.NewEVMConfigurator().
 		WithChainConfig(ethCfg).
-		// NOTE: we're using the 18 decimals default for the example chain
+		// NOTE: we're using the 18 decimals
 		WithEVMCoinInfo(baseDenom, uint8(coinInfo.Decimals)).
 		Configure()
 	if err != nil {
