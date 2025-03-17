@@ -24,6 +24,7 @@ If you just want to build an application and don't want to focus on tokenomics o
 ## Proof of Authority (PoA)
 
 ### Default
+<!-- markdown-link-check-disable -->
 If you do not know which security module best fits for you, use this one. The source code for this feature can be found [here](https://github.com/strangelove-ventures/poa). The most popular example of this security model is [Circle's](https://www.circle.com/en/) USDC issuance network, [Noble](https://www.noble.xyz/) ([twitter](https://twitter.com/noble_xyz)).
 
 ### What it does
