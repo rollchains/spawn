@@ -115,6 +115,14 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		}
 	}
 
+	if cfg.IsFeatureEnabled(EVM) {
+		// Go Relayer does not work well with IBC e2e, so removing for EVM chains for now. (some key not found issue)
+		fc.HandleAllTagged("not-evm") // CI & interchaintest
+		fc.DeleteFile(path.Join("interchaintest", "ibc_test.go"))
+		fc.DeleteFile(path.Join("interchaintest", "ibc_rate_limit_test.go"))
+		fc.DeleteFile(path.Join("interchaintest", "packetforward_test.go"))
+	}
+
 	// remove any left over `// spawntag:` comments
 	fc.RemoveTaggedLines("", false)
 }
