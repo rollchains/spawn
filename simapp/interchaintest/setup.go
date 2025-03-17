@@ -20,6 +20,10 @@ import (
 	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 	poa "github.com/strangelove-ventures/poa"
 	tokenfactory "github.com/strangelove-ventures/tokenfactory/x/tokenfactory/types"
+
+	"github.com/evmos/os/crypto/ethsecp256k1" // spawntag:evm
+	evmtypes "github.com/evmos/os/x/evm/types" // spawntag:evm
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types" // spawntag:evm
 )
 
 var (
@@ -127,6 +131,9 @@ func GetEncodingConfig() *moduletestutil.TestEncodingConfig {
 	tokenfactory.RegisterInterfaces(cfg.InterfaceRegistry)
 	poa.RegisterInterfaces(cfg.InterfaceRegistry)
 	ccvconsumertypes.RegisterInterfaces(cfg.InterfaceRegistry)
+	evmtypes.RegisterInterfaces(cfg.InterfaceRegistry)
+	cfg.InterfaceRegistry.RegisterImplementations((*cryptotypes.PubKey)(nil), &ethsecp256k1.PubKey{})
+	cfg.InterfaceRegistry.RegisterImplementations((*cryptotypes.PrivKey)(nil), &ethsecp256k1.PrivKey{})
 	return &cfg
 }
 
