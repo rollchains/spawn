@@ -21,9 +21,9 @@ import (
 	poa "github.com/strangelove-ventures/poa"
 	tokenfactory "github.com/strangelove-ventures/tokenfactory/x/tokenfactory/types"
 
-	"github.com/evmos/os/crypto/ethsecp256k1" // spawntag:evm
-	evmtypes "github.com/evmos/os/x/evm/types" // spawntag:evm
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types" // spawntag:evm
+	"github.com/evmos/os/crypto/ethsecp256k1"               // spawntag:evm
+	evmtypes "github.com/evmos/os/x/evm/types"              // spawntag:evm
 )
 
 var (
@@ -131,9 +131,9 @@ func GetEncodingConfig() *moduletestutil.TestEncodingConfig {
 	tokenfactory.RegisterInterfaces(cfg.InterfaceRegistry)
 	poa.RegisterInterfaces(cfg.InterfaceRegistry)
 	ccvconsumertypes.RegisterInterfaces(cfg.InterfaceRegistry)
-	evmtypes.RegisterInterfaces(cfg.InterfaceRegistry)
-	cfg.InterfaceRegistry.RegisterImplementations((*cryptotypes.PubKey)(nil), &ethsecp256k1.PubKey{})
-	cfg.InterfaceRegistry.RegisterImplementations((*cryptotypes.PrivKey)(nil), &ethsecp256k1.PrivKey{})
+	evmtypes.RegisterInterfaces(cfg.InterfaceRegistry)                                                  // spawntag:evm
+	cfg.InterfaceRegistry.RegisterImplementations((*cryptotypes.PubKey)(nil), &ethsecp256k1.PubKey{})   // spawntag:evm
+	cfg.InterfaceRegistry.RegisterImplementations((*cryptotypes.PrivKey)(nil), &ethsecp256k1.PrivKey{}) // spawntag:evm
 	return &cfg
 }
 
