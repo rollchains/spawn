@@ -123,7 +123,10 @@ func TestAppImportExport(t *testing.T) {
 		require.NoError(t, os.RemoveAll(newDir))
 	}()
 
-	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions, nil, fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
+	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions,
+		nil,           // spawntag:wasm
+		EVMAppOptions, // spawntag:evm
+		fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
 
 	initReq := &abci.RequestInitChain{
 		AppStateBytes: exported.AppState,
@@ -237,7 +240,10 @@ func TestAppSimulationAfterImport(t *testing.T) {
 		require.NoError(t, os.RemoveAll(newDir))
 	}()
 
-	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions, nil, fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
+	newApp := NewChainApp(log.NewNopLogger(), newDB, nil, true, appOptions,
+		nil,           // spawntag:wasm
+		EVMAppOptions, // spawntag:evm
+		fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
 
 	_, err = newApp.InitChain(&abci.RequestInitChain{
 		ChainId:       SimAppChainID,
@@ -278,7 +284,10 @@ func setupSimulationApp(t *testing.T, msg string) (simtypes.Config, dbm.DB, simt
 	appOptions[flags.FlagHome] = dir // ensure a unique folder
 	appOptions[server.FlagInvCheckPeriod] = simcli.FlagPeriodValue
 
-	app := NewChainApp(logger, db, nil, true, appOptions, nil, fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
+	app := NewChainApp(logger, db, nil, true, appOptions,
+		nil,           // spawntag:wasm
+		EVMAppOptions, // spawntag:evm
+		fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
 	return config, db, appOptions, app
 }
 
@@ -329,7 +338,10 @@ func TestAppStateDeterminism(t *testing.T) {
 			}
 
 			db := dbm.NewMemDB()
-			app := NewChainApp(logger, db, nil, true, appOptions, nil, interBlockCacheOpt(), baseapp.SetChainID(SimAppChainID))
+			app := NewChainApp(logger, db, nil, true, appOptions,
+				nil,           // spawntag:wasm
+				EVMAppOptions, // spawntag:evm
+				interBlockCacheOpt(), baseapp.SetChainID(SimAppChainID))
 
 			fmt.Printf(
 				"running non-determinism simulation; seed %d: %d/%d, attempt: %d/%d\n",

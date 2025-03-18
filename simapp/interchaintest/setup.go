@@ -20,23 +20,31 @@ import (
 	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
 	poa "github.com/strangelove-ventures/poa"
 	tokenfactory "github.com/strangelove-ventures/tokenfactory/x/tokenfactory/types"
+
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types" // spawntag:evm
+	"github.com/evmos/os/crypto/ethsecp256k1"               // spawntag:evm
+	evmtypes "github.com/evmos/os/x/evm/types"              // spawntag:evm
 )
 
 var (
 	VotingPeriod     = "15s"
 	MaxDepositPeriod = "10s"
 
-	Denom   = "mydenom"
-	Name    = "appName"
-	ChainID = "localchain-1"
+	Denom = "mydenom"
+	Name  = "appName"
+	// ChainID = "localchain_9000-1" // ?spawntag:evm
+	ChainID = "localchain_9000-1" // spawntag:evm
 	Binary  = "wasmd"
 	Bech32  = "mybechprefix"
+	ibcPath = "ibc-path"
 
 	NumberVals         = 1
 	NumberFullNodes    = 0
 	GenesisFundsAmount = sdkmath.NewInt(1000_000000) // 1k tokens
 
 	ChainImage = ibc.NewDockerImage("wasmd", "local", "1025:1025")
+
+	Precompiles = []string{"0x0000000000000000000000000000000000000100", "0x0000000000000000000000000000000000000400", "0x0000000000000000000000000000000000000800", "0x0000000000000000000000000000000000000801", "0x0000000000000000000000000000000000000802", "0x0000000000000000000000000000000000000803", "0x0000000000000000000000000000000000000804", "0x0000000000000000000000000000000000000805"} // spawntag:evm
 
 	DefaultGenesis = []cosmos.GenesisKV{
 		// default
@@ -47,6 +55,10 @@ var (
 		// tokenfactory: set create cost in set denom or in gas usage.
 		cosmos.NewGenesisKV("app_state.tokenfactory.params.denom_creation_fee", nil),
 		cosmos.NewGenesisKV("app_state.tokenfactory.params.denom_creation_gas_consume", 1), // cost 1 gas to create a new denom
+		cosmos.NewGenesisKV("app_state.feemarket.params.no_base_fee", true),                // spawntag:evm
+		cosmos.NewGenesisKV("app_state.feemarket.params.base_fee", "0.000000000000000000"), // spawntag:evm
+		cosmos.NewGenesisKV("app_state.evm.params.evm_denom", Denom),                       // spawntag:evm
+		cosmos.NewGenesisKV("app_state.evm.params.active_static_precompiles", Precompiles), // spawntag:evm
 
 	}
 
@@ -63,7 +75,8 @@ var (
 		Bin:            Binary,
 		Bech32Prefix:   Bech32,
 		Denom:          Denom,
-		CoinType:       "118",
+		// CoinType:       "118", // ?spawntag:evm
+		CoinType:       "60", // spawntag:evm
 		GasPrices:      "0" + Denom,
 		TrustingPeriod: "504h",
 	}
@@ -119,6 +132,9 @@ func GetEncodingConfig() *moduletestutil.TestEncodingConfig {
 	tokenfactory.RegisterInterfaces(cfg.InterfaceRegistry)
 	poa.RegisterInterfaces(cfg.InterfaceRegistry)
 	ccvconsumertypes.RegisterInterfaces(cfg.InterfaceRegistry)
+	evmtypes.RegisterInterfaces(cfg.InterfaceRegistry)                                                  // spawntag:evm
+	cfg.InterfaceRegistry.RegisterImplementations((*cryptotypes.PubKey)(nil), &ethsecp256k1.PubKey{})   // spawntag:evm
+	cfg.InterfaceRegistry.RegisterImplementations((*cryptotypes.PrivKey)(nil), &ethsecp256k1.PrivKey{}) // spawntag:evm
 	return &cfg
 }
 

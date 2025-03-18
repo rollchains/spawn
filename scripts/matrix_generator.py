@@ -14,6 +14,7 @@ SupportedFeatures = [
     "ibc-packetforward",
     "ibc-ratelimit",
     "cosmwasm",
+    "evm",
     "wasm-light-client",
     "optimistic-execution",
 ]
@@ -104,7 +105,7 @@ def main():
         CmdCreator(
             "randmixthree",
             ICS,
-            "packetforward,ibc-ratelimit".split(","),
+            "packetforward,ibc-ratelimit,evm".split(","),
             random_string(5, True),
             f"{random_string(6, True)}",
             f"u{random_string(5, True)}",
@@ -137,7 +138,7 @@ def main():
         CmdCreator(
             "mywlcnocw",
             POS,
-            "tokenfactory,ibc-packetforward,cosmwasm".split(","),
+            "tokenfactory,ibc-packetforward,cosmwasm,evm".split(","),
             random_string(5, True),
             f"{random_string(6, True)}",
             f"u{random_string(5, True)}",

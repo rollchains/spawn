@@ -121,7 +121,7 @@ func testRemovePending(t *testing.T, ctx context.Context, chain *cosmos.CosmosCh
 
 	// validate it was removed
 	pv = GetPOAPending(t, ctx, chain)
-	require.Equal(t, 0, len(pv))
+	require.Equal(t, 0, len(pv), "pending validator was not removed, you likely do not have the sdk fork with the proper patch: https://github.com/cosmos/cosmos-sdk/pull/20059")
 }
 
 func testPowerErrors(t *testing.T, ctx context.Context, chain *cosmos.CosmosChain, validators []string, incorrectUser ibc.Wallet, admin ibc.Wallet) {

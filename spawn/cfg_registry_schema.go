@@ -19,7 +19,6 @@ const (
 	DefaultDescription               = "A short description of your project"
 	DefaultChainID                   = "localchain-1"
 	DefaultNetworkType               = "testnet" // or mainnet
-	DefaultSlip44CoinType            = 118
 	DefaultChainRegistrySchema       = "https://raw.githubusercontent.com/cosmos/chain-registry/master/chain.schema.json"
 	DefaultChainRegistryAssetsSchema = "https://github.com/cosmos/chain-registry/blob/master/assetlist.schema.json"
 	DefaultThemeHexColor             = "#FF2D00"
@@ -36,12 +35,19 @@ func (cfg NewChainConfig) ChainRegistryFile() types.ChainRegistryFormat {
 	if cfg.IsFeatureEnabled(CosmWasm) {
 		DefaultCosmWasmVersion = "0.50"
 	}
-	DefaultConsensus := "tendermint" // TODO: gordian in the future on gen
+	DefaultConsensus := "tendermint"
+
+	keyAlgos := []string{"secp256k1"}
+	chainType := "cosmos"
+	if cfg.IsFeatureEnabled(EVM) {
+		keyAlgos = []string{"eth_secp256k1"}
+		chainType = "ethereum"
+	}
 
 	return types.ChainRegistryFormat{
 		Schema:       DefaultChainRegistrySchema,
 		ChainName:    cfg.ProjectName,
-		ChainType:    "cosmos",
+		ChainType:    chainType,
 		Status:       "live",
 		Website:      DefaultWebsite,
 		NetworkType:  DefaultNetworkType,
@@ -50,8 +56,8 @@ func (cfg NewChainConfig) ChainRegistryFile() types.ChainRegistryFormat {
 		Bech32Prefix: cfg.Bech32Prefix,
 		DaemonName:   cfg.BinDaemon,
 		NodeHome:     cfg.NodeHome(),
-		KeyAlgos:     []string{"secp256k1"},
-		Slip44:       DefaultSlip44CoinType,
+		KeyAlgos:     keyAlgos,
+		Slip44:       int(cfg.CoinType()),
 		Fees: types.Fees{
 			FeeTokens: []types.FeeTokens{
 				{
@@ -138,6 +144,11 @@ func (cfg NewChainConfig) ChainRegistryFile() types.ChainRegistryFormat {
 func (cfg NewChainConfig) ChainRegistryAssetsFile() types.ChainRegistryAssetsList {
 	display := strings.TrimPrefix(strings.ToUpper(cfg.Denom), "U")
 
+	exponent := 6
+	if cfg.IsFeatureEnabled(EVM) {
+		exponent = 18
+	}
+
 	return types.ChainRegistryAssetsList{
 		Schema:    DefaultChainRegistryAssetsSchema,
 		ChainName: cfg.ProjectName,
@@ -151,7 +162,7 @@ func (cfg NewChainConfig) ChainRegistryAssetsFile() types.ChainRegistryAssetsLis
 					},
 					{
 						Denom:    display, // TOKEN
-						Exponent: 6,
+						Exponent: exponent,
 					},
 				},
 				Base:    cfg.Denom, // utoken

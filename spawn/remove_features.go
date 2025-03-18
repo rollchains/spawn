@@ -15,6 +15,7 @@ var (
 	POA                 = "poa"
 	POS                 = "staking" // if ICS is used, we remove staking
 	CosmWasm            = "cosmwasm"
+	EVM                 = "evm"
 	WasmLC              = "wasmlc"
 	PacketForward       = "packetforward"
 	IBCRateLimit        = "ibc-ratelimit"
@@ -23,7 +24,7 @@ var (
 	BlockExplorer       = "block-explorer"
 
 	appGo   = path.Join("app", "app.go")
-	appAnte = path.Join("app", "ante.go")
+	appAnte = path.Join("app", "ante", "ante_cosmos.go")
 )
 
 // used for fuzz testing
@@ -57,6 +58,8 @@ func AliasName(name string) string {
 		return InterchainSecurity
 	case BlockExplorer, "explorer", "pingpub":
 		return BlockExplorer
+	case EVM, "ethereum":
+		return EVM
 	default:
 		panic(fmt.Sprintf("AliasName: unknown feature to remove: %s", name))
 	}
@@ -87,6 +90,8 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 			fc.RemovePacketForward()
 		case IBCRateLimit:
 			fc.RemoveIBCRateLimit()
+		case EVM:
+			fc.RemoveEVM()
 		// other
 		case OptimisticExecution:
 			fc.RemoveOptimisticExecution()
@@ -108,6 +113,11 @@ func (fc *FileContent) RemoveDisabledFeatures(cfg *NewChainConfig) {
 		if fc.ContainsPath("Makefile") {
 			fc.RemoveLineWithAnyMatch("scripts/test_ics_node.sh")
 		}
+	}
+
+	if cfg.IsFeatureEnabled(EVM) {
+		// Go Relayer does not work well with IBC e2e, so removing for EVM chains for now. (some key not found issue)
+		fc.HandleAllTagged("not-evm") // CI & interchaintest
 	}
 
 	// remove any left over `// spawntag:` comments
@@ -190,6 +200,41 @@ func (fc *FileContent) RemoveCosmWasm(isWasmClientDisabled bool) {
 
 	fc.DeleteFile(path.Join("interchaintest", "cosmwasm_test.go"))
 	fc.DeleteDirectoryContents(path.Join("interchaintest", "contracts"))
+}
+
+func (fc *FileContent) RemoveEVM() {
+	text := "evm"
+	fc.RemoveGoModImport("github.com/evmos/os")
+	fc.RemoveGoModImport("github.com/ethereum/go-ethereum") // TODO:?
+
+	fc.HandleAllTagged(text)
+
+	// TODO: ante/ ?
+	fc.DeleteFile(path.Join("app", "config.go"))
+	fc.DeleteFile(path.Join("app", "token_pair.go"))
+	fc.DeleteFile(path.Join("app", "precompiles.go"))
+
+	for _, word := range []string{
+		"feemarketkeeper", "FeeMarketKeeper", "feemarkettypes", "feemarket",
+		"evmtypes", "EVMKeeper", "Erc20Keeper", "evmostypes",
+		"erc20keeper", "erc20types", "github.com/evmos/os", "evmosserverconfig",
+	} {
+		fc.RemoveModuleFromText(word,
+			appGo,
+			path.Join("commands.go"),
+		)
+	}
+
+	if fc.ContainsPath(path.Join("test_node")) {
+		fc.RemoveModuleFromText("evm")
+		fc.RemoveModuleFromText("erc20")
+		fc.RemoveModuleFromText("feemarket")
+	}
+
+	fc.ReplaceAll("localchain_9000", "localchain")
+
+	fc.DeleteFile(path.Join("ante", "handler_options_test.go"))
+	fc.DeleteFile(path.Join("ante", "ante_evm.go"))
 }
 
 func (fc *FileContent) RemoveWasmLightClient() {

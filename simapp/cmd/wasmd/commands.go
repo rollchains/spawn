@@ -16,29 +16,32 @@ import (
 	"cosmossdk.io/log"
 	confixcmd "cosmossdk.io/tools/confix/cmd"
 
+	cmtcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/pruning"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/client/snapshot"
-	"github.com/cosmos/cosmos-sdk/codec"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/server"
+	sdkserver "github.com/cosmos/cosmos-sdk/server"
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
+	evmosserverconfig "github.com/evmos/os/server/config"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmcli "github.com/CosmWasm/wasmd/x/wasm/client/cli"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+
+	evmoscmd "github.com/evmos/os/client"
+	evmosserver "github.com/evmos/os/server"
+	srvflags "github.com/evmos/os/server/flags"
 )
 
 // initCometBFTConfig helps to override default CometBFT Config values.
@@ -53,16 +56,19 @@ func initCometBFTConfig() *cmtcfg.Config {
 	return cfg
 }
 
+type CustomAppConfig struct {
+	serverconfig.Config
+
+	Wasm    wasmtypes.WasmConfig `mapstructure:"wasm"`
+	EVM     evmosserverconfig.EVMConfig
+	JSONRPC evmosserverconfig.JSONRPCConfig
+	TLS     evmosserverconfig.TLSConfig
+}
+
 // initAppConfig helps to override default appConfig template and configs.
 // return "", nil if no custom configuration is required for the application.
 func initAppConfig() (string, interface{}) {
 	// The following code snippet is just for reference.
-
-	type CustomAppConfig struct {
-		serverconfig.Config
-
-		Wasm wasmtypes.WasmConfig `mapstructure:"wasm"`
-	}
 
 	// Optionally allow the chain developer to overwrite the SDK's default
 	// server config.
@@ -83,47 +89,74 @@ func initAppConfig() (string, interface{}) {
 	// srvCfg.BaseConfig.IAVLDisableFastNode = true // disable fastnode by default
 
 	customAppConfig := CustomAppConfig{
-		Config: *srvCfg,
-		Wasm:   wasmtypes.DefaultWasmConfig(),
+		Config:  *srvCfg,
+		Wasm:    wasmtypes.DefaultWasmConfig(),
+		EVM:     *evmosserverconfig.DefaultEVMConfig(),
+		JSONRPC: *evmosserverconfig.DefaultJSONRPCConfig(),
+		TLS:     *evmosserverconfig.DefaultTLSConfig(),
 	}
 
 	customAppTemplate := serverconfig.DefaultConfigTemplate
 
 	customAppTemplate += wasmtypes.DefaultConfigTemplate()
 
+	customAppTemplate += evmosserverconfig.DefaultEVMConfigTemplate // spawntag:evm
+
 	return customAppTemplate, customAppConfig
 }
 
 func initRootCmd(
 	rootCmd *cobra.Command,
-	txConfig client.TxConfig,
-	interfaceRegistry codectypes.InterfaceRegistry,
-	appCodec codec.Codec,
-	basicManager module.BasicManager,
+	chainApp *app.ChainApp,
 ) {
 	cfg := sdk.GetConfig()
 	cfg.Seal()
 
 	rootCmd.AddCommand(
-		genutilcli.InitCmd(basicManager, app.DefaultNodeHome),
-		NewTestnetCmd(basicManager, banktypes.GenesisBalancesIterator{}), //spawntag:not-ics
+		genutilcli.InitCmd(chainApp.BasicModuleManager, app.DefaultNodeHome),
+		genutilcli.Commands(chainApp.TxConfig(), chainApp.BasicModuleManager, app.DefaultNodeHome), // spawntag:evm
+		cmtcli.NewCompletionCmd(rootCmd, true),
 		debug.Cmd(),
 		confixcmd.ConfigCommand(),
 		pruning.Cmd(newApp, app.DefaultNodeHome),
 		snapshot.Cmd(newApp),
 	)
 
-	server.AddCommands(rootCmd, app.DefaultNodeHome, newApp, appExport, addModuleInitFlags)
+	// sdkserver.AddCommands(rootCmd, app.DefaultNodeHome, newApp, appExport, addModuleInitFlags) // ?spawntag:evm
 	wasmcli.ExtendUnsafeResetAllCmd(rootCmd)
+
+	// <spawntag:evm
+	// add EVM' flavored TM commands to start server, etc.
+	evmosserver.AddCommands(
+		rootCmd,
+		evmosserver.NewDefaultStartOptions(newApp, app.DefaultNodeHome),
+		appExport,
+		addModuleInitFlags,
+	)
+
+	// add EVM key commands
+	rootCmd.AddCommand(
+		evmoscmd.KeyCommands(app.DefaultNodeHome, true),
+	)
+	// spawntag:evm>
 
 	// add keybase, auxiliary RPC, query, genesis, and tx child commands
 	rootCmd.AddCommand(
 		server.StatusCommand(),
-		genesisCommand(txConfig, basicManager),
+		// genesisCommand(chainApp.TxConfig(), chainApp.BasicModuleManager), // ?spawntag:evm
+		// keys.Commands(),  // ?spawntag:evm
 		queryCommand(),
 		txCommand(),
-		keys.Commands(),
 	)
+
+	// <spawntag:evm
+	var err error
+	// add general tx flags to the root command
+	rootCmd, err = srvflags.AddTxFlags(rootCmd)
+	if err != nil {
+		panic(err)
+	}
+	// spawntag:evm>
 }
 
 func addModuleInitFlags(startCmd *cobra.Command) {
@@ -153,12 +186,14 @@ func queryCommand() *cobra.Command {
 
 	cmd.AddCommand(
 		rpc.QueryEventForTxCmd(),
-		server.QueryBlockCmd(),
+		rpc.ValidatorCommand(),
 		authcmd.QueryTxsByEventsCmd(),
-		server.QueryBlocksCmd(),
 		authcmd.QueryTxCmd(),
-		server.QueryBlockResultsCmd(),
+		sdkserver.QueryBlocksCmd(),
+		sdkserver.QueryBlockResultsCmd(),
 	)
+
+	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
 	return cmd
 }
@@ -184,6 +219,8 @@ func txCommand() *cobra.Command {
 		authcmd.GetSimulateCmd(),
 	)
 
+	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
+
 	return cmd
 }
 
@@ -194,7 +231,7 @@ func newApp(
 	traceStore io.Writer,
 	appOpts servertypes.AppOptions,
 ) servertypes.Application {
-	baseappOptions := server.DefaultBaseappOptions(appOpts)
+	baseappOptions := sdkserver.DefaultBaseappOptions(appOpts)
 
 	var wasmOpts []wasmkeeper.Option
 	if cast.ToBool(appOpts.Get("telemetry.enabled")) {
@@ -205,6 +242,7 @@ func newApp(
 		logger, db, traceStore, true,
 		appOpts,
 		wasmOpts,
+		app.EVMAppOptions, // spawntag:evm
 		baseappOptions...,
 	)
 }
@@ -243,7 +281,8 @@ func appExport(
 		traceStore,
 		height == -1,
 		appOpts,
-		nil,
+		nil,               // spawntag:wasm
+		app.EVMAppOptions, // spawntag:evm
 	)
 
 	if height != -1 {

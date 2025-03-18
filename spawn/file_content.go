@@ -100,7 +100,18 @@ func (fc *FileContent) DeleteDirectoryContents(path string) {
 func (fc *FileContent) ReplaceTestNodeScript(cfg *NewChainConfig) {
 	if fc.IsPath(path.Join("scripts", "test_node.sh")) || fc.IsPath(path.Join("scripts", "test_ics_node.sh")) {
 		fc.ReplaceAll("export BINARY=${BINARY:-wasmd}", fmt.Sprintf("export BINARY=${BINARY:-%s}", cfg.BinDaemon))
-		fc.ReplaceAll("export DENOM=${DENOM:-token}", fmt.Sprintf("export DENOM=${DENOM:-%s}", cfg.Denom))
+		fc.ReplaceAll("export DENOM=${DENOM:-mydenom}", fmt.Sprintf("export DENOM=${DENOM:-%s}", cfg.Denom))
+
+		if cfg.IsFeatureEnabled(EVM) {
+			fc.ReplaceAll(`export KEYALGO="secp256k1"`, `export KEYALGO="eth_secp256k1"`)
+			// migrate to the coinType 60 variations of these addresses
+			fc.ReplaceAll(`wasm1efd63aw40lxf3n4mhf7dzhjkr453axursysrvp`, `wasm140fehngcrxvhdt84x729p3f0qmkmea8npkdh4d`)
+			fc.ReplaceAll(`wasm1hj5fveer5cjtn4wd6wstzugjfdxzl0xpvsr89g`, `wasm1r6yue0vuyj9m7xw78npspt9drq2tmtvgdttkxx`)
+
+			// the same for both ics & normal test nodes
+			baseStartCmd := `BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC"`
+			fc.ReplaceAll(baseStartCmd, fmt.Sprintf(`%s --json-rpc.api=eth,txpool,personal,net,debug,web3 --chain-id="$CHAIN_ID"`, baseStartCmd))
+		}
 
 		fc.ReplaceAll(`export HOME_DIR=$(eval echo "${HOME_DIR:-"~/.simapp"}")`, fmt.Sprintf(`export HOME_DIR=$(eval echo "${HOME_DIR:-"~/%s"}")`, cfg.HomeDir))
 		fc.ReplaceAll(`HOME_DIR="~/.simapp"`, fmt.Sprintf(`HOME_DIR="~/%s"`, cfg.HomeDir))
@@ -134,6 +145,7 @@ func (fc *FileContent) ReplaceApp(cfg *NewChainConfig) {
 		fc.ReplaceAll(".myapplicationd", cfg.HomeDir)
 		fc.ReplaceAll(`CosmosSimApp`, cfg.ProjectName)
 		fc.ReplaceAll(`mybechprefix`, cfg.Bech32Prefix)
+		fc.ReplaceAll(`mydenom`, cfg.Denom)
 	}
 }
 

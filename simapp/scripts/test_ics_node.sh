@@ -2,21 +2,21 @@
 # Run this script to quickly install, setup, and run the current version of the network.
 #
 # Examples:
-# CHAIN_ID="localchain-1" HOME_DIR="~/.simapp" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_ics_node.sh
-# CHAIN_ID="localchain-2" HOME_DIR="~/.simapp" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_ics_node.sh
+# CHAIN_ID="localchain_9000-1" HOME_DIR="~/.simapp" BLOCK_TIME="1000ms" CLEAN=true sh scripts/test_ics_node.sh
+# CHAIN_ID="localchain_9000-2" HOME_DIR="~/.simapp" CLEAN=true RPC=36657 REST=2317 PROFF=6061 P2P=36656 GRPC=8090 GRPC_WEB=8091 ROSETTA=8081 BLOCK_TIME="500ms" sh scripts/test_ics_node.sh
 
 set -eu
 
 export KEY="acc0"
 export KEY2="acc1"
 
-export CHAIN_ID=${CHAIN_ID:-"localchain-1"}
+export CHAIN_ID=${CHAIN_ID:-"localchain_9000-1"}
 export MONIKER="localvalidator"
 export KEYALGO="secp256k1"
 export KEYRING=${KEYRING:-"test"}
 export HOME_DIR=$(eval echo "${HOME_DIR:-"~/.simapp"}")
 export BINARY=${BINARY:-wasmd}
-export DENOM=${DENOM:-token}
+export DENOM=${DENOM:-mydenom}
 
 export CLEAN=${CLEAN:-"false"}
 export RPC=${RPC:-"26657"}
@@ -42,6 +42,8 @@ if [ -z `which $BINARY` ]; then
     exit 1
   fi
 fi
+
+alias BINARY="$BINARY --home=$HOME_DIR"
 
 command -v $BINARY > /dev/null 2>&1 || { echo >&2 "$BINARY command not found. Ensure this is setup / properly installed in your GOPATH (make install)."; exit 1; }
 command -v jq > /dev/null 2>&1 || { echo >&2 "jq not installed. More info: https://stedolan.github.io/jq/download/"; exit 1; }
@@ -69,7 +71,7 @@ from_scratch () {
     add_key() {
       key=$1
       mnemonic=$2
-      echo $mnemonic | $BINARY keys add $key --home $HOME_DIR --keyring-backend $KEYRING --algo $KEYALGO --recover
+      echo $mnemonic | BINARY keys add $key --keyring-backend $KEYRING --algo $KEYALGO --recover
     }
 
     # cosmos1efd63aw40lxf3n4mhf7dzhjkr453axur6cpk92
@@ -77,7 +79,7 @@ from_scratch () {
     # cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr
     add_key $KEY2 "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise"
 
-    $BINARY init $CHAIN_ID --chain-id $CHAIN_ID --overwrite --default-denom $DENOM --home $HOME_DIR
+    BINARY init $MONIKER --chain-id $CHAIN_ID --overwrite --default-denom $DENOM
 
     update_test_genesis () {
         cat $HOME_DIR/config/genesis.json | jq "$1" > $HOME_DIR/config/tmp_genesis.json && mv $HOME_DIR/config/tmp_genesis.json $HOME_DIR/config/genesis.json
@@ -96,11 +98,11 @@ from_scratch () {
     update_test_genesis '.app_state["tokenfactory"]["params"]["denom_creation_fee"]=[]'
     update_test_genesis '.app_state["tokenfactory"]["params"]["denom_creation_gas_consume"]=100000'
 
-    $BINARY keys list --keyring-backend $KEYRING --home $HOME_DIR
+    BINARY keys list --keyring-backend $KEYRING
 
     # Allocate genesis accounts
-    $BINARY genesis add-genesis-account $KEY 10000000$DENOM,900test --keyring-backend $KEYRING --home $HOME_DIR --append
-    $BINARY genesis add-genesis-account $KEY2 10000000$DENOM,800test --keyring-backend $KEYRING --home $HOME_DIR --append
+    BINARY genesis add-genesis-account $KEY 10000000$DENOM,900test --keyring-backend $KEYRING --append
+    BINARY genesis add-genesis-account $KEY2 10000000$DENOM,800test --keyring-backend $KEYRING --append
 
     # ICS provider genesis hack
     HACK_DIR=icshack-1 && echo $HACK_DIR
@@ -122,6 +124,8 @@ if [ "$CLEAN" != "false" ]; then
   from_scratch
 fi
 
+echo "Starting node..."
+
 # Opens the RPC endpoint to outside connections
 sed -i -e 's/laddr = "tcp:\/\/127.0.0.1:26657"/c\laddr = "tcp:\/\/0.0.0.0:'$RPC'"/g' $HOME_DIR/config/config.toml
 sed -i -e 's/cors_allowed_origins = \[\]/cors_allowed_origins = \["\*"\]/g' $HOME_DIR/config/config.toml
@@ -129,6 +133,7 @@ sed -i -e 's/cors_allowed_origins = \[\]/cors_allowed_origins = \["\*"\]/g' $HOM
 # REST endpoint
 sed -i -e 's/address = "tcp:\/\/localhost:1317"/address = "tcp:\/\/0.0.0.0:'$REST'"/g' $HOME_DIR/config/app.toml
 sed -i -e 's/enable = false/enable = true/g' $HOME_DIR/config/app.toml
+sed -i -e 's/enabled-unsafe-cors = false/enabled-unsafe-cors = true/g' $HOME_DIR/config/app.toml
 
 # peer exchange
 sed -i -e 's/pprof_laddr = "localhost:6060"/pprof_laddr = "localhost:'$PROFF'"/g' $HOME_DIR/config/config.toml
@@ -145,4 +150,4 @@ sed -i -e 's/address = ":8080"/address = "0.0.0.0:'$ROSETTA'"/g' $HOME_DIR/confi
 sed -i -e 's/timeout_commit = "5s"/timeout_commit = "'$BLOCK_TIME'"/g' $HOME_DIR/config/config.toml
 
 # Start the daemon in the background
-$BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC" --home $HOME_DIR
+BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC"
