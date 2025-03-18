@@ -43,6 +43,39 @@ echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
 source ~/.bashrc
 ```
 
+## Build an EVM Chain
+
+Cosmos EVM chain, CoinType 60, Full foundry support
+
+```bash
+# flags are optional
+spawn new mychain --consensus=proof-of-stake --binary=simd --denom=token --disable=explorer
+
+cd mychain
+
+make sh-testnet
+
+# foundry works as you expect
+cast block
+
+# cosmos works as you expect
+simd status
+```
+
+## Build a Cosmos Chain
+
+```bash
+# flags are optional
+spawn new mychain --consensus=proof-of-stake --binary=simd --denom=token --disable=explorer,evm
+
+cd mychain
+
+make sh-testnet
+
+# cosmos works as you expect
+simd status
+```
+
 ## Spawn in Action
 
 In this 4 minute demo we:
