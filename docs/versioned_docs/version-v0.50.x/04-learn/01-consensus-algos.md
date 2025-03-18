@@ -19,6 +19,7 @@ This topic is a little more advanced due to technical speak. It is condensed to 
 
 ## Choose for me (TLDR)
 
+<!-- markdown-link-check-disable -->
 If you just want to build an application and don't want to focus on tokenomics or game theory, use [proof of authority](#proof-of-authority-poa). If a token is part of your product or required to financially reward users with some lock mechanism and long term incentives, use [proof of stake](#proof-of-stake-pos). If you have plans for a large amount of value to be secured or don't want to run your own network nodes, use [interchain security](#interchain-security-ics).
 
 ## Proof of Authority (PoA)
