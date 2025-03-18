@@ -1128,8 +1128,8 @@ github.com/strangelove-ventures/cosmos-sdk v0.0.0-20250317212103-0767f8c5b1e5 h1
 github.com/strangelove-ventures/cosmos-sdk v0.0.0-20250317212103-0767f8c5b1e5/go.mod h1:PHUr2nW1WC6isM2ar72DLQ/Cd/ibvUntm/YU6ML/eG0=
 github.com/strangelove-ventures/interchaintest/v8 v8.8.1 h1:F7xqxZ8Nl9ttKHQqVjgJ2lCQrQxiRjJq6EVdA/YaGeY=
 github.com/strangelove-ventures/interchaintest/v8 v8.8.1/go.mod h1:AFFimVWInij/cZMjNbKYMW6EgX0SjHKmIl/GS/akMd8=
-github.com/strangelove-ventures/os v0.0.0-20250312180136-3733a391e22c h1:ORI40dKGkjXOIVd+2WaHNw4LvBT6meszow/rhjVqm3U=
-github.com/strangelove-ventures/os v0.0.0-20250312180136-3733a391e22c/go.mod h1:zgs0dJ8M4AQtRDtGNCa6h2XqQDh4a5ar4Za+B80YJwc=
+github.com/strangelove-ventures/os v0.1.0 h1:a03pRcwyX8PA/NzzW1bF7ylJuaOKWpCL6MsXmFJ0/h4=
+github.com/strangelove-ventures/os v0.1.0/go.mod h1:zgs0dJ8M4AQtRDtGNCa6h2XqQDh4a5ar4Za+B80YJwc=
 github.com/strangelove-ventures/poa v0.50.3 h1:Ib9t8TObkd8LWQYt+pFxJVnxA4jEfr0HM8bgBytXcE4=
 github.com/strangelove-ventures/poa v0.50.3/go.mod h1:hCoBNFkrAxmRvVVXVsaIN8j3jpxzBUxDXZ0LP3NrRyw=
 github.com/strangelove-ventures/tokenfactory v0.50.3 h1:MccxHYUHjMHDOxcmx/HJs1mU4zVhli1f4sz3126Wzr8=
