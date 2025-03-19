@@ -82,7 +82,7 @@ func ParseFileImports(filePath string) ([]string, int, int, error) {
 	return imports, importStartLine, importEndLine, nil
 }
 
-// ReadCurrentModuleName reads the go package module name from the go.mod file on the host machine.
+// ReadCurrentGoModuleName reads the go package module name from the go.mod file on the host machine.
 func ReadCurrentGoModuleName(loc string) string {
 	if !strings.HasSuffix(loc, "go.mod") {
 		loc = path.Join(loc, "go.mod")

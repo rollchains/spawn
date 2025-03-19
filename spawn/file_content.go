@@ -149,7 +149,7 @@ func (fc *FileContent) ReplaceApp(cfg *NewChainConfig) {
 	}
 }
 
-// ReplaceEverywhereReplaces any file content that matches anywhere in the file regardless of location.
+// ReplaceEverywhere replaces any file content that matches anywhere in the file regardless of location.
 func (fc *FileContent) ReplaceEverywhere(cfg *NewChainConfig) {
 	fc.ReplaceAll("github.com/rollchains/spawn/simapp", cfg.GithubPath())
 
@@ -185,7 +185,7 @@ func (fc *FileContent) ReplaceMakeFile(cfg *NewChainConfig) {
 	}
 }
 
-// FindAndReplaceStandardWalletsBech32 finds a prefix1... address and replaces it with a new prefix1... address
+// FindAndReplaceAddressBech32 finds a prefix1... address and replaces it with a new prefix1... address
 // This works for both standard wallets (38 length after prefix1) and also smart contracts (58)
 func (fc *FileContent) FindAndReplaceAddressBech32(oldPrefix, newPrefix string) {
 	oldPrefix = strings.TrimSuffix(oldPrefix, "1")

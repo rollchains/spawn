@@ -103,7 +103,7 @@ func (fc *FileContent) RemoveTaggedLines(name string, deleteLine bool) {
 	fc.Contents = strings.Join(newContent, "\n")
 }
 
-// removeSpawnTagLineComment removes just the spawntag comment from a line of code.
+// RemoveSpawnTagLineComment removes just the spawntag comment from a line of code.
 func RemoveSpawnTagLineComment(line string, tag string) string {
 	// QOL for us to not tear our hair out if we have a space or not
 	// Could do this for all contents on load?
@@ -186,7 +186,7 @@ func (fc *FileContent) RemoveLineWithAnyMatch(text string) {
 	fc.Contents = strings.Join(newContent, "\n")
 }
 
-// doesLineEndWithOpenSymbol returns true if the end of a line opens a statement such as a multi-line function.
+// DoesLineEndWithOpenSymbol returns true if the end of a line opens a statement such as a multi-line function.
 func DoesLineEndWithOpenSymbol(line string) bool {
 	// remove comment if there is one
 	if strings.Contains(line, "//") {
