@@ -38,8 +38,6 @@ if [ -z `which $BINARY` ]; then
   fi
 fi
 
-alias BINARY="$BINARY --home=$HOME_DIR"
-
 command -v $BINARY > /dev/null 2>&1 || { echo >&2 "$BINARY command not found. Ensure this is setup / properly installed in your GOPATH (make install)."; exit 1; }
 command -v jq > /dev/null 2>&1 || { echo >&2 "jq not installed. More info: https://stedolan.github.io/jq/download/"; exit 1; }
 
@@ -67,7 +65,7 @@ from_scratch () {
   add_key() {
     key=$1
     mnemonic=$2
-    echo $mnemonic | BINARY keys add $key --keyring-backend $KEYRING --algo $KEYALGO --recover
+    echo $mnemonic | $BINARY keys add $key --keyring-backend $KEYRING --algo $KEYALGO --home $HOME_DIR --recover
   }
 
   # wasm1efd63aw40lxf3n4mhf7dzhjkr453axursysrvp
@@ -75,7 +73,7 @@ from_scratch () {
   # wasm1hj5fveer5cjtn4wd6wstzugjfdxzl0xpvsr89g
   add_key $KEY2 "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise"
 
-  BINARY init $MONIKER --chain-id $CHAIN_ID --default-denom $DENOM
+  $BINARY init $MONIKER --chain-id $CHAIN_ID --default-denom $DENOM --home $HOME_DIR
 
   update_test_genesis () {
     cat $HOME_DIR/config/genesis.json | jq "$1" > $HOME_DIR/config/tmp_genesis.json && mv $HOME_DIR/config/tmp_genesis.json $HOME_DIR/config/genesis.json
@@ -116,16 +114,19 @@ from_scratch () {
   update_test_genesis '.app_state["tokenfactory"]["params"]["denom_creation_fee"]=[]'
   update_test_genesis '.app_state["tokenfactory"]["params"]["denom_creation_gas_consume"]=100000'
 
+
+  BASE_GENESIS_ALLOCATIONS="100000000000000000000000000$DENOM,100000000test"
+
   # Allocate genesis accounts
-  BINARY genesis add-genesis-account $KEY 100000000000000000000000000$DENOM,100000000test --keyring-backend $KEYRING --append
-  BINARY genesis add-genesis-account $KEY2 100000000000000000000000000$DENOM,90000000test --keyring-backend $KEYRING --append
+  $BINARY genesis add-genesis-account $KEY $BASE_GENESIS_ALLOCATIONS --keyring-backend $KEYRING --home $HOME_DIR --append
+  $BINARY genesis add-genesis-account $KEY2 $BASE_GENESIS_ALLOCATIONS --keyring-backend $KEYRING --home $HOME_DIR --append
 
   # Sign genesis transaction
-  BINARY genesis gentx $KEY 1000000000000000000000$DENOM --gas-prices 0${DENOM} --keyring-backend $KEYRING --chain-id $CHAIN_ID
+  $BINARY genesis gentx $KEY 1000000000000000000000$DENOM --gas-prices 0${DENOM} --keyring-backend $KEYRING --chain-id $CHAIN_ID --home $HOME_DIR
 
-  BINARY genesis collect-gentxs
+  $BINARY genesis collect-gentxs --home $HOME_DIR
 
-  BINARY genesis validate-genesis
+  $BINARY genesis validate-genesis --home $HOME_DIR
   err=$?
   if [ $err -ne 0 ]; then
     echo "Failed to validate genesis"
@@ -164,4 +165,4 @@ sed -i -e 's/address = ":8080"/address = "0.0.0.0:'$ROSETTA'"/g' $HOME_DIR/confi
 # Faster blocks
 sed -i -e 's/timeout_commit = "5s"/timeout_commit = "'$BLOCK_TIME'"/g' $HOME_DIR/config/config.toml
 
-BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC"
+$BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC" --home $HOME_DIR

@@ -109,7 +109,7 @@ func (fc *FileContent) ReplaceTestNodeScript(cfg *NewChainConfig) {
 			fc.ReplaceAll(`wasm1hj5fveer5cjtn4wd6wstzugjfdxzl0xpvsr89g`, `wasm1r6yue0vuyj9m7xw78npspt9drq2tmtvgdttkxx`)
 
 			// the same for both ics & normal test nodes
-			baseStartCmd := `BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC"`
+			baseStartCmd := `$BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC" --home $HOME_DIR`
 			fc.ReplaceAll(baseStartCmd, fmt.Sprintf(`%s --json-rpc.api=eth,txpool,personal,net,debug,web3 --chain-id="$CHAIN_ID"`, baseStartCmd))
 		}
 

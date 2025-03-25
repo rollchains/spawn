@@ -43,8 +43,6 @@ if [ -z `which $BINARY` ]; then
   fi
 fi
 
-alias BINARY="$BINARY --home=$HOME_DIR"
-
 command -v $BINARY > /dev/null 2>&1 || { echo >&2 "$BINARY command not found. Ensure this is setup / properly installed in your GOPATH (make install)."; exit 1; }
 command -v jq > /dev/null 2>&1 || { echo >&2 "jq not installed. More info: https://stedolan.github.io/jq/download/"; exit 1; }
 
@@ -71,7 +69,7 @@ from_scratch () {
     add_key() {
       key=$1
       mnemonic=$2
-      echo $mnemonic | BINARY keys add $key --keyring-backend $KEYRING --algo $KEYALGO --recover
+      echo $mnemonic | $BINARY keys add $key --keyring-backend $KEYRING --algo $KEYALGO --home $HOME_DIR --recover
     }
 
     # cosmos1efd63aw40lxf3n4mhf7dzhjkr453axur6cpk92
@@ -79,7 +77,7 @@ from_scratch () {
     # cosmos1hj5fveer5cjtn4wd6wstzugjfdxzl0xpxvjjvr
     add_key $KEY2 "wealth flavor believe regret funny network recall kiss grape useless pepper cram hint member few certain unveil rather brick bargain curious require crowd raise"
 
-    BINARY init $MONIKER --chain-id $CHAIN_ID --overwrite --default-denom $DENOM
+    $BINARY init $MONIKER --chain-id $CHAIN_ID --home $HOME_DIR --overwrite --default-denom $DENOM
 
     update_test_genesis () {
         cat $HOME_DIR/config/genesis.json | jq "$1" > $HOME_DIR/config/tmp_genesis.json && mv $HOME_DIR/config/tmp_genesis.json $HOME_DIR/config/genesis.json
@@ -98,11 +96,12 @@ from_scratch () {
     update_test_genesis '.app_state["tokenfactory"]["params"]["denom_creation_fee"]=[]'
     update_test_genesis '.app_state["tokenfactory"]["params"]["denom_creation_gas_consume"]=100000'
 
-    BINARY keys list --keyring-backend $KEYRING
+    $BINARY keys list --keyring-backend $KEYRING --home $HOME_DIR
 
     # Allocate genesis accounts
-    BINARY genesis add-genesis-account $KEY 10000000$DENOM,900test --keyring-backend $KEYRING --append
-    BINARY genesis add-genesis-account $KEY2 10000000$DENOM,800test --keyring-backend $KEYRING --append
+    BASE_GENESIS_ALLOCATIONS="100000000000000000000000000$DENOM,100000000test"
+    $BINARY genesis add-genesis-account $KEY $BASE_GENESIS_ALLOCATIONS --keyring-backend $KEYRING --append --home $HOME_DIR
+    $BINARY genesis add-genesis-account $KEY2 $BASE_GENESIS_ALLOCATIONS --keyring-backend $KEYRING --append --home $HOME_DIR
 
     # ICS provider genesis hack
     HACK_DIR=icshack-1 && echo $HACK_DIR
@@ -150,4 +149,4 @@ sed -i -e 's/address = ":8080"/address = "0.0.0.0:'$ROSETTA'"/g' $HOME_DIR/confi
 sed -i -e 's/timeout_commit = "5s"/timeout_commit = "'$BLOCK_TIME'"/g' $HOME_DIR/config/config.toml
 
 # Start the daemon in the background
-BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC"
+$BINARY start --pruning=nothing  --minimum-gas-prices=0$DENOM --rpc.laddr="tcp://0.0.0.0:$RPC" --home $HOME_DIR
