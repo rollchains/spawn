@@ -18,6 +18,10 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   release-image:
     runs-on: ubuntu-latest
@@ -61,6 +65,7 @@ jobs:
           chain: ${{ env.REPO_NAME}}
           dockerfile: cosmos
           registry: ${{ env.DOCKER_REGISTRY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           build-target: make install
           local: true
           binaries: |
