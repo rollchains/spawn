@@ -61,9 +61,7 @@ jobs:
           chain: ${{ env.REPO_NAME}}
           dockerfile: cosmos
           registry: ${{ env.DOCKER_REGISTRY }}
-          build-target: |
-            cd ..
-            make install
+          build-target: make install
           local: true
           binaries: |
             - /go/bin/wasmd
