@@ -94,6 +94,7 @@ https://github.com/rollchains/spawn/assets/31943163/ecc21ce4-c42c-4ff2-8e73-897c
 
 ## Repo Layout
 
+<!-- Generated with https://gitdiagram.com/rollchains/spawn -->
 ```mermaid
 graph TD
     %% CLI Interface Layer
