@@ -29,9 +29,12 @@ import (
 	ibcfee "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"
 	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
 	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
+	"github.com/ethereum/go-ethereum/core/vm"
 
 	// "github.com/cosmos/ibc-go/v8/modules/apps/transfer" // ?spawntag:evm
 	// ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper" // ?spawntag:evm
+	transfer "github.com/cosmos/evm/x/ibc/transfer"                 // spawntag:evm
+	ibctransferkeeper "github.com/cosmos/evm/x/ibc/transfer/keeper" // spawntag:evm
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v8/modules/core"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
@@ -40,8 +43,6 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
-	transfer "github.com/evmos/os/x/ibc/transfer"                 // spawntag:evm
-	ibctransferkeeper "github.com/evmos/os/x/ibc/transfer/keeper" // spawntag:evm
 	"github.com/spf13/cast"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
@@ -174,24 +175,23 @@ import (
 	//"github.com/cosmos/cosmos-sdk/x/gov" // ?spawntag:ics
 	//"github.com/cosmos/cosmos-sdk/x/staking" // ?spawntag:ics
 
-	evmosante "github.com/evmos/os/ante"
-	evmosevmante "github.com/evmos/os/ante/evm"
-	evmosencoding "github.com/evmos/os/encoding"
-	srvflags "github.com/evmos/os/server/flags"
-	evmostypes "github.com/evmos/os/types"
-	evmosutils "github.com/evmos/os/utils"
-	"github.com/evmos/os/x/erc20"
-	erc20keeper "github.com/evmos/os/x/erc20/keeper"
-	erc20types "github.com/evmos/os/x/erc20/types"
-	"github.com/evmos/os/x/evm"
-	_ "github.com/evmos/os/x/evm/core/tracers/js"
-	_ "github.com/evmos/os/x/evm/core/tracers/native"
-	"github.com/evmos/os/x/evm/core/vm"
-	evmkeeper "github.com/evmos/os/x/evm/keeper"
-	evmtypes "github.com/evmos/os/x/evm/types"
-	"github.com/evmos/os/x/feemarket"
-	feemarketkeeper "github.com/evmos/os/x/feemarket/keeper"
-	feemarkettypes "github.com/evmos/os/x/feemarket/types"
+	evmosante "github.com/cosmos/evm/ante"
+	evmosevmante "github.com/cosmos/evm/ante/evm"
+	evmosencoding "github.com/cosmos/evm/encoding"
+	srvflags "github.com/cosmos/evm/server/flags"
+	evmostypes "github.com/cosmos/evm/types"
+	evmosutils "github.com/cosmos/evm/utils"
+	"github.com/cosmos/evm/x/erc20"
+	erc20keeper "github.com/cosmos/evm/x/erc20/keeper"
+	erc20types "github.com/cosmos/evm/x/erc20/types"
+	"github.com/cosmos/evm/x/feemarket"
+	feemarketkeeper "github.com/cosmos/evm/x/feemarket/keeper"
+	feemarkettypes "github.com/cosmos/evm/x/feemarket/types"
+	cosmosevmvm "github.com/cosmos/evm/x/vm"
+	_ "github.com/cosmos/evm/x/vm/core/tracers/js"
+	_ "github.com/cosmos/evm/x/vm/core/tracers/native"
+	evmkeeper "github.com/cosmos/evm/x/vm/keeper"
+	evmtypes "github.com/cosmos/evm/x/vm/types"
 	chainante "github.com/rollchains/spawn/simapp/app/ante"
 	// authante "github.com/cosmos/cosmos-sdk/x/auth/ante" // ?spawntag:evm
 )
@@ -1095,7 +1095,7 @@ func NewChainApp(
 		ratelimit.NewAppModule(appCodec, app.RatelimitKeeper),
 		consumerModule, //spawntag:ics
 		// <spawntag:evm
-		evm.NewAppModule(app.EVMKeeper, app.AccountKeeper, app.GetSubspace(evmtypes.ModuleName)),
+		cosmosevmvm.NewAppModule(app.EVMKeeper, app.AccountKeeper, app.GetSubspace(evmtypes.ModuleName)),
 		feemarket.NewAppModule(app.FeeMarketKeeper, app.GetSubspace(feemarkettypes.ModuleName)),
 		erc20.NewAppModule(app.Erc20Keeper, app.AccountKeeper, app.GetSubspace(erc20types.ModuleName)),
 		// spawntag:evm>

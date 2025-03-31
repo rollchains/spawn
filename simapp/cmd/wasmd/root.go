@@ -20,7 +20,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	evmoskeyring "github.com/evmos/os/crypto/keyring"
+	evmoskeyring "github.com/cosmos/evm/crypto/keyring"
 	"github.com/rollchains/spawn/simapp/app"
 	"github.com/rollchains/spawn/simapp/app/params"
 )
