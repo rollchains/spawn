@@ -22,8 +22,8 @@ import (
 	tokenfactory "github.com/strangelove-ventures/tokenfactory/x/tokenfactory/types"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types" // spawntag:evm
-	"github.com/evmos/os/crypto/ethsecp256k1"               // spawntag:evm
-	evmtypes "github.com/evmos/os/x/evm/types"              // spawntag:evm
+	"github.com/cosmos/evm/crypto/ethsecp256k1"             // spawntag:evm
+	evmtypes "github.com/cosmos/evm/x/vm/types"             // spawntag:evm
 )
 
 var (

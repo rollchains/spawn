@@ -1,8 +1,8 @@
 module github.com/rollchains/spawn/simapp
 
-go 1.23.0
+go 1.23.6
 
-toolchain go1.23.1
+toolchain go1.23.7
 
 // overrides
 replace (
@@ -11,8 +11,8 @@ replace (
 	github.com/CosmWasm/wasmd => github.com/rollchains/wasmd v0.50.0-evm // spawntag:evm
 	// github.com/cosmos/cosmos-sdk => github.com/rollchains/cosmos-sdk v0.50.11 // ?spawntag:evm
 	github.com/cosmos/cosmos-sdk => github.com/strangelove-ventures/cosmos-sdk v0.0.0-20250317212103-0767f8c5b1e5 // https://github.com/strangelove-ventures/cosmos-sdk/pull/2 // spawntag:evm
+	github.com/cosmos/evm => github.com/strangelove-ventures/cosmos-evm v0.0.0-20250331170919-edd5c6adffa2 // spawntag:evm
 	github.com/ethereum/go-ethereum => github.com/evmos/go-ethereum v1.10.26-evmos-rc4 // spawntag:evm
-	github.com/evmos/os => github.com/strangelove-ventures/os v0.1.0 // spawntag:evm
 	github.com/spf13/viper => github.com/spf13/viper v1.17.0 // v1.18+ breaks app overrides
 )
 
@@ -52,16 +52,16 @@ require (
 	github.com/cometbft/cometbft v0.38.17
 	github.com/cosmos/cosmos-db v1.1.1
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5
-	github.com/cosmos/cosmos-sdk v0.50.11
+	github.com/cosmos/cosmos-sdk v0.50.13
+	github.com/cosmos/evm v0.1.0
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8 v8.1.1
 	github.com/cosmos/ibc-apps/modules/rate-limiting/v8 v8.0.0
 	github.com/cosmos/ibc-go/modules/capability v1.0.1
 	github.com/cosmos/ibc-go/modules/light-clients/08-wasm v0.1.1-0.20231213092650-57fcdb9a9a9d
-	github.com/cosmos/ibc-go/v8 v8.5.2
+	github.com/cosmos/ibc-go/v8 v8.7.0
 	github.com/cosmos/interchain-security/v5 v5.1.1
 	github.com/ethereum/go-ethereum v1.15.3
-	github.com/evmos/os v0.0.0-20250130185216-d2cab8abc34d
 	github.com/golang/protobuf v1.5.4
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
@@ -132,7 +132,7 @@ require (
 	github.com/dgraph-io/badger/v4 v4.2.0 // indirect
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
 	github.com/distribution/reference v0.5.0 // indirect
-	github.com/dlclark/regexp2 v1.4.1-0.20201116162257-a2a8dda75c91 // indirect
+	github.com/dlclark/regexp2 v1.7.0 // indirect
 	github.com/dop251/goja v0.0.0-20220405120441-9037c2b61cbf // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/dvsekhvalnov/jose2go v1.6.0 // indirect
@@ -154,7 +154,7 @@ require (
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/gogo/status v1.1.0 // indirect
-	github.com/golang/glog v1.2.3 // indirect
+	github.com/golang/glog v1.2.4 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect

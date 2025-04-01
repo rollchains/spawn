@@ -204,7 +204,7 @@ func (fc *FileContent) RemoveCosmWasm(isWasmClientDisabled bool) {
 
 func (fc *FileContent) RemoveEVM() {
 	text := "evm"
-	fc.RemoveGoModImport("github.com/evmos/os")
+	fc.RemoveGoModImport("github.com/cosmos/evm")
 	fc.RemoveGoModImport("github.com/ethereum/go-ethereum") // TODO:?
 
 	fc.HandleAllTagged(text)
@@ -217,7 +217,7 @@ func (fc *FileContent) RemoveEVM() {
 	for _, word := range []string{
 		"feemarketkeeper", "FeeMarketKeeper", "feemarkettypes", "feemarket",
 		"evmtypes", "EVMKeeper", "Erc20Keeper", "evmostypes",
-		"erc20keeper", "erc20types", "github.com/evmos/os", "evmosserverconfig",
+		"erc20keeper", "erc20types", "github.com/cosmos/evm", "evmosserverconfig",
 	} {
 		fc.RemoveModuleFromText(word,
 			appGo,

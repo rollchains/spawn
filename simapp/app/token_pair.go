@@ -1,6 +1,6 @@
 package app
 
-import erc20types "github.com/evmos/os/x/erc20/types"
+import erc20types "github.com/cosmos/evm/x/erc20/types"
 
 // WTokenContractMainnet is the WrappedToken contract address for mainnet
 const WTokenContractMainnet = "0xD4949664cD82660AaE99bEdc034a0deA8A0bd517"

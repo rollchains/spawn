@@ -3,7 +3,7 @@
 # curl -sSL https://raw.githubusercontent.com/rollchains/spawn/release/v0.50/install.sh | bash
 #
 
-VERSION=${1:-"v0.50.14"}
+VERSION=${1:-"v0.50.15"}
 BASE_URL="https://github.com/rollchains/spawn/releases/download/$VERSION"
 
 ARCH=$(uname -m)
