@@ -3,7 +3,7 @@
 # docker build . -t spawn:local
 # docker run -it spawn:local
 
-FROM golang:1.22.11 AS builder
+FROM golang:1.23.6 AS builder
 
 WORKDIR /app
 
