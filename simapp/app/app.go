@@ -237,7 +237,7 @@ var (
 	BaseDenomUnit int64 = 18 // spawntag:evm
 
 	BaseDenom    = "mydenom"
-	DisplayDenom = "MY_DENOM_DISPLAY" // TODO: ?
+	DisplayDenom = "MY_DENOM_DISPLAY"
 
 	// Bech32PrefixAccAddr defines the Bech32 prefix of an account's address
 	Bech32PrefixAccAddr = Bech32Prefix
@@ -363,7 +363,6 @@ func NewChainApp(
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *ChainApp {
 
-	// TODO: verify
 	// interfaceRegistry := GetInterfaceRegistry() // ?spawntag:evm
 	// appCodec := codec.NewProtoCodec(interfaceRegistry) // ?spawntag:evm
 	// legacyAmino := codec.NewLegacyAmino() // ?spawntag:evm

@@ -315,7 +315,6 @@ func (cfg *NewChainConfig) SetupInterchainTest() error {
 	})
 }
 
-// TODO: allow selecting for other chains to generate from (ethos, saga)
 // SetupLocalInterchainJSON sets up the local-interchain testnets configuration files.
 func (cfg *NewChainConfig) SetupLocalInterchainJSON() {
 

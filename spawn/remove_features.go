@@ -209,7 +209,6 @@ func (fc *FileContent) RemoveEVM() {
 
 	fc.HandleAllTagged(text)
 
-	// TODO: ante/ ?
 	fc.DeleteFile(path.Join("app", "config.go"))
 	fc.DeleteFile(path.Join("app", "token_pair.go"))
 	fc.DeleteFile(path.Join("app", "precompiles.go"))
@@ -351,7 +350,6 @@ func (fc *FileContent) RemoveMint() {
 	text := "mint"
 	fc.HandleAllTagged(text)
 
-	// TODO: Fix this so it does not break
 	fc.RemoveModuleFromText("MintKeeper", appGo)
 	fc.RemoveModuleFromText("mintkeeper", appGo)
 	fc.RemoveLineWithAnyMatch("minttypes.")
