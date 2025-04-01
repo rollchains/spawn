@@ -23,7 +23,7 @@ replace (
 replace (
 	cosmossdk.io/store => github.com/evmos/cosmos-sdk/store v0.0.0-20240718141609-414cbd051fbe
 	github.com/cosmos/cosmos-sdk => github.com/strangelove-ventures/cosmos-sdk v0.0.0-20250317212103-0767f8c5b1e5
-	github.com/cosmos/evm => github.com/strangelove-ventures/cosmos-evm v0.0.0-20250331170919-edd5c6adffa2 // spawntag:evm
+	github.com/cosmos/evm => github.com/strangelove-ventures/cosmos-evm v0.1.5 // spawntag:evm
 	github.com/ethereum/go-ethereum => github.com/evmos/go-ethereum v1.10.26-evmos-rc4
 )
 

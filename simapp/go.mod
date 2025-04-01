@@ -11,7 +11,7 @@ replace (
 	github.com/CosmWasm/wasmd => github.com/rollchains/wasmd v0.50.0-evm // spawntag:evm
 	// github.com/cosmos/cosmos-sdk => github.com/rollchains/cosmos-sdk v0.50.11 // ?spawntag:evm
 	github.com/cosmos/cosmos-sdk => github.com/strangelove-ventures/cosmos-sdk v0.0.0-20250317212103-0767f8c5b1e5 // https://github.com/strangelove-ventures/cosmos-sdk/pull/2 // spawntag:evm
-	github.com/cosmos/evm => github.com/strangelove-ventures/cosmos-evm v0.0.0-20250331170919-edd5c6adffa2 // spawntag:evm
+	github.com/cosmos/evm => github.com/strangelove-ventures/cosmos-evm v0.1.5 // spawntag:evm
 	github.com/ethereum/go-ethereum => github.com/evmos/go-ethereum v1.10.26-evmos-rc4 // spawntag:evm
 	github.com/spf13/viper => github.com/spf13/viper v1.17.0 // v1.18+ breaks app overrides
 )
