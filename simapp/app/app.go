@@ -995,6 +995,7 @@ func NewChainApp(
 	// Create Transfer Stack
 	var transferStack porttypes.IBCModule
 	transferStack = transfer.NewIBCModule(app.TransferKeeper)
+	transferStack = erc20.NewIBCMiddleware(app.Erc20Keeper, transferStack) // spawntag:evm
 	transferStack = ratelimit.NewIBCMiddleware(app.RatelimitKeeper, transferStack)
 	transferStack = ibcfee.NewIBCMiddleware(transferStack, app.IBCFeeKeeper)
 	transferStack = packetforward.NewIBCMiddleware(
