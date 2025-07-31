@@ -19,6 +19,11 @@ Congrats!! You built your first network already. You are ready to run a local te
 
 Use the `sh-testnet` command *(short for shell testnet)* to quickly build your application, generate example wallet accounts, and start the local network on your machine.
 
+```bash
+# Install the binary
+make install
+```
+
 ```bash docci-background
 # Run a quick shell testnet
 make sh-testnet
@@ -38,7 +43,7 @@ TX_HASH=`rolld tx nameservice set alice --from=acc1 --yes -o json | jq -r '.txha
 
 # You can verify this transaction was successful
 # By querying it's unique ID.
-rolld q tx $TX_HASH
+rolld q tx $TX_HASH -o json
 ```
 
 ## Interaction Get Name
