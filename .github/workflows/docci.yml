@@ -66,6 +66,7 @@ jobs:
     - name: setup & install spawn
       run: docci run docs/versioned_docs/version-v0.50.x/01-setup/docci_config.json
 
+      # since this is not run within the 'rollchain' directory, it runs standalone before (this generates the rollchain dir)
     - name: builds chain
       run: docci run docs/versioned_docs/version-v0.50.x/02-build-your-application/01-nameservice.md
 

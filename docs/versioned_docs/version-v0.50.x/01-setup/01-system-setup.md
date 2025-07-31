@@ -34,7 +34,7 @@ Install [VSCode](https://code.visualstudio.com/download) if you do not already h
 <Tabs defaultValue="macos">
   <TabItem value="macos" label="MacOS">
 
-  ```bash docci-os=macos
+  ```bash docci-os="macos"
   # Setup Homebrew (https://brew.sh/)
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   sudo echo 'export PATH=$PATH:/opt/homebrew/bin' >> ~/.zshrc
@@ -61,7 +61,7 @@ Install [VSCode](https://code.visualstudio.com/download) if you do not already h
 
   <TabItem value="windows" label="Windows (WSL)" default>
 
-  ```bash docci-os=windows
+  ```bash docci-os="windows"
   # Install WSL in powershell
   wsl --install
 
@@ -104,7 +104,7 @@ Install [VSCode](https://code.visualstudio.com/download) if you do not already h
   <TabItem value="ubuntu-linux" label="Linux (Ubuntu)">
 
   <!-- markdown-link-check-disable -->
-  ```bash docci-os=linux
+  ```bash docci-os="linux"
   # Base
   sudo apt install make gcc git jq wget
 
