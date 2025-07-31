@@ -44,7 +44,7 @@ Let's create a new chain called 'rollchain'. You are going to set defining chara
 - Binary executable (bin)
 
 ```bash
-spawn new rollchain --consensus=pos --disable=cosmwasm --bech32=roll --denom=uroll --bin=rolld
+spawn new rollchain --consensus=pos --disable=cosmwasm,explorer --bech32=roll --denom=uroll --bin=rolld
 ```
 
 🎉 Your new blockchain 'rollchain' is now generated!

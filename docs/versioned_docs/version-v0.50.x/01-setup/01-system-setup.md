@@ -34,7 +34,7 @@ Install [VSCode](https://code.visualstudio.com/download) if you do not already h
 <Tabs defaultValue="macos">
   <TabItem value="macos" label="MacOS">
 
-  ```bash
+  ```bash docci-os=macos
   # Setup Homebrew (https://brew.sh/)
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   sudo echo 'export PATH=$PATH:/opt/homebrew/bin' >> ~/.zshrc
@@ -104,7 +104,7 @@ Install [VSCode](https://code.visualstudio.com/download) if you do not already h
   <TabItem value="ubuntu-linux" label="Linux (Ubuntu)">
 
   <!-- markdown-link-check-disable -->
-  ```bash
+  ```bash docci-os=linux
   # Base
   sudo apt install make gcc git jq wget
 
@@ -131,7 +131,7 @@ Install [VSCode](https://code.visualstudio.com/download) if you do not already h
   Some tutorials require CosmWasm (Rust smart contracts) setup. This section is option, unless a tutorial is CosmWasm focused.
 
   CosmWasm requires [Rust](https://www.rust-lang.org/). You must have this installed as the contract will be built locally.
-  ```bash
+  ```bash docci-ignore
   # Install rust - https://www.rust-lang.org/tools/install
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 

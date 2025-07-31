@@ -13,7 +13,7 @@ Extend the template module and add how to store and interact with data. Specific
 
 Open the `proto/nameservice/v1` directory. Edit `tx.proto` to add the transaction setter message.
 
-```protobuf title="proto/nameservice/v1/tx.proto"
+```protobuf title="proto/nameservice/v1/tx.proto" docci-file="proto/nameservice/v1/tx.proto" docci-line-replace=19
 
   // SetServiceName allows a user to set their accounts name.
   rpc SetServiceName(MsgSetServiceName) returns (MsgSetServiceNameResponse);
@@ -42,7 +42,8 @@ proto/nameservice/v1/tx.proto file
 
 Find `query.proto` and add the following
 
-```protobuf title="proto/nameservice/v1/query.proto"
+<!-- TODO: verify if this should be 15 or 14 (0 or 1 indexed) -->
+```protobuf title="proto/nameservice/v1/query.proto" docci-file="proto/nameservice/v1/query.proto" docci-line-replace=15
 
   // ResolveName allows a user to resolve the name of an account.
   rpc ResolveName(QueryResolveNameRequest) returns (QueryResolveNameResponse) {

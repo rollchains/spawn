@@ -35,13 +35,25 @@ func NewKeeper() Keeper {
 }
 ```
 
+<!-- ==================
+```bash docci-file=x/nameservice/keeper/keeper.go docci-line-replace=29
+	NameMapping collections.Map[string, string]
+```
+
+```bash docci-file=x/nameservice/keeper/keeper.go docci-line-replace=64
+		NameMapping: collections.NewMap(sb, collections.NewPrefix(1),
+			"name_mapping", collections.StringKey, collections.StringValue,
+		),
+```
+================== -->
+
 ---
 
 ## Application Logic
 
 Update the msg_server logic to set the name upon request from a user.
 
-```go title="x/nameservice/keeper/msg_server.go"
+```go title="x/nameservice/keeper/msg_server.go" docci-file=x/nameservice/keeper/msg_server.go docci-line-replace=30-38
 func (ms msgServer) SetServiceName(ctx context.Context, msg *types.MsgSetServiceName) (*types.MsgSetServiceNameResponse, error) {
 	// highlight-start
 	if err := ms.k.NameMapping.Set(ctx, msg.Sender, msg.Name); err != nil {
@@ -55,7 +67,7 @@ func (ms msgServer) SetServiceName(ctx context.Context, msg *types.MsgSetService
 
 and also for the query_server to retrieve the name.
 
-```go title="x/nameservice/keeper/query_server.go"
+```go title="x/nameservice/keeper/query_server.go" docci-file=x/nameservice/keeper/query_server.go docci-line-replace=33-37
 func (k Querier) ResolveName(goCtx context.Context, req *types.QueryResolveNameRequest) (*types.QueryResolveNameResponse, error) {
 	// highlight-start
 	v, err := k.Keeper.NameMapping.Get(goCtx, req.Wallet)

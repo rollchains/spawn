@@ -13,7 +13,7 @@ Using the AutoCLI, you will easily set up the CLI client for transactions and qu
 
 Update the autocli to allow someone to get the name of a wallet account.
 
-```go title="x/nameservice/autocli.go"
+```go title="x/nameservice/autocli.go" docci-file="x/nameservice/autocli.go" docci-line-replace=11-20
 		Query: &autocliv1.ServiceCommandDescriptor{
             Service: modulev1.Query_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
@@ -48,7 +48,7 @@ Update the autocli to allow someone to get the name of a wallet account.
 
 Also add interaction in `x/nameservice/autocli.go` to set the name of a wallet account.
 
-```go title="x/nameservice/autocli.go"
+```go title="x/nameservice/autocli.go"  docci-file="x/nameservice/autocli.go" docci-line-replace=31-39
 		Tx: &autocliv1.ServiceCommandDescriptor{
 			Service: modulev1.Msg_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
