@@ -29,11 +29,6 @@ jobs:
     - name: Install Ubuntu packages
       run: sudo apt-get update && sudo apt-get install bash make jq
 
-    - uses: actions/setup-node@v4
-      name: Install Node.js
-      with:
-        node-version: 21
-
     - name: Setup go
       uses: actions/setup-go@v4
       with:
@@ -47,7 +42,6 @@ jobs:
         sudo mv docci /usr/local/bin/docci
         sudo chmod +x /usr/local/bin/docci
         rm docci.tar.gz
-
 
     - name: setup & install spawn
       run: docci run docs/versioned_docs/version-v0.50.x/01-setup/docci_config.json

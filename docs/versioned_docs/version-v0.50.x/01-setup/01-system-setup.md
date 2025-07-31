@@ -61,7 +61,7 @@ Install [VSCode](https://code.visualstudio.com/download) if you do not already h
 
   <TabItem value="windows" label="Windows (WSL)" default>
 
-  ```bash
+  ```bash docci-os=windows
   # Install WSL in powershell
   wsl --install
 
