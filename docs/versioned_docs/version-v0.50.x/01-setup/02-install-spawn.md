@@ -19,10 +19,10 @@ Install Spawn from source.
 
 ```bash
 # Install from latest source
-git clone https://github.com/rollchains/spawn.git --depth 1 --branch v0.50.15
+git clone https://github.com/rollchains/spawn.git --depth 1 --branch v0.50.15 spawn_bin
 
 # Change to this directory
-cd spawn
+cd spawn_bin
 
 # Clear Go modules cache for a fresh install
 go clean -modcache
@@ -42,13 +42,15 @@ spawn
 local-ic
 
 heighliner
+
+rm -rf spawn_bin
 ```
 
 ## Command not found error
 
 If you get "command 'spawn' not found", run:
 
-```bash
+```bash docci-ignore
 # Gets your operating system
 unameOut="$(uname -s)"
 case "${unameOut}" in
