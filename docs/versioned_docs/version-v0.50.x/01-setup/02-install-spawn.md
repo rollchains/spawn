@@ -19,7 +19,7 @@ Install Spawn from source.
 
 ```bash
 # Install from latest source
-git clone https://github.com/rollchains/spawn.git --depth 1 --branch v0.50.15 spawn_bin
+git clone https://github.com/rollchains/spawn.git --depth 1 --branch v0.50.16 spawn_bin
 
 # Change to this directory
 cd spawn_bin
