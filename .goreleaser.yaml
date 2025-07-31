@@ -23,7 +23,7 @@ builds:
     targets:
       - linux_amd64_v1
       - linux_arm64
-      - linux_386
+      # - linux_386
       - darwin_amd64_v1
       - darwin_arm64
       - windows_amd64_v1
