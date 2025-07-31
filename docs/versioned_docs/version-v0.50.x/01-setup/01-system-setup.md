@@ -110,10 +110,10 @@ Install [VSCode](https://code.visualstudio.com/download) if you do not already h
 
   # (optional) Github CLI - https://github.com/cli/cli
   curl -sS https://webi.sh/gh | sh
-  gh auth login
+  # gh auth login
 
   # Golang
-  GO_VERSION=1.23.0
+  GO_VERSION=1.23.9
   wget https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz
   sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go$GO_VERSION.linux-amd64.tar.gz
 
